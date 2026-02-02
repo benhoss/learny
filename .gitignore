@@ -1,0 +1,34 @@
+# OS
+.DS_Store
+
+# Environment
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Node
+node_modules/
+
+# Flutter/Dart
+.dart_tool/
+.build/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+
+# PHP/Laravel
+vendor/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Other
+.claude-plugin/

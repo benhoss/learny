@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../app/backend_config.dart';
+import '../routes/app_routes.dart';
 import '../data/fake_repositories.dart';
 import '../models/achievement.dart';
 import '../models/child_profile.dart';
@@ -61,6 +62,11 @@ class AppState extends ChangeNotifier {
   PackSessionStage? packSessionStage;
   Map<String, dynamic>? flashcardsPayload;
   Map<String, dynamic>? matchingPayload;
+  Map<String, Map<String, dynamic>> gamePayloads = {};
+  List<String> packGameQueue = [];
+  int packGameIndex = 0;
+  String? currentGameType;
+  String? currentGameTitle;
 
   bool isGeneratingQuiz = false;
   String generationStatus = 'Idle';
@@ -209,6 +215,8 @@ class AppState extends ChangeNotifier {
       return;
     }
     selectedPackId = id;
+    currentGameType = 'quiz';
+    currentGameTitle = 'Quick Quiz';
     quizSession = QuizSession(
       packId: id,
       questions: _repositories.packs.loadQuestions(id),
@@ -222,6 +230,9 @@ class AppState extends ChangeNotifier {
     final id = packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
     if (id != null) {
       selectedPackId = id;
+    }
+    if (packGameQueue.isEmpty) {
+      _setPackGameQueue(['flashcards', 'quiz', 'matching']);
     }
     notifyListeners();
   }
@@ -261,6 +272,8 @@ class AppState extends ChangeNotifier {
   void endPackSession() {
     inPackSession = false;
     packSessionStage = null;
+    packGameQueue = [];
+    packGameIndex = 0;
     notifyListeners();
   }
 
@@ -477,6 +490,20 @@ class AppState extends ChangeNotifier {
         await _syncPackFromBackend(pack);
 
         final games = await backend.listGames(childId: childId, packId: packId);
+        final payloadsByType = <String, Map<String, dynamic>>{};
+        for (final entry in games.cast<Map<String, dynamic>>()) {
+          final status = entry['status']?.toString();
+          final type = entry['type']?.toString();
+          final payload = entry['payload'];
+          if (status == 'ready' && type != null && payload is Map<String, dynamic>) {
+            payloadsByType[type] = payload;
+          }
+        }
+        gamePayloads = payloadsByType;
+        flashcardsPayload = payloadsByType['flashcards'];
+        matchingPayload = payloadsByType['matching'];
+        _setPackGameQueue(payloadsByType.keys.toList());
+
         final supportedTypes = [
           'quiz',
           'true_false',
@@ -497,20 +524,6 @@ class AppState extends ChangeNotifier {
         }
 
         if (selectedGame.isNotEmpty) {
-          final flashcardsGame = games.cast<Map<String, dynamic>>().firstWhere(
-                (game) => game['type'] == 'flashcards' && game['status'] == 'ready',
-                orElse: () => <String, dynamic>{},
-              );
-          if (flashcardsGame.isNotEmpty) {
-            flashcardsPayload = flashcardsGame['payload'] as Map<String, dynamic>?;
-          }
-          final matchingGame = games.cast<Map<String, dynamic>>().firstWhere(
-                (game) => game['type'] == 'matching' && game['status'] == 'ready',
-                orElse: () => <String, dynamic>{},
-              );
-          if (matchingGame.isNotEmpty) {
-            matchingPayload = matchingGame['payload'] as Map<String, dynamic>?;
-          }
           _loadQuizFromPayload(selectedGame);
           return;
         }
@@ -549,6 +562,8 @@ class AppState extends ChangeNotifier {
   void _loadQuizFromPayload(Map<String, dynamic> game) {
     final type = game['type']?.toString() ?? 'quiz';
     final payload = game['payload'] as Map<String, dynamic>? ?? {};
+    currentGameType = type;
+    currentGameTitle = payload['title']?.toString();
     final mapped = <QuizQuestion>[];
 
     if (type == 'ordering') {
@@ -625,6 +640,74 @@ class AppState extends ChangeNotifier {
       packId: selectedPackId ?? '',
       questions: mapped,
     );
+  }
+
+  void startGameType(String type) {
+    if (type == 'flashcards' || type == 'matching') {
+      return;
+    }
+    final payload = gamePayloads[type];
+    if (payload != null) {
+      _loadQuizFromPayload({'type': type, 'payload': payload});
+      notifyListeners();
+      return;
+    }
+    startQuiz();
+  }
+
+  void advancePackGame() {
+    if (!inPackSession) {
+      return;
+    }
+    if (packGameIndex + 1 < packGameQueue.length) {
+      packGameIndex += 1;
+      notifyListeners();
+    }
+  }
+
+  String? get currentPackGameType {
+    if (packGameQueue.isEmpty || packGameIndex >= packGameQueue.length) {
+      return null;
+    }
+    return packGameQueue[packGameIndex];
+  }
+
+  String? get nextPackGameType {
+    if (packGameQueue.isEmpty || packGameIndex + 1 >= packGameQueue.length) {
+      return null;
+    }
+    return packGameQueue[packGameIndex + 1];
+  }
+
+  String routeForGameType(String type) {
+    if (type == 'flashcards') {
+      return AppRoutes.flashcards;
+    }
+    if (type == 'matching') {
+      return AppRoutes.matching;
+    }
+    return AppRoutes.quiz;
+  }
+
+  void _setPackGameQueue(List<String> availableTypes) {
+    const preferredOrder = [
+      'flashcards',
+      'quiz',
+      'true_false',
+      'multiple_select',
+      'fill_blank',
+      'short_answer',
+      'ordering',
+      'matching',
+    ];
+    final normalized = availableTypes.toSet();
+    final ordered = preferredOrder.where(normalized.contains).toList();
+    if (ordered.isEmpty) {
+      packGameQueue = ['flashcards', 'quiz', 'matching'];
+    } else {
+      packGameQueue = ordered;
+    }
+    packGameIndex = 0;
   }
 
   void answerCurrentQuestion(int selectedIndex) {
@@ -716,6 +799,8 @@ class AppState extends ChangeNotifier {
     quizSession = null;
     flashcardsPayload = null;
     matchingPayload = null;
+    currentGameType = null;
+    currentGameTitle = null;
     notifyListeners();
   }
 

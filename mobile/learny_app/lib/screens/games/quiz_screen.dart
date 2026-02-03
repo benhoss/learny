@@ -74,8 +74,14 @@ class _QuizScreenState extends State<QuizScreen> {
     }
     if (state.quizSession?.isComplete ?? false) {
       if (state.inPackSession) {
-        state.advancePackSession(PackSessionStage.matching);
-        Navigator.pushReplacementNamed(context, AppRoutes.matching);
+        final nextType = state.nextPackGameType;
+        if (nextType != null) {
+          state.advancePackGame();
+          state.startGameType(nextType);
+          Navigator.pushReplacementNamed(context, state.routeForGameType(nextType));
+        } else {
+          Navigator.pushReplacementNamed(context, AppRoutes.results);
+        }
       } else {
         Navigator.pushReplacementNamed(context, AppRoutes.results);
       }
@@ -184,7 +190,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
     return GradientScaffold(
       gradient: LearnyGradients.hero,
-      appBar: AppBar(title: const Text('Quick Quiz')),
+      appBar: AppBar(title: Text(_gameTitle(state))),
       child: Stack(
         children: [
           Positioned(
@@ -222,6 +228,26 @@ class _QuizScreenState extends State<QuizScreen> {
                       .headlineMedium
                       ?.copyWith(fontWeight: FontWeight.w700),
                 ),
+                if (question != null && question.isMultiSelect) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'Select all that apply.',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: LearnyColors.slateMedium),
+                  ),
+                ],
+                if (question != null && question.isOrdering) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'Drag items into the correct order.',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: LearnyColors.slateMedium),
+                  ),
+                ],
                 if (question?.hint != null) ...[
                   const SizedBox(height: 8),
                   Text(
@@ -301,6 +327,28 @@ class _QuizScreenState extends State<QuizScreen> {
         ],
       ),
     );
+  }
+
+  String _gameTitle(AppState state) {
+    final provided = state.currentGameTitle;
+    if (provided != null && provided.trim().isNotEmpty) {
+      return provided;
+    }
+    switch (state.currentGameType) {
+      case 'true_false':
+        return 'True or False';
+      case 'multiple_select':
+        return 'Choose All That Apply';
+      case 'fill_blank':
+        return 'Fill in the Blank';
+      case 'short_answer':
+        return 'Short Answer';
+      case 'ordering':
+        return 'Put in Order';
+      case 'quiz':
+      default:
+        return 'Quick Quiz';
+    }
   }
 }
 

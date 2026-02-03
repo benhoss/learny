@@ -160,9 +160,14 @@ PROMPT;
 {
   "objective": string,
   "summary": string,
+  "language": string,
+  "difficulty": number,
+  "topics": [string],
+  "estimated_time_minutes": number,
+  "engagement": {"tone": string, "persona": string, "encouragement": string},
   "concepts": [{"key": string, "label": string, "difficulty": number}],
   "items": [
-    {"type": "flashcards"|"quiz"|"matching", "content": object}
+    {"type": "flashcards"|"quiz"|"matching"|"true_false"|"fill_blank"|"ordering"|"multiple_select"|"short_answer", "content": object}
   ]
 }
 SCHEMA;

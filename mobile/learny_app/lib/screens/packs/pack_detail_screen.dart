@@ -11,31 +11,24 @@ class PackDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final pack = state.selectedPack ?? (state.packs.isNotEmpty ? state.packs.first : null);
+    final games = _defaultGames();
     return PlaceholderScreen(
       title: pack?.title ?? 'Learning Pack',
       subtitle: pack == null
           ? 'No pack selected yet.'
-          : '${pack.itemCount} cards • 3 games • ${pack.minutes} minutes',
+          : '${pack.itemCount} cards • ${games.length} games • ${pack.minutes} minutes',
       gradient: LearnyGradients.trust,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          ListTile(
-            leading: Icon(Icons.flash_on_rounded, color: LearnyColors.coral),
-            title: Text('Warm-up flashcards'),
-            subtitle: Text('10 cards'),
-          ),
-          ListTile(
-            leading: Icon(Icons.quiz_rounded, color: LearnyColors.teal),
-            title: Text('Quick quiz'),
-            subtitle: Text('5 questions'),
-          ),
-          ListTile(
-            leading: Icon(Icons.extension_rounded, color: LearnyColors.purple),
-            title: Text('Matching pairs'),
-            subtitle: Text('3 rounds'),
-          ),
-        ],
+        children: games
+            .map(
+              (game) => ListTile(
+                leading: Icon(game.icon, color: game.color),
+                title: Text(game.label),
+                subtitle: Text(game.subtitle),
+              ),
+            )
+            .toList(),
       ),
       primaryAction: ElevatedButton(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.packSession),
@@ -43,4 +36,71 @@ class PackDetailScreen extends StatelessWidget {
       ),
     );
   }
+
+  List<_GameDetailItem> _defaultGames() {
+    return const [
+      _GameDetailItem(
+        label: 'Warm-up flashcards',
+        subtitle: '10 cards',
+        icon: Icons.flash_on_rounded,
+        color: LearnyColors.coral,
+      ),
+      _GameDetailItem(
+        label: 'Quick quiz',
+        subtitle: '5 questions',
+        icon: Icons.quiz_rounded,
+        color: LearnyColors.teal,
+      ),
+      _GameDetailItem(
+        label: 'True or False',
+        subtitle: 'Fast judgments',
+        icon: Icons.rule_rounded,
+        color: LearnyColors.coralLight,
+      ),
+      _GameDetailItem(
+        label: 'Fill in the Blank',
+        subtitle: 'Complete the sentence',
+        icon: Icons.edit_rounded,
+        color: LearnyColors.coralLight,
+      ),
+      _GameDetailItem(
+        label: 'Choose All That Apply',
+        subtitle: 'Multiple correct answers',
+        icon: Icons.checklist_rounded,
+        color: LearnyColors.coralLight,
+      ),
+      _GameDetailItem(
+        label: 'Short Answer',
+        subtitle: 'Write a quick response',
+        icon: Icons.short_text_rounded,
+        color: LearnyColors.coralLight,
+      ),
+      _GameDetailItem(
+        label: 'Ordering Challenge',
+        subtitle: 'Drag into order',
+        icon: Icons.reorder_rounded,
+        color: LearnyColors.coralLight,
+      ),
+      _GameDetailItem(
+        label: 'Matching pairs',
+        subtitle: '3 rounds',
+        icon: Icons.extension_rounded,
+        color: LearnyColors.purple,
+      ),
+    ];
+  }
+}
+
+class _GameDetailItem {
+  const _GameDetailItem({
+    required this.label,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
 }

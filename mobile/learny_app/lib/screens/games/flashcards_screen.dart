@@ -116,7 +116,13 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (state.inPackSession) {
-                        state.advancePackSession(PackSessionStage.quiz);
+                        final nextType = state.nextPackGameType;
+                        if (nextType != null) {
+                          state.advancePackGame();
+                          state.startGameType(nextType);
+                          Navigator.pushNamed(context, state.routeForGameType(nextType));
+                          return;
+                        }
                       }
                       state.startQuiz();
                       Navigator.pushNamed(context, AppRoutes.quiz);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
+import 'game_type_selector.dart';
 import '../shared/placeholder_screen.dart';
 
 class UploadScreen extends StatefulWidget {
@@ -17,6 +18,16 @@ class _UploadScreenState extends State<UploadScreen> {
   final _languageController = TextEditingController();
   final _goalController = TextEditingController();
   final _contextController = TextEditingController();
+  final List<String> _selectedGameTypes = [
+    'flashcards',
+    'quiz',
+    'matching',
+    'true_false',
+    'fill_blank',
+    'ordering',
+    'multiple_select',
+    'short_answer',
+  ];
 
   @override
   void dispose() {
@@ -30,6 +41,8 @@ class _UploadScreenState extends State<UploadScreen> {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final hasContext = _subjectController.text.trim().isNotEmpty ||
+        _goalController.text.trim().isNotEmpty;
     return PlaceholderScreen(
       title: 'Upload a File',
       subtitle: 'PDFs and images supported.',
@@ -60,6 +73,7 @@ class _UploadScreenState extends State<UploadScreen> {
           const SizedBox(height: 8),
           TextField(
             controller: _subjectController,
+            onChanged: (_) => setState(() {}),
             decoration: const InputDecoration(
               labelText: 'Subject (optional)',
               hintText: 'e.g. French verbs',
@@ -76,6 +90,7 @@ class _UploadScreenState extends State<UploadScreen> {
           const SizedBox(height: 8),
           TextField(
             controller: _goalController,
+            onChanged: (_) => setState(() {}),
             decoration: const InputDecoration(
               labelText: 'Learning goal (optional)',
               hintText: 'e.g. Present tense conjugation',
@@ -90,10 +105,22 @@ class _UploadScreenState extends State<UploadScreen> {
               hintText: 'Short notes to guide quiz generation',
             ),
           ),
+          const SizedBox(height: 12),
+          GameTypeSelector(
+            selectedTypes: _selectedGameTypes,
+            onSelectionChanged: (types) {
+              setState(() {
+                _selectedGameTypes
+                  ..clear()
+                  ..addAll(types);
+              });
+            },
+          ),
         ],
       ),
       primaryAction: ElevatedButton(
-        onPressed: () async {
+        onPressed: hasContext
+            ? () async {
           final result = await FilePicker.platform.pickFiles(
             type: FileType.custom,
             allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
@@ -113,6 +140,7 @@ class _UploadScreenState extends State<UploadScreen> {
             learningGoal: _goalController.text.trim(),
             contextText: _contextController.text.trim(),
           );
+          state.setPendingGameTypes(List<String>.from(_selectedGameTypes));
           state.generateQuizFromBytes(
             bytes: bytes,
             filename: file.name,
@@ -121,7 +149,8 @@ class _UploadScreenState extends State<UploadScreen> {
             return;
           }
           Navigator.pushNamed(context, AppRoutes.processing);
-        },
+        }
+            : null,
         child: const Text('Choose File'),
       ),
     );

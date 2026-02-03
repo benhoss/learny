@@ -108,49 +108,67 @@ PROMPT;
      */
     protected function imageContentForDocument(Document $document): array
     {
-        if (! $this->isImage($document->mime_type, $document->storage_path, $document->original_filename)) {
+        $paths = array_filter(array_merge(
+            [$document->storage_path],
+            is_array($document->storage_paths ?? null) ? $document->storage_paths : []
+        ));
+        $mimeTypes = array_filter(array_merge(
+            [$document->mime_type],
+            is_array($document->mime_types ?? null) ? $document->mime_types : []
+        ));
+
+        if (! $this->isImage($mimeTypes, $paths, $document->original_filename)) {
             return [];
         }
-
-        $path = $document->storage_path;
-        if (! $path) {
-            return [];
-        }
-
-        if (filter_var($path, FILTER_VALIDATE_URL) !== false) {
-            return [Image::fromUrl($path, $document->mime_type)];
-        }
-
+        $images = [];
         $disk = $document->storage_disk ?: config('filesystems.default', 's3');
+        foreach ($paths as $index => $path) {
+            $mimeType = $mimeTypes[$index] ?? $document->mime_type;
+            if (! $path) {
+                continue;
+            }
+            if (filter_var($path, FILTER_VALIDATE_URL) !== false) {
+                $images[] = Image::fromUrl($path, $mimeType);
+            } else {
+                $images[] = Image::fromStoragePath($path, $disk);
+            }
+        }
 
-        return [Image::fromStoragePath($path, $disk)];
+        return $images;
     }
 
-    protected function isImage(?string $mimeType, ?string $path, ?string $filename): bool
+    protected function isImage(array $mimeTypes, array $paths, ?string $filename): bool
     {
-        if (is_string($mimeType) && str_starts_with($mimeType, 'image/')) {
-            return true;
+        foreach ($mimeTypes as $mimeType) {
+            if (is_string($mimeType) && str_starts_with($mimeType, 'image/')) {
+                return true;
+            }
         }
 
-        $extension = $this->extensionFromPath($path) ?: $this->extensionFromPath($filename);
-        if (! $extension) {
+        foreach ($paths as $path) {
+            if ($this->isImageExtension($path)) {
+                return true;
+            }
+        }
+
+        return $this->isImageExtension($filename);
+    }
+
+    protected function isImageExtension(?string $path): bool
+    {
+        if (! $path) {
+            return false;
+        }
+
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        if ($extension === '') {
             return false;
         }
 
         $imageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'heic'];
 
         return in_array($extension, $imageExtensions, true);
-    }
-
-    protected function extensionFromPath(?string $path): ?string
-    {
-        if (! $path) {
-            return null;
-        }
-
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-
-        return $extension !== '' ? $extension : null;
     }
 
     protected function repairJson(string $content): ?array

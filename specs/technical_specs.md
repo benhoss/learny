@@ -40,7 +40,7 @@ Mobile App (Flutter / React Native)
 - Concepts
 - Learning Packs
 - Games
-- Attempts
+- Attempts / Game Results
 - Mastery Profiles
 
 ---
@@ -53,6 +53,7 @@ Mobile App (Flutter / React Native)
 4. Learning pack generation
 5. Mini-game content generation
 6. JSON schema validation
+7. Result capture for personalization feedback loops
 
 ---
 

@@ -3,6 +3,7 @@
 namespace App\Services\Generation;
 
 use App\Models\Game;
+use App\Models\GameResult;
 use App\Models\LearningPack;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Facades\Prism;
@@ -11,6 +12,7 @@ use RuntimeException;
 class PrismGameGenerator implements GameGeneratorInterface
 {
     private const RECENT_GAMES_LIMIT = 5;
+    private const RECENT_RESULTS_LIMIT = 5;
 
     public function generate(LearningPack $pack, string $type): array
     {
@@ -33,7 +35,11 @@ class PrismGameGenerator implements GameGeneratorInterface
         };
 
         $recentGames = $this->recentGameHistory((string) $pack->user_id, (string) $pack->_id);
-        $prompt = $this->buildPrompt($pack, $type, $schema, $recentGames);
+        $recentPerformance = $this->recentPerformanceSummary(
+            (string) $pack->user_id,
+            (string) $pack->child_profile_id
+        );
+        $prompt = $this->buildPrompt($pack, $type, $schema, $recentGames, $recentPerformance);
 
         $response = Prism::text()
             ->using(Provider::OpenRouter, $model)
@@ -64,7 +70,8 @@ class PrismGameGenerator implements GameGeneratorInterface
         LearningPack $pack,
         string $type,
         string $schema,
-        string $recentGames
+        string $recentGames,
+        string $recentPerformance
     ): string
     {
         $concepts = $pack->content['concepts'] ?? [];
@@ -75,6 +82,8 @@ class PrismGameGenerator implements GameGeneratorInterface
 Create a {$type} game payload for a child aged 10-14.
 Use the same language as the learning pack content for every prompt and choice.
 Do not use English unless the learning pack is English.
+Use upbeat, encouraging, kid-friendly wording.
+Add a short, friendly intro line that hints this game is personalized from past sessions to help the child grow.
 Return JSON matching this schema:
 {$schema}
 
@@ -82,6 +91,8 @@ Concepts: {$conceptText}
 Objective: {$objective}
 Recent games (avoid repeating questions/patterns and vary style/difficulty):
 {$recentGames}
+Recent performance summary (reinforce weak spots and celebrate improvements):
+{$recentPerformance}
 
 Return JSON only.
 PROMPT;
@@ -127,6 +138,48 @@ PROMPT;
                 $sample = isset($items[0]['prompt']) ? (string) $items[0]['prompt'] : '';
             }
             $summaries[] = trim("{$type}: {$sample}");
+        }
+
+        return implode("\n", array_filter($summaries));
+    }
+
+    protected function recentPerformanceSummary(string $userId, string $childId): string
+    {
+        if ($userId === '' || $childId === '') {
+            return 'None.';
+        }
+
+        $results = GameResult::where('user_id', $userId)
+            ->where('child_profile_id', $childId)
+            ->orderBy('completed_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->limit(self::RECENT_RESULTS_LIMIT)
+            ->get();
+
+        if ($results->isEmpty()) {
+            return 'None.';
+        }
+
+        $summaries = [];
+        foreach ($results as $result) {
+            $items = $result->results ?? [];
+            $total = $result->total_questions ?? count($items);
+            $correct = $result->correct_answers ?? collect($items)->where('correct', true)->count();
+            $type = $result->game_type ?? 'unknown';
+
+            $missedTopics = [];
+            foreach ($items as $item) {
+                if (! ($item['correct'] ?? false) && ! empty($item['topic'])) {
+                    $missedTopics[] = (string) $item['topic'];
+                }
+            }
+
+            $missedSummary = '';
+            if (! empty($missedTopics)) {
+                $missedSummary = ' Missed topics: '.implode(', ', array_slice(array_unique($missedTopics), 0, 3)).'.';
+            }
+
+            $summaries[] = trim("{$type}: {$correct}/{$total} correct.{$missedSummary}");
         }
 
         return implode("\n", array_filter($summaries));

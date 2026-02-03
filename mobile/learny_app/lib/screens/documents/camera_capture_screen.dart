@@ -61,6 +61,58 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
     Navigator.pushNamed(context, AppRoutes.review);
   }
 
+  Future<void> _pickMultipleFromGallery() async {
+    if (kIsWeb) {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png'],
+        withData: true,
+        allowMultiple: true,
+      );
+      if (result == null || result.files.isEmpty) {
+        return;
+      }
+      final state = AppStateScope.of(context);
+      state.clearPendingImages();
+      for (final file in result.files) {
+        final bytes = file.bytes;
+        if (bytes == null) {
+          continue;
+        }
+        state.addPendingImage(
+          bytes: bytes,
+          filename: file.name.isEmpty ? 'capture.jpg' : file.name,
+        );
+      }
+      if (!mounted) {
+        return;
+      }
+      Navigator.pushNamed(context, AppRoutes.review);
+      return;
+    }
+
+    final files = await _picker.pickMultiImage(
+      maxWidth: 1600,
+      imageQuality: 85,
+    );
+    if (files.isEmpty) {
+      return;
+    }
+    final state = AppStateScope.of(context);
+    state.clearPendingImages();
+    for (final file in files) {
+      final bytes = await file.readAsBytes();
+      state.addPendingImage(
+        bytes: bytes,
+        filename: file.name.isEmpty ? 'capture.jpg' : file.name,
+      );
+    }
+    if (!mounted) {
+      return;
+    }
+    Navigator.pushNamed(context, AppRoutes.review);
+  }
+
   @override
   Widget build(BuildContext context) {
     return PlaceholderScreen(
@@ -86,7 +138,12 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
         children: [
           OutlinedButton(
             onPressed: () => _pickImage(ImageSource.gallery),
-            child: const Text('Choose from Photos'),
+            child: const Text('Choose Single Photo'),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: _pickMultipleFromGallery,
+            child: const Text('Choose Multiple Pages'),
           ),
           const SizedBox(height: 8),
           TextButton(

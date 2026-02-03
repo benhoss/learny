@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Game;
 use App\Models\LearningPack;
+use App\Models\Document;
 use App\Services\Generation\GameGeneratorInterface;
 use App\Services\Schemas\JsonSchemaValidator;
 use Illuminate\Bus\Queueable;
@@ -39,6 +40,7 @@ class GenerateGamesFromLearningPack implements ShouldQueue
             'multiple_select',
             'short_answer',
         ];
+        $types = $this->filterRequestedTypes($pack, $types);
 
         foreach ($types as $type) {
             try {
@@ -58,5 +60,28 @@ class GenerateGamesFromLearningPack implements ShouldQueue
                 throw $e;
             }
         }
+    }
+
+    private function filterRequestedTypes(LearningPack $pack, array $defaultTypes): array
+    {
+        $documentId = $pack->document_id;
+        if (! $documentId) {
+            return $defaultTypes;
+        }
+
+        $document = Document::find($documentId);
+        if (! $document) {
+            return $defaultTypes;
+        }
+
+        $requested = $document->requested_game_types;
+        if (! is_array($requested) || $requested === []) {
+            return $defaultTypes;
+        }
+
+        $normalized = array_values(array_unique(array_filter($requested, 'is_string')));
+        $allowed = array_values(array_intersect($defaultTypes, $normalized));
+
+        return $allowed !== [] ? $allowed : $defaultTypes;
     }
 }

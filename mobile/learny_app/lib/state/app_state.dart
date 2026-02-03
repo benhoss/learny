@@ -72,12 +72,16 @@ class AppState extends ChangeNotifier {
   String generationStatus = 'Idle';
   String? generationError;
   String? backendChildId;
-  Uint8List? pendingImageBytes;
-  String? pendingImageName;
+  List<Uint8List> pendingImages = [];
+  List<String> pendingImageNames = [];
   String? pendingSubject;
   String? pendingLanguage;
   String? pendingLearningGoal;
   String? pendingContextText;
+  List<String> pendingGameTypes = [];
+  String? currentGameId;
+  bool isSyncingDocuments = false;
+  String? documentSyncError;
 
   int _docCounter = 0;
 
@@ -217,6 +221,7 @@ class AppState extends ChangeNotifier {
     selectedPackId = id;
     currentGameType = 'quiz';
     currentGameTitle = 'Quick Quiz';
+    currentGameId = null;
     quizSession = QuizSession(
       packId: id,
       questions: _repositories.packs.loadQuestions(id),
@@ -327,19 +332,32 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> generateQuizFromPendingImage() async {
-    final bytes = pendingImageBytes;
-    final name = pendingImageName;
-    if (bytes == null || name == null) {
+    if (pendingImages.isEmpty) {
       throw BackendException('No image selected.');
     }
-    await generateQuizFromBytes(bytes: bytes, filename: name);
-    pendingImageBytes = null;
-    pendingImageName = null;
+    await generateQuizFromImages(
+      images: List<Uint8List>.from(pendingImages),
+      filenames: List<String>.from(pendingImageNames),
+    );
+    pendingImages = [];
+    pendingImageNames = [];
   }
 
   void setPendingImage({required Uint8List bytes, required String filename}) {
-    pendingImageBytes = bytes;
-    pendingImageName = filename;
+    pendingImages = [bytes];
+    pendingImageNames = [filename];
+    notifyListeners();
+  }
+
+  void addPendingImage({required Uint8List bytes, required String filename}) {
+    pendingImages = [...pendingImages, bytes];
+    pendingImageNames = [...pendingImageNames, filename];
+    notifyListeners();
+  }
+
+  void clearPendingImages() {
+    pendingImages = [];
+    pendingImageNames = [];
     notifyListeners();
   }
 
@@ -353,6 +371,11 @@ class AppState extends ChangeNotifier {
     pendingLanguage = language;
     pendingLearningGoal = learningGoal;
     pendingContextText = contextText;
+    notifyListeners();
+  }
+
+  void setPendingGameTypes(List<String> types) {
+    pendingGameTypes = types;
     notifyListeners();
   }
 
@@ -376,6 +399,7 @@ class AppState extends ChangeNotifier {
         gradeLevel: BackendConfig.childGrade,
         learningGoal: pendingLearningGoal,
         contextText: pendingContextText,
+        requestedGameTypes: pendingGameTypes,
       );
       lastDocumentId = _extractId(document);
 
@@ -393,6 +417,50 @@ class AppState extends ChangeNotifier {
       pendingLanguage = null;
       pendingLearningGoal = null;
       pendingContextText = null;
+      pendingGameTypes = [];
+      notifyListeners();
+    }
+  }
+
+  Future<void> generateQuizFromImages({
+    required List<Uint8List> images,
+    required List<String> filenames,
+  }) async {
+    generationError = null;
+    isGeneratingQuiz = true;
+    generationStatus = 'Uploading document...';
+    notifyListeners();
+
+    try {
+      final session = await _ensureBackendSession();
+      final document = await backend.uploadDocumentBatch(
+        childId: session.childId,
+        files: images,
+        filenames: filenames,
+        subject: pendingSubject,
+        language: pendingLanguage,
+        gradeLevel: BackendConfig.childGrade,
+        learningGoal: pendingLearningGoal,
+        contextText: pendingContextText,
+        requestedGameTypes: pendingGameTypes,
+      );
+      lastDocumentId = _extractId(document);
+
+      generationStatus = 'Processing and generating quiz...';
+      notifyListeners();
+
+      await _pollForPackAndQuiz(session.childId, lastDocumentId);
+      generationStatus = 'Quiz ready!';
+    } catch (error) {
+      generationError = error.toString();
+      generationStatus = 'Generation failed';
+    } finally {
+      isGeneratingQuiz = false;
+      pendingSubject = null;
+      pendingLanguage = null;
+      pendingLearningGoal = null;
+      pendingContextText = null;
+      pendingGameTypes = [];
       notifyListeners();
     }
   }
@@ -560,6 +628,7 @@ class AppState extends ChangeNotifier {
   }
 
   void _loadQuizFromPayload(Map<String, dynamic> game) {
+    currentGameId = _extractId(game);
     final type = game['type']?.toString() ?? 'quiz';
     final payload = game['payload'] as Map<String, dynamic>? ?? {};
     currentGameType = type;
@@ -719,10 +788,13 @@ class AppState extends ChangeNotifier {
     if (question == null) {
       return;
     }
+    final index = session.currentIndex;
     if (selectedIndex == question.correctIndex) {
       session.correctCount += 1;
       xpToday += 5;
       totalXp += 5;
+    } else {
+      session.incorrectIndices.add(index);
     }
     session.currentIndex += 1;
     notifyListeners();
@@ -737,12 +809,15 @@ class AppState extends ChangeNotifier {
     if (question == null) {
       return;
     }
+    final index = session.currentIndex;
     final correct = (question.correctIndices ?? [question.correctIndex]).toSet();
     final selected = selectedIndices.toSet();
     if (selected.isNotEmpty && selected.length == correct.length && selected.containsAll(correct)) {
       session.correctCount += 1;
       xpToday += 5;
       totalXp += 5;
+    } else {
+      session.incorrectIndices.add(index);
     }
     session.currentIndex += 1;
     notifyListeners();
@@ -757,6 +832,7 @@ class AppState extends ChangeNotifier {
     if (question == null) {
       return;
     }
+    final index = session.currentIndex;
     final normalized = value.trim().toLowerCase();
     final answers = <String>{};
     if (question.answerText != null) {
@@ -769,6 +845,8 @@ class AppState extends ChangeNotifier {
       session.correctCount += 1;
       xpToday += 5;
       totalXp += 5;
+    } else {
+      session.incorrectIndices.add(index);
     }
     session.currentIndex += 1;
     notifyListeners();
@@ -783,6 +861,7 @@ class AppState extends ChangeNotifier {
     if (question == null || question.orderedSequence == null) {
       return;
     }
+    final index = session.currentIndex;
     final expected = question.orderedSequence!;
     final isCorrect = ordered.length == expected.length &&
         List.generate(ordered.length, (index) => ordered[index] == expected[index]).every((v) => v);
@@ -790,6 +869,8 @@ class AppState extends ChangeNotifier {
       session.correctCount += 1;
       xpToday += 5;
       totalXp += 5;
+    } else {
+      session.incorrectIndices.add(index);
     }
     session.currentIndex += 1;
     notifyListeners();
@@ -801,6 +882,99 @@ class AppState extends ChangeNotifier {
     matchingPayload = null;
     currentGameType = null;
     currentGameTitle = null;
+    currentGameId = null;
+    notifyListeners();
+  }
+
+  Future<void> refreshDocumentsFromBackend() async {
+    isSyncingDocuments = true;
+    documentSyncError = null;
+    notifyListeners();
+
+    try {
+      final session = await _ensureBackendSession();
+      final data = await backend.listDocuments(childId: session.childId);
+      documents = data
+          .cast<Map<String, dynamic>>()
+          .map((doc) {
+            final id = _extractId(doc) ?? '';
+            final title = doc['original_filename']?.toString() ?? 'Homework';
+            final subject = doc['subject']?.toString() ?? 'Homework';
+            final status = doc['status']?.toString() ?? 'unknown';
+            final createdAt = DateTime.tryParse(doc['created_at']?.toString() ?? '') ?? DateTime.now();
+            return DocumentItem(
+              id: id,
+              title: title,
+              subject: subject,
+              createdAt: createdAt,
+              statusLabel: _statusLabelForDocument(status),
+            );
+          })
+          .toList();
+    } catch (error) {
+      documentSyncError = error.toString();
+    } finally {
+      isSyncingDocuments = false;
+      notifyListeners();
+    }
+  }
+
+  String _statusLabelForDocument(String status) {
+    switch (status) {
+      case 'queued':
+        return 'Queued';
+      case 'processing':
+        return 'Processing';
+      case 'processed':
+        return 'Processed';
+      case 'ready':
+        return 'Ready';
+      case 'failed':
+        return 'Failed';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  Future<void> regenerateDocument(String documentId) async {
+    final session = await _ensureBackendSession();
+    await backend.regenerateDocument(childId: session.childId, documentId: documentId);
+    documents = documents
+        .map(
+          (doc) => doc.id == documentId ? doc.copyWith(statusLabel: 'Queued') : doc,
+        )
+        .toList();
+    notifyListeners();
+  }
+
+  Future<void> retryIncorrectQuestions() async {
+    final session = quizSession;
+    if (session == null || session.incorrectIndices.isEmpty) {
+      return;
+    }
+    final packId = session.packId;
+    if (currentGameId != null) {
+      final backendSession = await _ensureBackendSession();
+      final retryGame = await backend.createRetryGame(
+        childId: backendSession.childId,
+        packId: packId,
+        gameId: currentGameId!,
+        questionIndices: session.incorrectIndices,
+      );
+      _loadQuizFromPayload(retryGame);
+      notifyListeners();
+      return;
+    }
+
+    final questions = session.incorrectIndices
+        .where((index) => index >= 0 && index < session.questions.length)
+        .map((index) => session.questions[index])
+        .toList();
+    if (questions.isEmpty) {
+      return;
+    }
+    currentGameTitle = 'Retry Mistakes';
+    quizSession = QuizSession(packId: packId, questions: questions);
     notifyListeners();
   }
 

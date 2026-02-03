@@ -10,6 +10,7 @@ class QuizSession {
   final List<QuizQuestion> questions;
   int currentIndex = 0;
   int correctCount = 0;
+  List<int> incorrectIndices = [];
 
   bool get isComplete => currentIndex >= questions.length;
 

@@ -14,6 +14,7 @@ class ResultsScreen extends StatelessWidget {
     final total = session?.questions.length ?? 0;
     final correct = session?.correctCount ?? 0;
     final isPackSession = state.inPackSession;
+    final hasRetry = !isPackSession && (session?.incorrectIndices.isNotEmpty ?? false);
     return PlaceholderScreen(
       title: 'Great Job!',
       subtitle: 'You earned ${state.xpToday} XP today and kept your streak.',
@@ -45,23 +46,34 @@ class ResultsScreen extends StatelessWidget {
         },
         child: Text(isPackSession ? 'Finish Session' : 'Next Game'),
       ),
-      secondaryAction: OutlinedButton(
-        onPressed: () {
-          state.resetQuiz();
-          if (isPackSession) {
-            state.completePackSession();
-            state.endPackSession();
-            Navigator.pushNamed(context, AppRoutes.progressOverview);
-          } else {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              AppRoutes.home,
-              (route) => false,
-            );
-          }
-        },
-        child: Text(isPackSession ? 'See Progress' : 'Back to Home'),
-      ),
+      secondaryAction: hasRetry
+          ? OutlinedButton(
+              onPressed: () async {
+                await state.retryIncorrectQuestions();
+                if (!context.mounted) {
+                  return;
+                }
+                Navigator.pushNamed(context, AppRoutes.quiz);
+              },
+              child: const Text('Retry Mistakes'),
+            )
+          : OutlinedButton(
+              onPressed: () {
+                state.resetQuiz();
+                if (isPackSession) {
+                  state.completePackSession();
+                  state.endPackSession();
+                  Navigator.pushNamed(context, AppRoutes.progressOverview);
+                } else {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.home,
+                    (route) => false,
+                  );
+                }
+              },
+              child: Text(isPackSession ? 'See Progress' : 'Back to Home'),
+            ),
     );
   }
 }

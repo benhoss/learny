@@ -32,7 +32,7 @@ class ProcessDocumentOcr implements ShouldQueue
         $document->ocr_error = null;
         $document->save();
 
-        if ($this->shouldSkipOcr($document->mime_type, $document->storage_path, $document->original_filename)) {
+        if ($this->shouldSkipOcr($document)) {
             $document->status = 'processed';
             $document->processed_at = now();
             $document->save();
@@ -62,30 +62,47 @@ class ProcessDocumentOcr implements ShouldQueue
         }
     }
 
-    private function shouldSkipOcr(?string $mimeType, ?string $path, ?string $filename): bool
+    private function shouldSkipOcr(Document $document): bool
     {
-        if (is_string($mimeType) && str_starts_with($mimeType, 'image/')) {
-            return true;
+        $mimeTypes = array_filter(array_merge(
+            [$document->mime_type],
+            is_array($document->mime_types ?? null) ? $document->mime_types : []
+        ));
+        foreach ($mimeTypes as $mimeType) {
+            if (is_string($mimeType) && str_starts_with($mimeType, 'image/')) {
+                return true;
+            }
         }
 
-        $extension = $this->extensionFromPath($path) ?: $this->extensionFromPath($filename);
-        if (! $extension) {
+        $paths = array_filter(array_merge(
+            [$document->storage_path],
+            is_array($document->storage_paths ?? null) ? $document->storage_paths : []
+        ));
+        foreach ($paths as $path) {
+            if ($this->isImageExtension($path)) {
+                return true;
+            }
+        }
+
+        if ($this->isImageExtension($document->original_filename)) {
+            return true;
+        }
+        return false;
+    }
+
+    private function isImageExtension(?string $path): bool
+    {
+        if (! $path) {
+            return false;
+        }
+
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if ($extension === '') {
             return false;
         }
 
         $imageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'heic'];
 
         return in_array($extension, $imageExtensions, true);
-    }
-
-    private function extensionFromPath(?string $path): ?string
-    {
-        if (! $path) {
-            return null;
-        }
-
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-
-        return $extension !== '' ? $extension : null;
     }
 }

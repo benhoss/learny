@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ChildProfileController;
 use App\Http\Controllers\Api\ChildProgressController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\GameResultController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\LearningPackController;
 use Illuminate\Support\Facades\Route;
@@ -38,5 +39,6 @@ Route::prefix('v1')->group(function () {
         Route::get('children/{child}/learning-packs/{pack}/games', [GameController::class, 'index']);
         Route::post('children/{child}/learning-packs/{pack}/games', [GameController::class, 'store']);
         Route::get('children/{child}/learning-packs/{pack}/games/{game}', [GameController::class, 'show']);
+        Route::post('children/{child}/learning-packs/{pack}/games/{game}/results', [GameResultController::class, 'store']);
     });
 });

@@ -31,6 +31,7 @@ Route::prefix('v1')->group(function () {
         Route::get('children/{child}/documents', [DocumentController::class, 'index']);
         Route::post('children/{child}/documents', [DocumentController::class, 'store']);
         Route::get('children/{child}/documents/{document}', [DocumentController::class, 'show']);
+        Route::post('children/{child}/documents/{document}/regenerate', [DocumentController::class, 'regenerate']);
 
         Route::get('children/{child}/learning-packs', [LearningPackController::class, 'index']);
         Route::post('children/{child}/learning-packs', [LearningPackController::class, 'store']);
@@ -39,6 +40,8 @@ Route::prefix('v1')->group(function () {
         Route::get('children/{child}/learning-packs/{pack}/games', [GameController::class, 'index']);
         Route::post('children/{child}/learning-packs/{pack}/games', [GameController::class, 'store']);
         Route::get('children/{child}/learning-packs/{pack}/games/{game}', [GameController::class, 'show']);
+
         Route::post('children/{child}/learning-packs/{pack}/games/{game}/results', [GameResultController::class, 'store']);
+        Route::post('children/{child}/learning-packs/{pack}/games/{game}/retry', [GameController::class, 'retry']);
     });
 });

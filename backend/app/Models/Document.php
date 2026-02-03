@@ -17,7 +17,9 @@ class Document extends Model
         'original_filename',
         'storage_disk',
         'storage_path',
+        'storage_paths',
         'mime_type',
+        'mime_types',
         'size_bytes',
         'extracted_text',
         'ocr_error',
@@ -27,11 +29,15 @@ class Document extends Model
         'grade_level',
         'learning_goal',
         'context_text',
+        'requested_game_types',
     ];
 
     protected $casts = [
         'size_bytes' => 'integer',
         'processed_at' => 'datetime',
+        'storage_paths' => 'array',
+        'mime_types' => 'array',
+        'requested_game_types' => 'array',
     ];
 
     public function childProfile()

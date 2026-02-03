@@ -97,6 +97,7 @@ class BackendClient {
     String? gradeLevel,
     String? learningGoal,
     String? contextText,
+    List<String>? requestedGameTypes,
   }) async {
     final request = http.MultipartRequest(
       'POST',
@@ -119,12 +120,100 @@ class BackendClient {
     if (contextText != null && contextText.isNotEmpty) {
       request.fields['context_text'] = contextText;
     }
+    if (requestedGameTypes != null && requestedGameTypes.isNotEmpty) {
+      for (var index = 0; index < requestedGameTypes.length; index += 1) {
+        request.fields['requested_game_types[$index]'] = requestedGameTypes[index];
+      }
+    }
 
     final streamed = await request.send();
     final response = await http.Response.fromStream(streamed);
 
     if (response.statusCode != 201) {
       throw BackendException('Upload failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> uploadDocumentBatch({
+    required String childId,
+    required List<Uint8List> files,
+    required List<String> filenames,
+    String? subject,
+    String? language,
+    String? gradeLevel,
+    String? learningGoal,
+    String? contextText,
+    List<String>? requestedGameTypes,
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/api/v1/children/$childId/documents'),
+    );
+    request.headers.addAll(_authHeaders());
+    for (var index = 0; index < files.length; index += 1) {
+      final filename = index < filenames.length ? filenames[index] : 'page-${index + 1}.jpg';
+      request.files.add(http.MultipartFile.fromBytes('files[]', files[index], filename: filename));
+    }
+    if (subject != null && subject.isNotEmpty) {
+      request.fields['subject'] = subject;
+    }
+    if (language != null && language.isNotEmpty) {
+      request.fields['language'] = language;
+    }
+    if (gradeLevel != null && gradeLevel.isNotEmpty) {
+      request.fields['grade_level'] = gradeLevel;
+    }
+    if (learningGoal != null && learningGoal.isNotEmpty) {
+      request.fields['learning_goal'] = learningGoal;
+    }
+    if (contextText != null && contextText.isNotEmpty) {
+      request.fields['context_text'] = contextText;
+    }
+    if (requestedGameTypes != null && requestedGameTypes.isNotEmpty) {
+      for (var index = 0; index < requestedGameTypes.length; index += 1) {
+        request.fields['requested_game_types[$index]'] = requestedGameTypes[index];
+      }
+    }
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+
+    if (response.statusCode != 201) {
+      throw BackendException('Upload failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<List<dynamic>> listDocuments({required String childId}) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/v1/children/$childId/documents'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('List documents failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return (payload['data'] as List<dynamic>?) ?? [];
+  }
+
+  Future<Map<String, dynamic>> regenerateDocument({
+    required String childId,
+    required String documentId,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/children/$childId/documents/$documentId/regenerate'),
+      headers: _authHeaders(includeContentType: true),
+    );
+
+    if (response.statusCode != 202) {
+      throw BackendException('Regenerate failed: ${response.body}');
     }
 
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
@@ -179,6 +268,26 @@ class BackendClient {
 
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
     return (payload['data'] as List<dynamic>?) ?? [];
+  }
+
+  Future<Map<String, dynamic>> createRetryGame({
+    required String childId,
+    required String packId,
+    required String gameId,
+    required List<int> questionIndices,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/children/$childId/learning-packs/$packId/games/$gameId/retry'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({'question_indices': questionIndices}),
+    );
+
+    if (response.statusCode != 201) {
+      throw BackendException('Retry game failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
   }
 
   Map<String, String> _jsonHeaders({bool includeContentType = false}) {

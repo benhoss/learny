@@ -73,6 +73,43 @@ class GameController extends Controller
         ]);
     }
 
+    public function retry(Request $request, string $childId, string $packId, string $gameId): JsonResponse
+    {
+        $child = $this->findOwnedChild($childId);
+
+        $game = Game::where('_id', $gameId)
+            ->where('learning_pack_id', $packId)
+            ->where('child_profile_id', (string) $child->_id)
+            ->firstOrFail();
+
+        $data = $request->validate([
+            'question_indices' => ['required', 'array', 'min:1'],
+            'question_indices.*' => ['integer', 'min:0'],
+        ]);
+
+        $filtered = $this->filterPayloadByIndices($game->payload ?? [], (string) $game->type, $data['question_indices']);
+
+        if ($filtered === null) {
+            throw ValidationException::withMessages([
+                'question_indices' => ['Unable to create retry quiz from this game type.'],
+            ]);
+        }
+
+        $retryGame = Game::create([
+            'user_id' => (string) Auth::guard('api')->id(),
+            'child_profile_id' => (string) $child->_id,
+            'learning_pack_id' => (string) $packId,
+            'type' => $game->type,
+            'schema_version' => 'v1',
+            'payload' => $filtered,
+            'status' => 'ready',
+        ]);
+
+        return response()->json([
+            'data' => $retryGame,
+        ], 201);
+    }
+
     protected function schemaForType(string $type): string
     {
         return match ($type) {
@@ -88,6 +125,43 @@ class GameController extends Controller
                 'type' => ['Unsupported game type.'],
             ]),
         };
+    }
+
+    protected function filterPayloadByIndices(array $payload, string $type, array $indices): ?array
+    {
+        $indices = array_values(array_unique(array_filter($indices, 'is_int')));
+        if ($indices === []) {
+            return null;
+        }
+
+        $copy = $payload;
+        $itemsKey = match ($type) {
+            'flashcards' => 'cards',
+            'matching' => 'pairs',
+            'ordering' => 'items',
+            default => 'questions',
+        };
+
+        if (! isset($copy[$itemsKey]) || ! is_array($copy[$itemsKey])) {
+            return null;
+        }
+
+        $items = [];
+        foreach ($copy[$itemsKey] as $index => $item) {
+            if (in_array($index, $indices, true)) {
+                $items[] = $item;
+            }
+        }
+
+        if ($items === []) {
+            return null;
+        }
+
+        $copy[$itemsKey] = $items;
+        $copy['title'] = ($copy['title'] ?? 'Quick Quiz').' • Retry';
+        $copy['intro'] = $copy['intro'] ?? 'Focus on the questions you missed.';
+
+        return $copy;
     }
 
     protected function findOwnedChild(string $childId): ChildProfile

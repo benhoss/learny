@@ -194,6 +194,9 @@ External research is warranted because this request spans product UX, processing
 2. Add AI metadata suggestion step immediately after capture/upload selection.
 3. Reduce time-to-first-question (TTFQ) through fast-path generation and better pipeline orchestration.
 4. Introduce persistent memory mechanics with evented learning history and concept-level scheduling.
+5. Use `learning_memory_events` as the single write source-of-truth; compute mastery/review/recommendation as projections.
+6. Deliver as one burst epic (all streams in parallel) behind feature flags and rollout gates.
+7. Use temporary bound-user resolution for easier testing in non-production only, with hard production fail-fast guard.
 
 ### Non-Goals (Phase 1)
 
@@ -210,6 +213,8 @@ External research is warranted because this request spans product UX, processing
   - Revision session endpoints.
   - Processing stage telemetry and progress exposure.
   - Learning memory event model and recommendation query layer.
+  - Projection contract: synchronous incremental updates on write + nightly reconciliation.
+  - Environment-scoped child binding mode for dev/staging while preserving production-safe route scoping.
 
 ### ERD (Proposed Additions)
 
@@ -264,6 +269,9 @@ erDiagram
 - Add endpoint `POST /v1/children/{child}/revision-session/{session}/results`.
 - In Flutter, replace `_repositories.packs.loadRevisionPrompts(id)` with backend fetch.
 - Persist revision outcomes and feed mastery update pipeline.
+- Add temporary bound-user resolver (env flag) for non-production testing while keeping route contract unchanged.
+- Add production guard: app boot fails if bound-user resolver is enabled in production.
+- Enforce child ownership policy checks for all `/children/{child}` endpoints in production mode.
 
 Pseudo files:
 - `backend/app/Http/Controllers/Api/RevisionSessionController.php`
@@ -314,12 +322,15 @@ Pseudo files:
 
 #### Phase 4: Persistent Memory Mechanic Across UX
 
-- Introduce `learning_memory_events` write path from uploads, games, retries, revisions.
+- Introduce `learning_memory_events` as the only write path from uploads, games, retries, revisions.
 - Derive concept memory signals:
   - retrieval strength,
   - recency decay,
   - mistake streak,
   - modality preference.
+- Update projections in two modes:
+  - synchronous incremental update after each event (fresh recommendations),
+  - nightly reconciliation for consistency/backfill.
 - Use these signals to power:
   - home recommendations,
   - revision composition,
@@ -406,7 +417,10 @@ Pseudo files:
   - game question results,
   - revision responses,
   - retries and skips.
-- Build a nightly projector job to compute lightweight memory state snapshots for fast reads.
+- Treat memory events as source-of-truth and projections as derived state only.
+- Apply synchronous incremental projector updates per event for user-facing freshness.
+- Build a nightly reconciliation projector job to repair drift and support backfills.
+- Enforce event idempotency key and per-child monotonic ordering at write time.
 - Add parent-facing controls:
   - clear memory for concept/document
   - pause personalization for a child profile
@@ -426,16 +440,16 @@ Pseudo files:
   - `From yesterday's upload`
 - Gate push notifications on confidence and recency to avoid fatigue.
 
-## Remaining Items Task List (Methodical Execution)
+## Remaining Items Task List (Burst Execution - All at Once)
 
-### Sprint 1 - Connect Revision to Real Learning Data
+### Track A - Revision Session and API Contract
 
 - [ ] Backend: implement `RevisionSessionController` and `RevisionComposer` composition logic.
 - [ ] Backend: add revision result write path + idempotency checks.
 - [ ] Mobile: replace fake revision prompt source in `app_state.dart`.
 - [ ] Tests: backend feature tests for session generation and submission payload validation.
 
-### Sprint 2 - Reduce Upload-to-First-Question Latency
+### Track B - Upload Latency and Progressive Readiness
 
 - [ ] Backend: add stage/progress fields to document model and API response.
 - [ ] Backend: separate queue lanes and capture per-stage timing telemetry.
@@ -443,25 +457,41 @@ Pseudo files:
 - [ ] Mobile: allow entering first available game before full pipeline completion.
 - [ ] Tests: pipeline stage transition and partial-ready regression suite.
 
-### Sprint 3 - AI Metadata Suggestion + Confirmation
+### Track C - AI Metadata Suggestion and Confirmation
 
 - [ ] Backend: add metadata suggestion endpoint and confidence/alternatives schema.
 - [ ] Mobile: add interactive suggestion confirmation step in review flow.
 - [ ] Telemetry: capture accepted/edited/rejected outcomes and confidence buckets.
 - [ ] Tests: widget/state tests for low-confidence and edit-heavy paths.
 
-### Sprint 4 - Persistent Memory Layer and Recommendation Loop
+### Track D - Memory Events, Projections, and Recommendations
 
 - [ ] Backend: create `LearningMemoryEvent` model + migration + writer hooks.
-- [ ] Backend: implement memory projector/service for recommendation signals.
+- [ ] Backend: enforce event idempotency and per-child monotonic ordering.
+- [ ] Backend: implement sync incremental projector + nightly reconciliation.
 - [ ] Backend: expose home recommendation API with explainability metadata.
 - [ ] Mobile: integrate memory-driven home cards and revision prioritization.
 - [ ] Governance: add memory controls (clear/pause/view-why) and policy copy updates.
 
+### Track E - Bound User Mode for Fast Testing (Non-Production Only)
+
+- [ ] Backend: implement env-driven bound-user resolver (`BOUND_CHILD_PROFILE_ID`) for dev/staging.
+- [ ] Backend: preserve `/children/{child}` route shape while resolver is enabled.
+- [ ] Backend: hard fail startup if bound-user resolver is enabled in production.
+- [ ] Tests: production guard test + integration test for bound-mode behavior.
+
+### Burst Gates (Must Pass Before Rollout)
+
+- [ ] Gate 1: API contracts and telemetry event names are frozen.
+- [ ] Gate 2: Revision session end-to-end works from real uploaded document concepts.
+- [ ] Gate 3: Upload fast-start flow works with stage-level processing feedback.
+- [ ] Gate 4: Metadata suggestion confirmation flow is stable under low-confidence cases.
+- [ ] Gate 5: Memory event -> projection -> recommendation loop remains consistent (no drift).
+
 ### Release Readiness Checklist
 
 - [ ] Define baseline metrics before rollout (TTFQ, upload abandonment, revision reuse).
-- [ ] Run A/B or staged rollout for metadata suggestions and memory-powered nudges.
+- [ ] Keep all tracks behind feature flags until all burst gates pass.
 - [ ] Add dashboards and alerts for queue latency, stage failures, and recommendation drift.
 - [ ] Execute end-to-end smoke test: capture -> suggest -> confirm -> process -> play -> revise -> recommend.
 
@@ -499,6 +529,7 @@ Decision: Defer until memory event infrastructure is stable.
 - [ ] Child can begin first available game without waiting for all game types.
 - [ ] Memory signals influence home recommendations and revision queue composition.
 - [ ] Parent can inspect and control memory personalization scope (view why, pause, clear).
+- [ ] Bound-user mode is available only in non-production environments, with identical route contract.
 
 ### Non-Functional Requirements
 
@@ -507,6 +538,7 @@ Decision: Defer until memory event infrastructure is stable.
 - [ ] Metadata suggestion acceptance rate reaches >= 70% after tuning.
 - [ ] No regression in idempotent game result processing.
 - [ ] Recommendation click-through improves by >= 15% without increasing notification opt-out rate.
+- [ ] Projection drift between memory events and derived recommendation state remains < 0.5%.
 
 ### Quality Gates
 
@@ -516,6 +548,8 @@ Decision: Defer until memory event infrastructure is stable.
 - [ ] Flutter tests for processing-state UX and fast-start behavior.
 - [ ] End-to-end smoke test: capture -> suggestion confirm -> process -> play -> revise.
 - [ ] API contract tests for recommendation explainability and memory control endpoints.
+- [ ] Production guard test fails startup if bound-user mode is enabled in production.
+- [ ] Consistency tests validate sync projection updates and nightly reconciliation parity.
 
 ## Success Metrics
 
@@ -530,6 +564,7 @@ Decision: Defer until memory event infrastructure is stable.
 - Queue worker reliability and capacity tuning.
 - Mobile/background app state handling for long processing tasks.
 - Privacy policy update for AI metadata suggestion processing (if image snippets are sent server-side).
+- Feature flag framework for staged enablement across burst tracks.
 
 ## Risk Analysis & Mitigation
 
@@ -539,6 +574,10 @@ Decision: Defer until memory event infrastructure is stable.
   - Mitigation: separate queue lanes, tune worker concurrency, add observability.
 - Risk: memory model overfits noisy early data.
   - Mitigation: conservative scoring rules first, calibrate with telemetry.
+- Risk: projection drift causes mismatch between event history and recommendations.
+  - Mitigation: idempotent writes, monotonic ordering, sync projector updates, nightly reconciliation, drift monitor.
+- Risk: bound-user mode accidentally leaks to production.
+  - Mitigation: production boot guard + CI check + runtime alert.
 
 ## Documentation Plan
 

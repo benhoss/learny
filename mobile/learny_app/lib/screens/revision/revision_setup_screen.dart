@@ -10,7 +10,9 @@ class RevisionSetupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final pack = state.selectedPack ?? (state.packs.isNotEmpty ? state.packs.first : null);
+    final pack =
+        state.selectedPack ??
+        (state.packs.isNotEmpty ? state.packs.first : null);
     return PlaceholderScreen(
       title: 'Revision Express',
       subtitle: 'Quick 5-minute boost before a test.',
@@ -26,13 +28,18 @@ class RevisionSetupScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.book_rounded, color: LearnyColors.teal),
             title: const Text('Subject focus'),
-            subtitle: Text(pack == null ? 'Pick a pack' : '${pack.subject} • ${pack.title}'),
+            subtitle: Text(
+              pack == null ? 'Pick a pack' : '${pack.subject} • ${pack.title}',
+            ),
           ),
         ],
       ),
       primaryAction: ElevatedButton(
-        onPressed: () {
-          state.startRevision(packId: pack?.id);
+        onPressed: () async {
+          await state.startRevision(packId: pack?.id);
+          if (!context.mounted) {
+            return;
+          }
           Navigator.pushNamed(context, AppRoutes.revisionSession);
         },
         child: const Text('Start Express Session'),

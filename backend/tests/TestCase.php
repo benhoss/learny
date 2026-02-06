@@ -20,6 +20,8 @@ abstract class TestCase extends BaseTestCase
             'learning_packs',
             'games',
             'game_results',
+            'revision_sessions',
+            'learning_memory_events',
         ]);
     }
 

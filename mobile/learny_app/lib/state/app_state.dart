@@ -16,6 +16,7 @@ import '../models/parent_profile.dart';
 import '../models/plan_option.dart';
 import '../models/quiz_question.dart';
 import '../models/quiz_session.dart';
+import '../models/revision_prompt.dart';
 import '../models/revision_session.dart';
 import '../models/user_profile.dart';
 import '../models/weak_area.dart';
@@ -98,6 +99,7 @@ class AppState extends ChangeNotifier {
   String? currentGameId;
   bool isSyncingDocuments = false;
   String? documentSyncError;
+  List<Map<String, dynamic>> _revisionSubmissionPayload = [];
 
   int _docCounter = 0;
 
@@ -317,7 +319,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void startRevision({String? packId}) {
+  Future<void> startRevision({String? packId}) async {
     final id =
         packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
     if (id == null) {
@@ -328,15 +330,35 @@ class AppState extends ChangeNotifier {
       (item) => item.id == id,
       orElse: () => packs.first,
     );
-    revisionSession = RevisionSession(
-      prompts: _repositories.packs.loadRevisionPrompts(id),
+    _revisionSubmissionPayload = [];
+
+    revisionSession = _buildFallbackRevisionSession(
+      packId: id,
       subjectLabel: '${pack.subject} • ${pack.title}',
-      durationMinutes: 5,
     );
     notifyListeners();
+
+    try {
+      final session = await _ensureBackendSession();
+      final payload = await backend.startRevisionSession(
+        childId: session.childId,
+        limit: 5,
+      );
+      final data = payload['data'];
+      if (data is Map<String, dynamic>) {
+        final backendSession = _buildBackendRevisionSession(data);
+        if (backendSession != null && backendSession.prompts.isNotEmpty) {
+          revisionSession = backendSession;
+          _revisionSubmissionPayload = [];
+          notifyListeners();
+        }
+      }
+    } catch (_) {
+      // Keep local fallback session if backend revision session is unavailable.
+    }
   }
 
-  void answerRevisionPrompt(int selectedIndex) {
+  Future<void> answerRevisionPrompt(int selectedIndex) async {
     final session = revisionSession;
     if (session == null) {
       return;
@@ -347,16 +369,108 @@ class AppState extends ChangeNotifier {
     }
     if (selectedIndex == prompt.correctIndex) {
       session.correctCount += 1;
-      xpToday += 3;
-      totalXp += 3;
+      if (session.backendSessionId == null) {
+        xpToday += 3;
+        totalXp += 3;
+      }
     }
+    _revisionSubmissionPayload = [
+      ..._revisionSubmissionPayload,
+      {'item_id': prompt.id, 'selected_index': selectedIndex, 'latency_ms': 0},
+    ];
     session.currentIndex += 1;
+    if (session.isComplete) {
+      await _syncCompletedRevisionSession(session);
+    }
     notifyListeners();
   }
 
   void resetRevision() {
     revisionSession = null;
+    _revisionSubmissionPayload = [];
     notifyListeners();
+  }
+
+  RevisionSession _buildFallbackRevisionSession({
+    required String packId,
+    required String subjectLabel,
+  }) {
+    return RevisionSession(
+      prompts: _repositories.packs.loadRevisionPrompts(packId),
+      subjectLabel: subjectLabel,
+      durationMinutes: 5,
+    );
+  }
+
+  RevisionSession? _buildBackendRevisionSession(Map<String, dynamic> data) {
+    final rawItems = data['items'] as List<dynamic>? ?? [];
+    final prompts = rawItems
+        .whereType<Map<String, dynamic>>()
+        .map((item) {
+          final options = (item['options'] as List<dynamic>? ?? [])
+              .map((option) => option.toString())
+              .where((option) => option.isNotEmpty)
+              .toList();
+          final promptId = item['id']?.toString() ?? '';
+          final promptText = item['prompt']?.toString() ?? '';
+          final correctIndex = (item['correct_index'] as num?)?.toInt() ?? 0;
+          if (promptId.isEmpty || promptText.isEmpty || options.length < 2) {
+            return null;
+          }
+
+          return RevisionPrompt(
+            id: promptId,
+            prompt: promptText,
+            options: options,
+            correctIndex: correctIndex.clamp(0, options.length - 1),
+          );
+        })
+        .whereType<RevisionPrompt>()
+        .toList();
+
+    if (prompts.isEmpty) {
+      return null;
+    }
+
+    return RevisionSession(
+      backendSessionId: data['id']?.toString(),
+      prompts: prompts,
+      subjectLabel: data['subject_label']?.toString() ?? 'Quick Revision',
+      durationMinutes: (data['duration_minutes'] as num?)?.toInt() ?? 5,
+    );
+  }
+
+  Future<void> _syncCompletedRevisionSession(RevisionSession session) async {
+    final backendSessionId = session.backendSessionId;
+    if (backendSessionId == null || _revisionSubmissionPayload.isEmpty) {
+      return;
+    }
+
+    try {
+      final backendSession = await _ensureBackendSession();
+      final payload = await backend.submitRevisionSession(
+        childId: backendSession.childId,
+        sessionId: backendSessionId,
+        results: List<Map<String, dynamic>>.from(_revisionSubmissionPayload),
+      );
+      final data = payload['data'];
+      if (data is Map<String, dynamic>) {
+        final xpEarned = (data['xp_earned'] as num?)?.toInt() ?? 0;
+        final correctItems = (data['correct_items'] as num?)?.toInt();
+        if (xpEarned > 0) {
+          xpToday += xpEarned;
+          totalXp += xpEarned;
+        }
+        if (correctItems != null) {
+          session.correctCount = correctItems;
+        }
+      }
+      _revisionSubmissionPayload = [];
+      await _refreshReviewCount();
+    } catch (error) {
+      lastResultSyncError = error.toString();
+      notifyListeners();
+    }
   }
 
   Future<void> generateQuizFromAsset({

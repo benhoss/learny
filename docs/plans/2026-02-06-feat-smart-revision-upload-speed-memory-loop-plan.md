@@ -444,10 +444,10 @@ Pseudo files:
 
 ### Track A - Revision Session and API Contract
 
-- [ ] Backend: implement `RevisionSessionController` and `RevisionComposer` composition logic.
-- [ ] Backend: add revision result write path + idempotency checks.
-- [ ] Mobile: replace fake revision prompt source in `app_state.dart`.
-- [ ] Tests: backend feature tests for session generation and submission payload validation.
+- [x] Backend: implement `RevisionSessionController` and `RevisionComposer` composition logic.
+- [x] Backend: add revision result write path + idempotency checks.
+- [x] Mobile: replace fake revision prompt source in `app_state.dart`.
+- [x] Tests: backend feature tests for session generation and submission payload validation.
 
 ### Track B - Upload Latency and Progressive Readiness
 
@@ -466,7 +466,7 @@ Pseudo files:
 
 ### Track D - Memory Events, Projections, and Recommendations
 
-- [ ] Backend: create `LearningMemoryEvent` model + migration + writer hooks.
+- [x] Backend: create `LearningMemoryEvent` model + migration + writer hooks.
 - [ ] Backend: enforce event idempotency and per-child monotonic ordering.
 - [ ] Backend: implement sync incremental projector + nightly reconciliation.
 - [ ] Backend: expose home recommendation API with explainability metadata.
@@ -475,10 +475,10 @@ Pseudo files:
 
 ### Track E - Bound User Mode for Fast Testing (Non-Production Only)
 
-- [ ] Backend: implement env-driven bound-user resolver (`BOUND_CHILD_PROFILE_ID`) for dev/staging.
-- [ ] Backend: preserve `/children/{child}` route shape while resolver is enabled.
-- [ ] Backend: hard fail startup if bound-user resolver is enabled in production.
-- [ ] Tests: production guard test + integration test for bound-mode behavior.
+- [x] Backend: implement env-driven bound-user resolver (`BOUND_CHILD_PROFILE_ID`) for dev/staging.
+- [x] Backend: preserve `/children/{child}` route shape while resolver is enabled.
+- [x] Backend: hard fail startup if bound-user resolver is enabled in production.
+- [x] Tests: production guard test + integration test for bound-mode behavior.
 
 ### Burst Gates (Must Pass Before Rollout)
 
@@ -522,14 +522,14 @@ Decision: Defer until memory event infrastructure is stable.
 
 ### Functional Requirements
 
-- [ ] Quick Revision sessions are generated from backend data linked to uploaded documents.
-- [ ] Revision outcomes persist and update mastery/review scheduling.
+- [x] Quick Revision sessions are generated from backend data linked to uploaded documents.
+- [x] Revision outcomes persist and update mastery/review scheduling.
 - [ ] Metadata is AI-prefilled post-capture, with explicit user confirmation/edit before submit.
 - [ ] Upload flow exposes transfer progress + pipeline stage status distinctly.
 - [ ] Child can begin first available game without waiting for all game types.
 - [ ] Memory signals influence home recommendations and revision queue composition.
 - [ ] Parent can inspect and control memory personalization scope (view why, pause, clear).
-- [ ] Bound-user mode is available only in non-production environments, with identical route contract.
+- [x] Bound-user mode is available only in non-production environments, with identical route contract.
 
 ### Non-Functional Requirements
 
@@ -542,13 +542,13 @@ Decision: Defer until memory event infrastructure is stable.
 
 ### Quality Gates
 
-- [ ] Backend feature tests for revision session generation and submission.
+- [x] Backend feature tests for revision session generation and submission.
 - [ ] Backend tests for pipeline stage transitions and partial readiness.
 - [ ] Flutter state/widget tests for metadata suggestion confirmation flow.
 - [ ] Flutter tests for processing-state UX and fast-start behavior.
 - [ ] End-to-end smoke test: capture -> suggestion confirm -> process -> play -> revise.
 - [ ] API contract tests for recommendation explainability and memory control endpoints.
-- [ ] Production guard test fails startup if bound-user mode is enabled in production.
+- [x] Production guard test fails startup if bound-user mode is enabled in production.
 - [ ] Consistency tests validate sync projection updates and nightly reconciliation parity.
 
 ## Success Metrics

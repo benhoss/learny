@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ChildProfile;
 use App\Models\Game;
 use App\Models\GameResult;
+use App\Models\LearningMemoryEvent;
 use App\Models\LearningPack;
 use App\Models\MasteryProfile;
 use Illuminate\Http\JsonResponse;
@@ -87,6 +88,7 @@ class GameResultController extends Controller
         if ($record->wasRecentlyCreated) {
             $this->updateMastery($child, $results);
             $streakData = $this->updateStreak($child, $xpEarned);
+            $this->recordLearningMemoryEvents($child, $game, $record, $results);
         } else {
             $freshChild = ChildProfile::where('_id', (string) $child->_id)->first();
             $streakData = [
@@ -206,6 +208,45 @@ class GameResultController extends Controller
             'streak_days' => $child->streak_days ?? 0,
             'total_xp' => $child->total_xp ?? 0,
         ];
+    }
+
+    protected function recordLearningMemoryEvents(
+        ChildProfile $child,
+        Game $game,
+        GameResult $record,
+        array $results
+    ): void {
+        $childId = (string) $child->_id;
+        $sourceId = (string) $record->_id;
+        $userId = (string) Auth::guard('api')->id();
+
+        foreach ($results as $result) {
+            $conceptKey = trim((string) ($result['topic'] ?? ''));
+            if ($conceptKey === '') {
+                continue;
+            }
+
+            $isCorrect = (bool) ($result['correct'] ?? false);
+
+            LearningMemoryEvent::create([
+                'user_id' => $userId,
+                'child_profile_id' => $childId,
+                'concept_key' => $conceptKey,
+                'event_type' => 'play',
+                'source_type' => 'game_result',
+                'source_id' => $sourceId,
+                'occurred_at' => $record->completed_at ?? now(),
+                'confidence' => $isCorrect ? 1.0 : 0.3,
+                'metadata' => [
+                    'game_id' => (string) $game->_id,
+                    'game_type' => (string) $game->type,
+                    'prompt' => (string) ($result['prompt'] ?? ''),
+                    'response' => (string) ($result['response'] ?? ''),
+                    'expected' => (string) ($result['expected'] ?? ''),
+                    'correct' => $isCorrect,
+                ],
+            ]);
+        }
     }
 
 }

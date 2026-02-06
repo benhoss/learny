@@ -2,11 +2,13 @@ import 'revision_prompt.dart';
 
 class RevisionSession {
   RevisionSession({
+    this.backendSessionId,
     required this.prompts,
     required this.subjectLabel,
     required this.durationMinutes,
   });
 
+  final String? backendSessionId;
   final List<RevisionPrompt> prompts;
   final String subjectLabel;
   final int durationMinutes;

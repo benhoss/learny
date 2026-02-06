@@ -6,6 +6,7 @@ use App\Models\ChildProfile;
 use App\Models\Document;
 use App\Models\Game;
 use App\Models\GameResult;
+use App\Models\LearningMemoryEvent;
 use App\Models\LearningPack;
 use App\Models\MasteryProfile;
 use App\Models\User;
@@ -120,6 +121,13 @@ class GameResultSubmissionTest extends TestCase
         $this->assertNotNull($mastery);
         $this->assertSame(1, (int) $mastery->total_attempts);
         $this->assertSame(1, (int) $mastery->correct_attempts);
+        $this->assertSame(
+            1,
+            LearningMemoryEvent::where('child_profile_id', (string) $child->_id)
+                ->where('event_type', 'play')
+                ->where('concept_key', 'fractions.addition')
+                ->count()
+        );
 
         $child->refresh();
         $this->assertSame(10, (int) $child->total_xp);

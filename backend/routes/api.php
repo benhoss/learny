@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\GameResultController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\LearningPackController;
+use App\Http\Controllers\Api\RevisionSessionController;
 use App\Http\Controllers\Api\ReviewQueueController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +39,7 @@ Route::prefix('v1')->group(function () {
         Route::get('children/{child}/learning-packs/{pack}/games/{game}', [GameController::class, 'show']);
 
         Route::get('children/{child}/review-queue', [ReviewQueueController::class, 'index']);
+        Route::get('children/{child}/revision-session', [RevisionSessionController::class, 'start']);
 
         // Write endpoints with stricter rate limiting.
         Route::middleware('throttle:api-write')->group(function () {
@@ -55,6 +57,7 @@ Route::prefix('v1')->group(function () {
 
             Route::post('children/{child}/learning-packs/{pack}/games/{game}/results', [GameResultController::class, 'store']);
             Route::post('children/{child}/learning-packs/{pack}/games/{game}/retry', [GameController::class, 'retry']);
+            Route::post('children/{child}/revision-session/{session}', [RevisionSessionController::class, 'submit']);
         });
     });
 });

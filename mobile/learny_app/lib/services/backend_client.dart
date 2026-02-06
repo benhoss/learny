@@ -374,6 +374,46 @@ class BackendClient {
     return payload['data'] as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> startRevisionSession({
+    required String childId,
+    int limit = 5,
+  }) async {
+    final response = await _client.get(
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/revision-session?limit=$limit',
+      ),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Start revision session failed: ${response.body}');
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> submitRevisionSession({
+    required String childId,
+    required String sessionId,
+    required List<Map<String, dynamic>> results,
+  }) async {
+    final response = await _client.post(
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/revision-session/$sessionId',
+      ),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({'results': results}),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException(
+        'Submit revision session failed: ${response.body}',
+      );
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   Map<String, String> _jsonHeaders({bool includeContentType = false}) {
     return {
       'Accept': 'application/json',

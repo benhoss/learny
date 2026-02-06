@@ -24,13 +24,16 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
     }
   }
 
-  void _submitAnswer(AppState state) {
+  Future<void> _submitAnswer(AppState state) async {
     final selected = _selectedIndex;
     if (selected == null) {
       return;
     }
-    state.answerRevisionPrompt(selected);
+    await state.answerRevisionPrompt(selected);
     if (state.revisionSession?.isComplete ?? false) {
+      if (!mounted) {
+        return;
+      }
       Navigator.pushReplacementNamed(context, AppRoutes.revisionResults);
     } else {
       setState(() => _selectedIndex = null);
@@ -55,20 +58,18 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
           children: [
             Text(
               session?.subjectLabel ?? 'Quick review',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: LearnyColors.slateMedium),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: LearnyColors.slateMedium),
             ),
             const SizedBox(height: 12),
             LinearProgressIndicator(value: progress),
             const SizedBox(height: 16),
             Text(
               prompt?.prompt ?? 'Loading prompt...',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 20),
             if (prompt != null)
@@ -84,8 +85,12 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: prompt == null ? null : () => _submitAnswer(state),
-                child: Text((session?.currentIndex ?? 0) + 1 >= total ? 'Finish' : 'Next'),
+                onPressed: prompt == null
+                    ? null
+                    : () async => _submitAnswer(state),
+                child: Text(
+                  (session?.currentIndex ?? 0) + 1 >= total ? 'Finish' : 'Next',
+                ),
               ),
             ),
           ],
@@ -109,10 +114,14 @@ class _OptionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: isSelected ? LearnyColors.teal.withValues(alpha: 0.2) : Colors.white,
+      color: isSelected
+          ? LearnyColors.teal.withValues(alpha: 0.2)
+          : Colors.white,
       child: ListTile(
         leading: Icon(
-          isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
+          isSelected
+              ? Icons.check_circle_rounded
+              : Icons.radio_button_unchecked,
           color: isSelected ? LearnyColors.teal : LearnyColors.slateLight,
         ),
         title: Text(text),

@@ -116,3 +116,28 @@ Revision is still locally fake, memory events are not persisted as first-class e
 **Learnings:**
 - Stage-level document telemetry materially improves user-facing progress messaging even before transfer-progress instrumentation is added.
 - Metadata suggestion UX works best as "prefill + confirm/edit", not auto-apply.
+
+### 2026-02-06 - Track D Recommendation Loop Slice Implemented
+
+**By:** Codex
+
+**Actions:**
+- Added memory-signal projection service and home recommendation endpoint:
+  - `backend/app/Services/Memory/MemorySignalProjector.php`
+  - `backend/app/Http/Controllers/Api/HomeRecommendationController.php`
+  - `backend/routes/api.php`
+  - `backend/tests/Feature/HomeRecommendationTest.php`
+- Added mobile client + state refresh integration:
+  - `mobile/learny_app/lib/services/backend_client.dart`
+  - `mobile/learny_app/lib/state/app_state.dart`
+- Added home-screen rendering for smart recommendation cards:
+  - `mobile/learny_app/lib/screens/home/home_screen.dart`
+
+**Validation:**
+- `php -l` passed for changed backend files.
+- `flutter test test/widget_test.dart` passed.
+- `flutter test test/state/app_state_result_submission_test.dart` passed.
+
+**Learnings:**
+- Explainability payloads are easy to include early and significantly improve trust/debuggability.
+- Recommendation cards can be integrated incrementally without redesigning the full home layout.

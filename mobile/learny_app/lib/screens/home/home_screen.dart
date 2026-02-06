@@ -18,6 +18,7 @@ class HomeScreen extends StatelessWidget {
     final profile = state.profile;
     final tokens = context.tokens;
     final featuredPacks = state.packs.take(2).toList();
+    final recommendations = state.homeRecommendations.take(3).toList();
 
     return Container(
       decoration: BoxDecoration(gradient: tokens.gradientWelcome),
@@ -136,6 +137,52 @@ class HomeScreen extends StatelessWidget {
                     }
                     Navigator.pushNamed(context, AppRoutes.revisionSetup);
                   },
+                ),
+              ),
+            ],
+
+            if (recommendations.isNotEmpty) ...[
+              SizedBox(height: tokens.spaceMd),
+              FadeInSlide(
+                delay: const Duration(milliseconds: 360),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Smart Next Steps',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: LearnyColors.neutralDark,
+                      ),
+                    ),
+                    SizedBox(height: tokens.spaceSm),
+                    ...recommendations.map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _SmartRecommendationCard(
+                          title:
+                              item['title']?.toString() ?? 'Continue learning',
+                          subtitle:
+                              item['subtitle']?.toString() ??
+                              'Based on your recent activity',
+                          onTap: () {
+                            final action = item['action']?.toString();
+                            if (action == 'start_revision') {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.revisionSetup,
+                              );
+                              return;
+                            }
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.cameraCapture,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -302,6 +349,81 @@ class _PrimaryActionCard extends StatelessWidget {
               LucideIcons.chevronRight,
               color: Colors.white.withValues(alpha: 0.6),
               size: 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SmartRecommendationCard extends StatelessWidget {
+  const _SmartRecommendationCard({
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return PressableScale(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(tokens.spaceMd),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.92),
+          borderRadius: tokens.radiusLg,
+          border: Border.all(
+            color: LearnyColors.skyPrimary.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: LearnyColors.skyPrimary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                LucideIcons.sparkles,
+                color: LearnyColors.skyPrimary,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: LearnyColors.neutralDark,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: LearnyColors.neutralMedium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              LucideIcons.chevronRight,
+              size: 16,
+              color: LearnyColors.slateMedium,
             ),
           ],
         ),

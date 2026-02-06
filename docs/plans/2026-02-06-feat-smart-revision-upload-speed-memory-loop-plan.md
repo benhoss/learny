@@ -469,8 +469,8 @@ Pseudo files:
 - [x] Backend: create `LearningMemoryEvent` model + migration + writer hooks.
 - [ ] Backend: enforce event idempotency and per-child monotonic ordering.
 - [ ] Backend: implement sync incremental projector + nightly reconciliation.
-- [ ] Backend: expose home recommendation API with explainability metadata.
-- [ ] Mobile: integrate memory-driven home cards and revision prioritization.
+- [x] Backend: expose home recommendation API with explainability metadata.
+- [x] Mobile: integrate memory-driven home cards and revision prioritization.
 - [ ] Governance: add memory controls (clear/pause/view-why) and policy copy updates.
 
 ### Track E - Bound User Mode for Fast Testing (Non-Production Only)
@@ -527,7 +527,7 @@ Decision: Defer until memory event infrastructure is stable.
 - [x] Metadata is AI-prefilled post-capture, with explicit user confirmation/edit before submit.
 - [ ] Upload flow exposes transfer progress + pipeline stage status distinctly.
 - [ ] Child can begin first available game without waiting for all game types.
-- [ ] Memory signals influence home recommendations and revision queue composition.
+- [x] Memory signals influence home recommendations and revision queue composition.
 - [ ] Parent can inspect and control memory personalization scope (view why, pause, clear).
 - [x] Bound-user mode is available only in non-production environments, with identical route contract.
 

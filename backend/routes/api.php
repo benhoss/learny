@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DocumentMetadataSuggestionController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\GameResultController;
 use App\Http\Controllers\Api\HealthController;
+use App\Http\Controllers\Api\HomeRecommendationController;
 use App\Http\Controllers\Api\LearningPackController;
 use App\Http\Controllers\Api\RevisionSessionController;
 use App\Http\Controllers\Api\ReviewQueueController;
@@ -29,6 +30,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('children/{child}/mastery', [ChildProgressController::class, 'mastery']);
         Route::get('children/{child}/progress', [ChildProgressController::class, 'progress']);
+        Route::get('children/{child}/home-recommendations', [HomeRecommendationController::class, 'index']);
 
         Route::get('children/{child}/documents', [DocumentController::class, 'index']);
         Route::get('children/{child}/documents/{document}', [DocumentController::class, 'show']);

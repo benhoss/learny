@@ -444,6 +444,26 @@ class BackendClient {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  Future<List<dynamic>?> fetchHomeRecommendations({
+    required String childId,
+  }) async {
+    try {
+      final response = await _client.get(
+        Uri.parse('$baseUrl/api/v1/children/$childId/home-recommendations'),
+        headers: _authHeaders(),
+      );
+
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      final payload = jsonDecode(response.body) as Map<String, dynamic>;
+      return payload['data'] as List<dynamic>? ?? [];
+    } catch (_) {
+      return null;
+    }
+  }
+
   Map<String, String> _jsonHeaders({bool includeContentType = false}) {
     return {
       'Accept': 'application/json',

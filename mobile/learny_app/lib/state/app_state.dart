@@ -64,6 +64,7 @@ class AppState extends ChangeNotifier {
   int totalXp = 0;
   int reviewDueCount = 0;
   List<String> reviewDueConceptKeys = [];
+  List<Map<String, dynamic>> homeRecommendations = [];
   GameOutcome? lastGameOutcome;
   String? lastResultSyncError;
 
@@ -148,6 +149,7 @@ class AppState extends ChangeNotifier {
         await _ensureBackendSession();
         _backendSessionReady = true;
         await _refreshReviewCount();
+        await _refreshHomeRecommendations();
       } catch (_) {
         // Surface errors during upload instead of at boot time.
       } finally {
@@ -467,6 +469,7 @@ class AppState extends ChangeNotifier {
       }
       _revisionSubmissionPayload = [];
       await _refreshReviewCount();
+      await _refreshHomeRecommendations();
     } catch (error) {
       lastResultSyncError = error.toString();
       notifyListeners();
@@ -1500,6 +1503,7 @@ class AppState extends ChangeNotifier {
     debugPrint('Game result submission failed: $lastError');
     notifyListeners();
     await _refreshReviewCount();
+    await _refreshHomeRecommendations();
   }
 
   Future<void> _refreshReviewCount() async {
@@ -1520,6 +1524,27 @@ class AppState extends ChangeNotifier {
             .toList();
         notifyListeners();
       }
+    } catch (_) {
+      // Ignore transient refresh failures.
+    }
+  }
+
+  Future<void> _refreshHomeRecommendations() async {
+    final childId = backendChildId;
+    if (childId == null) {
+      return;
+    }
+
+    try {
+      final data = await backend.fetchHomeRecommendations(childId: childId);
+      if (data == null) {
+        return;
+      }
+      homeRecommendations = data
+          .whereType<Map<String, dynamic>>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+      notifyListeners();
     } catch (_) {
       // Ignore transient refresh failures.
     }

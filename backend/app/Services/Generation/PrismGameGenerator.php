@@ -2,6 +2,7 @@
 
 namespace App\Services\Generation;
 
+use App\Concerns\RetriesLlmCalls;
 use App\Models\Game;
 use App\Models\GameResult;
 use App\Models\LearningPack;
@@ -11,6 +12,7 @@ use RuntimeException;
 
 class PrismGameGenerator implements GameGeneratorInterface
 {
+    use RetriesLlmCalls;
     private const RECENT_GAMES_LIMIT = 5;
     private const RECENT_RESULTS_LIMIT = 5;
 
@@ -41,13 +43,15 @@ class PrismGameGenerator implements GameGeneratorInterface
         );
         $prompt = $this->buildPrompt($pack, $type, $schema, $recentGames, $recentPerformance);
 
-        $response = Prism::text()
-            ->using(Provider::OpenRouter, $model)
-            ->withSystemPrompt('You generate concise, valid JSON only.')
-            ->withPrompt($prompt)
-            ->withMaxTokens(1000)
-            ->usingTemperature(0.3)
-            ->asText();
+        $response = $this->callWithRetry(function () use ($model, $prompt) {
+            return Prism::text()
+                ->using(Provider::OpenRouter, $model)
+                ->withSystemPrompt('You generate concise, valid JSON only.')
+                ->withPrompt($prompt)
+                ->withMaxTokens(1000)
+                ->usingTemperature(0.3)
+                ->asText();
+        });
 
         $decoded = json_decode($response->text, true);
 
@@ -76,6 +80,7 @@ class PrismGameGenerator implements GameGeneratorInterface
     {
         $concepts = $pack->content['concepts'] ?? [];
         $conceptText = json_encode($concepts);
+        $conceptKeys = implode(', ', array_map(fn ($c) => $c['key'] ?? $c['concept_key'] ?? '', $concepts));
         $objective = $pack->content['objective'] ?? '';
 
         return <<<PROMPT
@@ -84,6 +89,7 @@ Use the same language as the learning pack content for every prompt and choice.
 Do not use English unless the learning pack is English.
 Use upbeat, encouraging, kid-friendly wording.
 Add a short, friendly intro line that hints this game is personalized from past sessions to help the child grow.
+IMPORTANT: For each question/card/pair, the "topic" field MUST be one of these exact concept keys: {$conceptKeys}
 Return JSON matching this schema:
 {$schema}
 
@@ -185,54 +191,4 @@ PROMPT;
         return implode("\n", array_filter($summaries));
     }
 
-    protected function extractJson(string $content): ?array
-    {
-        if (preg_match('/```json\\s*(\\{.*\\})\\s*```/s', $content, $match) === 1) {
-            return json_decode($match[1], true);
-        }
-
-        if (preg_match('/```\\s*(\\{.*\\})\\s*```/s', $content, $match) === 1) {
-            return json_decode($match[1], true);
-        }
-
-        $start = strpos($content, '{');
-        $end = strrpos($content, '}');
-
-        if ($start === false || $end === false || $end <= $start) {
-            return null;
-        }
-
-        $snippet = substr($content, $start, $end - $start + 1);
-
-        return json_decode($snippet, true);
-    }
-
-    protected function repairJson(string $content, string $schema): ?array
-    {
-        $model = config('prism.openrouter.text_model', 'google/gemini-3-flash-preview');
-        $prompt = <<<PROMPT
-You are given a response that should be JSON but is not valid JSON.
-Fix it to match this schema exactly and output JSON only, no markdown:
-{$schema}
-
-Input:
-{$content}
-PROMPT;
-
-        $response = Prism::text()
-            ->using(Provider::Mistral, $model)
-            ->withSystemPrompt('Return only valid JSON. Do not include any other text.')
-            ->withPrompt($prompt)
-            ->withMaxTokens(800)
-            ->usingTemperature(0.0)
-            ->asText();
-
-        $fixed = json_decode($response->text, true);
-
-        if (! is_array($fixed)) {
-            $fixed = $this->extractJson($response->text);
-        }
-
-        return is_array($fixed) ? $fixed : null;
-    }
 }

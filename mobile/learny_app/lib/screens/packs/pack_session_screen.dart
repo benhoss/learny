@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state.dart';
 import '../../state/app_state_scope.dart';
@@ -11,36 +10,32 @@ class PackSessionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final pack = state.selectedPack ?? (state.packs.isNotEmpty ? state.packs.first : null);
+    final pack =
+        state.selectedPack ??
+        (state.packs.isNotEmpty ? state.packs.first : null);
     final games = _sessionGames(state);
     return PlaceholderScreen(
       title: pack == null ? 'Session Roadmap' : '${pack.title} Session',
-      subtitle: pack == null ? '15-minute guided flow.' : '${pack.minutes} minute guided flow.',
+      subtitle: pack == null
+          ? '15-minute guided flow.'
+          : '${pack.minutes} minute guided flow.',
       gradient: LearnyGradients.trust,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: List.generate(
-          games.length,
-          (index) {
-            final item = games[index];
-            return ListTile(
-              leading: Icon(
-                _stepIcon(index),
-                color: item.color,
-              ),
-              title: Text(item.label),
-              subtitle: Text(item.subtitle),
-            );
-          },
-        ),
+        children: List.generate(games.length, (index) {
+          final item = games[index];
+          return ListTile(
+            leading: Icon(_stepIcon(index), color: item.color),
+            title: Text(item.label),
+            subtitle: Text(item.subtitle),
+          );
+        }),
       ),
       primaryAction: ElevatedButton(
         onPressed: () {
           state.startPackSession(packId: pack?.id);
           final firstType = state.currentPackGameType ?? 'flashcards';
-          if (firstType != 'flashcards') {
-            state.startGameType(firstType);
-          }
+          state.startGameType(firstType);
           Navigator.pushNamed(context, state.routeForGameType(firstType));
         },
         child: const Text('Start Now'),

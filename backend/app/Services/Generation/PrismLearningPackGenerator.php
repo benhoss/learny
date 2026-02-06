@@ -2,6 +2,7 @@
 
 namespace App\Services\Generation;
 
+use App\Concerns\RetriesLlmCalls;
 use App\Models\Document;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Facades\Prism;
@@ -10,6 +11,7 @@ use RuntimeException;
 
 class PrismLearningPackGenerator implements LearningPackGeneratorInterface
 {
+    use RetriesLlmCalls;
     public function generate(Document $document, array $concepts): array
     {
         $model = config('prism.openrouter.text_model', 'google/gemini-3-flash-preview');
@@ -21,13 +23,15 @@ class PrismLearningPackGenerator implements LearningPackGeneratorInterface
         $additionalContent = $this->imageContentForDocument($document);
         $prompt = $this->buildPrompt($document, $concepts, ! empty($additionalContent));
 
-        $response = Prism::text()
-            ->using(Provider::OpenRouter, $model)
-            ->withSystemPrompt($this->systemPrompt())
-            ->withPrompt($prompt, $additionalContent)
-            ->withMaxTokens(1200)
-            ->usingTemperature(0.3)
-            ->asText();
+        $response = $this->callWithRetry(function () use ($model, $prompt, $additionalContent) {
+            return Prism::text()
+                ->using(Provider::OpenRouter, $model)
+                ->withSystemPrompt($this->systemPrompt())
+                ->withPrompt($prompt, $additionalContent)
+                ->withMaxTokens(1200)
+                ->usingTemperature(0.3)
+                ->asText();
+        });
 
         $content = $response->text;
         $decoded = json_decode($content, true);
@@ -37,7 +41,7 @@ class PrismLearningPackGenerator implements LearningPackGeneratorInterface
         }
 
         if (! is_array($decoded)) {
-            $decoded = $this->repairJson($content);
+            $decoded = $this->repairJson($content, $this->learningPackSchema());
         }
 
         if (! is_array($decoded)) {
@@ -171,10 +175,9 @@ PROMPT;
         return in_array($extension, $imageExtensions, true);
     }
 
-    protected function repairJson(string $content): ?array
+    protected function learningPackSchema(): string
     {
-        $model = config('prism.openrouter.text_model', 'google/gemini-3-flash-preview');
-        $schema = <<<'SCHEMA'
+        return <<<'SCHEMA'
 {
   "objective": string,
   "summary": string,
@@ -189,57 +192,12 @@ PROMPT;
   ]
 }
 SCHEMA;
-
-        $prompt = <<<PROMPT
-You are given a response that should be JSON but is not valid JSON.
-Fix it to match this schema exactly and output JSON only, no markdown:
-{$schema}
-
-Input:
-{$content}
-PROMPT;
-
-        $response = Prism::text()
-            ->using(Provider::Mistral, $model)
-            ->withSystemPrompt('Return only valid JSON. Do not include any other text.')
-            ->withPrompt($prompt)
-            ->withMaxTokens(1200)
-            ->usingTemperature(0.0)
-            ->asText();
-
-        $fixed = json_decode($response->text, true);
-
-        if (! is_array($fixed)) {
-            $fixed = $this->extractJson($response->text);
-        }
-
-        return is_array($fixed) ? $fixed : null;
-    }
-
-    protected function extractJson(string $content): ?array
-    {
-        if (preg_match('/```json\\s*(\\{.*\\})\\s*```/s', $content, $match) === 1) {
-            return json_decode($match[1], true);
-        }
-
-        if (preg_match('/```\\s*(\\{.*\\})\\s*```/s', $content, $match) === 1) {
-            return json_decode($match[1], true);
-        }
-
-        $start = strpos($content, '{');
-        $end = strrpos($content, '}');
-
-        if ($start === false || $end === false || $end <= $start) {
-            return null;
-        }
-
-        $snippet = substr($content, $start, $end - $start + 1);
-
-        return json_decode($snippet, true);
     }
 
     protected function normalizeDifficulty(array $payload): array
     {
+        $payload = $this->normalizeItemContent($payload);
+
         if (isset($payload['difficulty'])) {
             $payload['difficulty'] = $this->clampDifficulty($payload['difficulty']);
         }
@@ -258,6 +216,27 @@ PROMPT;
                     continue;
                 }
                 $payload['items'][$itemIndex]['content'] = $this->normalizeDifficultyInContent($item['content']);
+            }
+        }
+
+        return $payload;
+    }
+
+    protected function normalizeItemContent(array $payload): array
+    {
+        if (! isset($payload['items']) || ! is_array($payload['items'])) {
+            return $payload;
+        }
+
+        foreach ($payload['items'] as $itemIndex => $item) {
+            if (! is_array($item) || ! array_key_exists('content', $item)) {
+                continue;
+            }
+
+            $content = $item['content'];
+
+            if (is_array($content) && array_is_list($content)) {
+                $payload['items'][$itemIndex]['content'] = ['items' => $content];
             }
         }
 

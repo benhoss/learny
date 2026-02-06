@@ -47,6 +47,6 @@ class GenerationPipelineTest extends TestCase
         );
 
         $this->assertSame(1, LearningPack::count());
-        $this->assertSame(3, Game::count());
+        $this->assertSame(8, Game::count());
     }
 }

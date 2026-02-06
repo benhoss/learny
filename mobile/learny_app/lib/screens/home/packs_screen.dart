@@ -38,7 +38,37 @@ class PacksScreen extends StatelessWidget {
                 child: Icon(pack.icon, color: pack.color),
               ),
               title: Text(pack.title),
-              subtitle: Text('${pack.itemCount} items • ${pack.minutes} min'),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${pack.itemCount} items • ${pack.minutes} min'),
+                  if (pack.conceptsTotal > 0) ...[
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: pack.progress,
+                        minHeight: 6,
+                        backgroundColor: LearnyColors.neutralSoft,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          pack.progress >= 0.8
+                              ? LearnyColors.mintPrimary
+                              : pack.progress >= 0.5
+                                  ? LearnyColors.skyPrimary
+                                  : LearnyColors.sunshine,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${(pack.progress * 100).round()}% mastery • ${pack.conceptsMastered}/${pack.conceptsTotal} concepts',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: LearnyColors.slateMedium,
+                          ),
+                    ),
+                  ],
+                ],
+              ),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () {
                 state.selectPack(pack.id);

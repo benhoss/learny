@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Concerns\FindsOwnedChild;
 use App\Http\Controllers\Controller;
 use App\Models\ChildProfile;
 use App\Models\MasteryProfile;
@@ -12,6 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 class ChildProgressController extends Controller
 {
+    use FindsOwnedChild;
     public function mastery(string $childId): JsonResponse
     {
         $child = $this->findOwnedChild($childId);
@@ -85,12 +87,4 @@ class ChildProgressController extends Controller
         ]);
     }
 
-    protected function findOwnedChild(string $childId): ChildProfile
-    {
-        $userId = (string) Auth::guard('api')->id();
-
-        return ChildProfile::where('_id', $childId)
-            ->where('user_id', $userId)
-            ->firstOrFail();
-    }
 }

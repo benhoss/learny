@@ -11,6 +11,7 @@ class QuizSession {
   int currentIndex = 0;
   int correctCount = 0;
   List<int> incorrectIndices = [];
+  List<Map<String, dynamic>> results = [];
 
   bool get isComplete => currentIndex >= questions.length;
 

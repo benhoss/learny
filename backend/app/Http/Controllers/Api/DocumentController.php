@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Concerns\FindsOwnedChild;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessDocumentOcr;
 use App\Jobs\GenerateLearningPackFromDocument;
@@ -16,6 +17,7 @@ use Illuminate\Validation\ValidationException;
 
 class DocumentController extends Controller
 {
+    use FindsOwnedChild;
     public function index(string $childId): JsonResponse
     {
         $child = $this->findOwnedChild($childId);
@@ -147,12 +149,4 @@ class DocumentController extends Controller
         ], 202);
     }
 
-    protected function findOwnedChild(string $childId): ChildProfile
-    {
-        $userId = (string) Auth::guard('api')->id();
-
-        return ChildProfile::where('_id', $childId)
-            ->where('user_id', $userId)
-            ->firstOrFail();
-    }
 }

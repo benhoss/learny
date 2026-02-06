@@ -1,19 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'app_tokens.dart';
 
 class LearnyColors {
-  static const coral = Color(0xFFFF7A6B);
-  static const coralLight = Color(0xFFFF9A7B);
-  static const teal = Color(0xFF4ECDC4);
-  static const tealLight = Color(0xFF7DD3C0);
-  static const purple = Color(0xFF9B7EDE);
-  static const purpleLight = Color(0xFFB794F4);
-  static const peach = Color(0xFFFFD6C1);
-  static const cream = Color(0xFFFFF8F5);
-  static const sky = Color(0xFFE8F4F8);
-  static const slateDark = Color(0xFF2D3748);
-  static const slateMedium = Color(0xFF5A6C7D);
-  static const slateLight = Color(0xFF8B9CAD);
+  static const skyPrimary = Color(0xFF7DD3E8);
+  static const skyLight = Color(0xFFE8F7FA);
+  static const mintPrimary = Color(0xFF8FE5C2);
+  static const mintLight = Color(0xFFB8F0D8);
+  static const lavender = Color(0xFFC5B9E8);
+  static const lavenderLight = Color(0xFFDDD6F2);
+  static const cream = Color(0xFFFFF8F0);
+  static const neutralDark = Color(0xFF2D3748);
+  static const neutralMedium = Color(0xFF5A6C7D);
+  static const neutralLight = Color(0xFF8B9CAD);
+  static const neutralSoft = Color(0xFFE8EDF2);
+  static const neutralCream = Color(0xFFF7F9FC);
+  static const coral = Color(0xFFFF9A8B);
+  static const coralLight = Color(0xFFFFC4BC);
+  static const sunshine = Color(0xFFFFD97A);
+  static const sunshineLight = Color(0xFFFFE9AA);
+  static const sage = Color(0xFFA8D5BA);
+  static const success = Color(0xFF7DD3C8);
+  static const highlight = Color(0xFFFFF4E1);
+
+  // Compatibility aliases for existing screens.
+  static const teal = mintPrimary;
+  static const tealLight = mintLight;
+  static const purple = lavender;
+  static const purpleLight = lavenderLight;
+  static const peach = highlight;
+  static const sky = skyLight;
+  static const slateDark = neutralDark;
+  static const slateMedium = neutralMedium;
+  static const slateLight = neutralLight;
 }
 
 class LearnyTheme {
@@ -36,25 +55,25 @@ class LearnyTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: const ColorScheme.light(
-        primary: LearnyColors.coral,
-        secondary: LearnyColors.teal,
+        primary: LearnyColors.skyPrimary,
+        secondary: LearnyColors.mintPrimary,
         surface: Colors.white,
         background: LearnyColors.cream,
         onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: LearnyColors.slateDark,
-        onBackground: LearnyColors.slateDark,
+        onSecondary: LearnyColors.neutralDark,
+        onSurface: LearnyColors.neutralDark,
+        onBackground: LearnyColors.neutralDark,
       ),
       scaffoldBackgroundColor: LearnyColors.cream,
       textTheme: textTheme.apply(
-        bodyColor: LearnyColors.slateDark,
-        displayColor: LearnyColors.slateDark,
+        bodyColor: LearnyColors.neutralDark,
+        displayColor: LearnyColors.neutralDark,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        foregroundColor: LearnyColors.slateDark,
+        foregroundColor: LearnyColors.neutralDark,
       ),
       cardTheme: CardThemeData(
         color: Colors.white,
@@ -74,7 +93,7 @@ class LearnyTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: LearnyColors.coral,
+          backgroundColor: LearnyColors.skyPrimary,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
           shape: RoundedRectangleBorder(
@@ -85,8 +104,8 @@ class LearnyTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: LearnyColors.teal,
-          side: const BorderSide(color: LearnyColors.teal, width: 2),
+          foregroundColor: LearnyColors.skyPrimary,
+          side: const BorderSide(color: LearnyColors.skyPrimary, width: 2),
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
@@ -95,31 +114,40 @@ class LearnyTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: LearnyColors.sky,
+        backgroundColor: LearnyColors.neutralCream,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
       ),
+      extensions: const [
+        LearnyTokens.light,
+      ],
     );
   }
 }
 
 class LearnyGradients {
   static const hero = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [LearnyColors.peach, Color(0xFFFFF0E6), LearnyColors.sky],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [LearnyColors.skyLight, LearnyColors.cream],
   );
 
   static const cta = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [LearnyColors.coral, LearnyColors.coralLight],
+    colors: [LearnyColors.skyPrimary, LearnyColors.mintPrimary],
   );
 
   static const trust = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [LearnyColors.sky, Color(0xFFFFF0E6)],
+    colors: [LearnyColors.skyLight, LearnyColors.cream],
+  );
+
+  static const card = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Colors.white, LearnyColors.neutralCream],
   );
 }

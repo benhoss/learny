@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../app/backend_config.dart';
@@ -22,15 +24,23 @@ import '../services/backend_client.dart';
 import '../theme/app_theme.dart';
 
 class AppState extends ChangeNotifier {
-  AppState({FakeRepositories? repositories})
-      : _repositories = repositories ?? FakeRepositories(),
-        backend = BackendClient(baseUrl: BackendConfig.baseUrl) {
+  AppState({
+    FakeRepositories? repositories,
+    BackendClient? backendClient,
+    bool initializeBackendSession = true,
+    Duration submitRetryDelay = const Duration(seconds: 2),
+  }) : _repositories = repositories ?? FakeRepositories(),
+       backend = backendClient ?? BackendClient(baseUrl: BackendConfig.baseUrl),
+       _submitRetryDelay = submitRetryDelay {
     _load();
-    _initializeBackendSession();
+    if (initializeBackendSession) {
+      _initializeBackendSession();
+    }
   }
 
   final FakeRepositories _repositories;
   final BackendClient backend;
+  final Duration _submitRetryDelay;
 
   late UserProfile profile;
   late ParentProfile parentProfile;
@@ -51,6 +61,10 @@ class AppState extends ChangeNotifier {
   int streakDays = 0;
   int xpToday = 0;
   int totalXp = 0;
+  int reviewDueCount = 0;
+  List<String> reviewDueConceptKeys = [];
+  GameOutcome? lastGameOutcome;
+  String? lastResultSyncError;
 
   bool onboardingComplete = false;
 
@@ -63,10 +77,12 @@ class AppState extends ChangeNotifier {
   Map<String, dynamic>? flashcardsPayload;
   Map<String, dynamic>? matchingPayload;
   Map<String, Map<String, dynamic>> gamePayloads = {};
+  Map<String, String> gameIds = {};
   List<String> packGameQueue = [];
   int packGameIndex = 0;
   String? currentGameType;
   String? currentGameTitle;
+  String? lastAutoGameType;
 
   bool isGeneratingQuiz = false;
   String generationStatus = 'Idle';
@@ -93,6 +109,7 @@ class AppState extends ChangeNotifier {
   final String _demoPassword = BackendConfig.demoPassword;
   bool _backendSessionReady = false;
   bool _backendSessionInitializing = false;
+  String? _lastLocalStreakAwardDate;
 
   void _load() {
     profile = _repositories.user.loadProfile();
@@ -100,7 +117,9 @@ class AppState extends ChangeNotifier {
     packs = List<LearningPack>.from(_repositories.packs.loadPacks());
     achievements = _repositories.progress.loadAchievements();
     mastery = _repositories.progress.loadMastery();
-    documents = List<DocumentItem>.from(_repositories.documents.loadDocuments());
+    documents = List<DocumentItem>.from(
+      _repositories.documents.loadDocuments(),
+    );
     notifications = _repositories.notifications.loadNotifications();
     weeklySummary = _repositories.user.loadWeeklySummary();
     weakAreas = _repositories.user.loadWeakAreas();
@@ -126,6 +145,7 @@ class AppState extends ChangeNotifier {
       try {
         await _ensureBackendSession();
         _backendSessionReady = true;
+        await _refreshReviewCount();
       } catch (_) {
         // Surface errors during upload instead of at boot time.
       } finally {
@@ -139,6 +159,12 @@ class AppState extends ChangeNotifier {
       return null;
     }
     return packs.where((pack) => pack.id == selectedPackId).firstOrNull;
+  }
+
+  bool get hasReadyGeneratedGame {
+    return !isGeneratingQuiz &&
+        gamePayloads.isNotEmpty &&
+        currentPackGameType != null;
   }
 
   void completeOnboarding() {
@@ -214,7 +240,8 @@ class AppState extends ChangeNotifier {
   }
 
   void startQuiz({String? packId}) {
-    final id = packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
+    final id =
+        packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
     if (id == null) {
       return;
     }
@@ -222,6 +249,8 @@ class AppState extends ChangeNotifier {
     currentGameType = 'quiz';
     currentGameTitle = 'Quick Quiz';
     currentGameId = null;
+    lastGameOutcome = null;
+    lastResultSyncError = null;
     quizSession = QuizSession(
       packId: id,
       questions: _repositories.packs.loadQuestions(id),
@@ -232,7 +261,8 @@ class AppState extends ChangeNotifier {
   void startPackSession({String? packId}) {
     inPackSession = true;
     packSessionStage = PackSessionStage.flashcards;
-    final id = packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
+    final id =
+        packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
     if (id != null) {
       selectedPackId = id;
     }
@@ -240,6 +270,27 @@ class AppState extends ChangeNotifier {
       _setPackGameQueue(['flashcards', 'quiz', 'matching']);
     }
     notifyListeners();
+  }
+
+  String? startReviewFromDueConcepts() {
+    if (packs.isEmpty) {
+      return null;
+    }
+    final dueConcepts = reviewDueConceptKeys.toSet();
+    LearningPack? targetPack;
+    if (dueConcepts.isNotEmpty) {
+      targetPack = packs.firstWhere(
+        (pack) => pack.conceptKeys.any(dueConcepts.contains),
+        orElse: () => packs.first,
+      );
+    } else {
+      targetPack = selectedPack ?? packs.first;
+    }
+
+    startPackSession(packId: targetPack.id);
+    final firstType = currentPackGameType ?? 'quiz';
+    startGameType(firstType);
+    return routeForGameType(firstType);
   }
 
   void advancePackSession(PackSessionStage stage) {
@@ -254,13 +305,6 @@ class AppState extends ChangeNotifier {
     if (!inPackSession) {
       return;
     }
-    streakDays += 1;
-    xpToday += 20;
-    totalXp += 20;
-    mastery = mastery.map((key, value) {
-      final next = (value + 0.03).clamp(0.0, 1.0);
-      return MapEntry(key, next);
-    });
     final packId = selectedPackId;
     if (packId != null) {
       packs = packs
@@ -279,16 +323,21 @@ class AppState extends ChangeNotifier {
     packSessionStage = null;
     packGameQueue = [];
     packGameIndex = 0;
+    gameIds = {};
     notifyListeners();
   }
 
   void startRevision({String? packId}) {
-    final id = packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
+    final id =
+        packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
     if (id == null) {
       return;
     }
     selectedPackId = id;
-    final pack = packs.firstWhere((item) => item.id == id, orElse: () => packs.first);
+    final pack = packs.firstWhere(
+      (item) => item.id == id,
+      orElse: () => packs.first,
+    );
     revisionSession = RevisionSession(
       prompts: _repositories.packs.loadRevisionPrompts(id),
       subjectLabel: '${pack.subject} • ${pack.title}',
@@ -468,10 +517,7 @@ class AppState extends ChangeNotifier {
   Future<_BackendSession> _ensureBackendSession() async {
     if (backend.token == null) {
       try {
-        await backend.login(
-          email: _demoEmail,
-          password: _demoPassword,
-        );
+        await backend.login(email: _demoEmail, password: _demoPassword);
       } catch (error) {
         try {
           await backend.register(
@@ -493,9 +539,11 @@ class AppState extends ChangeNotifier {
       final children = await backend.listChildren();
       final selectedChild = children.firstWhere(
         (child) => child['name']?.toString() == BackendConfig.childName,
-        orElse: () => children.isNotEmpty ? children.first : <String, dynamic>{},
+        orElse: () =>
+            children.isNotEmpty ? children.first : <String, dynamic>{},
       );
       backendChildId = _extractId(selectedChild);
+      _syncGamificationFromBackendChild(selectedChild);
 
       if (backendChildId == null) {
         final created = await backend.createChild(
@@ -503,9 +551,17 @@ class AppState extends ChangeNotifier {
           gradeLevel: BackendConfig.childGrade,
         );
         backendChildId = _extractId(created);
+        _syncGamificationFromBackendChild(created);
         if (backendChildId == null && children.isEmpty) {
           final refreshed = await backend.listChildren();
-          backendChildId = refreshed.isNotEmpty ? _extractId(refreshed.first) : null;
+          if (refreshed.isNotEmpty) {
+            _syncGamificationFromBackendChild(
+              refreshed.first as Map<String, dynamic>,
+            );
+          }
+          backendChildId = refreshed.isNotEmpty
+              ? _extractId(refreshed.first)
+              : null;
         }
       }
     }
@@ -518,8 +574,29 @@ class AppState extends ChangeNotifier {
     return _BackendSession(childId: childId);
   }
 
+  void _syncGamificationFromBackendChild(Map<String, dynamic> child) {
+    var changed = false;
+    final backendStreak = (child['streak_days'] as num?)?.toInt();
+    final backendTotalXp = (child['total_xp'] as num?)?.toInt();
+
+    if (backendStreak != null && backendStreak != streakDays) {
+      streakDays = backendStreak;
+      changed = true;
+    }
+    if (backendTotalXp != null && backendTotalXp != totalXp) {
+      totalXp = backendTotalXp;
+      changed = true;
+    }
+
+    if (changed) {
+      notifyListeners();
+    }
+  }
+
   bool _isEmailTaken(Object error) {
-    return error.toString().toLowerCase().contains('email has already been taken');
+    return error.toString().toLowerCase().contains(
+      'email has already been taken',
+    );
   }
 
   String? _extractId(Map<String, dynamic> data) {
@@ -536,80 +613,117 @@ class AppState extends ChangeNotifier {
       throw BackendException('Missing document ID.');
     }
 
-    const maxAttempts = 20;
+    // Exponential backoff: starts at 3s, grows to max 15s.
+    // ~60 attempts gives roughly 3-5 minutes depending on backoff growth.
+    const maxAttempts = 60;
+    var delay = const Duration(seconds: 3);
+    const maxDelay = Duration(seconds: 15);
+
     for (var attempt = 0; attempt < maxAttempts; attempt += 1) {
-      final doc = await backend.getDocument(childId: childId, documentId: documentId);
+      final doc = await backend.getDocument(
+        childId: childId,
+        documentId: documentId,
+      );
       final status = doc['status']?.toString();
+
+      // Update status message based on document status
+      if (status == 'queued') {
+        generationStatus = 'Waiting in queue...';
+        notifyListeners();
+      } else if (status == 'processing') {
+        generationStatus = 'Processing document...';
+        notifyListeners();
+      } else if (status == 'processed') {
+        generationStatus = 'Generating learning content...';
+        notifyListeners();
+      }
+
       if (status == 'failed') {
         throw BackendException('Document processing failed.');
       }
 
-      final packs = await backend.listLearningPacks(
-        childId: childId,
-        documentId: documentId,
-      );
+      // Only check for packs once document processing is complete
+      if (status == 'processed' || status == 'ready') {
+        final packs = await backend.listLearningPacks(
+          childId: childId,
+          documentId: documentId,
+        );
 
-      if (packs.isNotEmpty) {
-        final pack = packs.first as Map<String, dynamic>;
-        final packId = _extractId(pack);
-        if (packId == null) {
-          throw BackendException('Pack missing id.');
-        }
-        await _syncPackFromBackend(pack);
-
-        final games = await backend.listGames(childId: childId, packId: packId);
-        final payloadsByType = <String, Map<String, dynamic>>{};
-        for (final entry in games.cast<Map<String, dynamic>>()) {
-          final status = entry['status']?.toString();
-          final type = entry['type']?.toString();
-          final payload = entry['payload'];
-          if (status == 'ready' && type != null && payload is Map<String, dynamic>) {
-            payloadsByType[type] = payload;
+        if (packs.isNotEmpty) {
+          final pack = packs.first as Map<String, dynamic>;
+          final packId = _extractId(pack);
+          if (packId == null) {
+            throw BackendException('Pack missing id.');
           }
-        }
-        gamePayloads = payloadsByType;
-        flashcardsPayload = payloadsByType['flashcards'];
-        matchingPayload = payloadsByType['matching'];
-        _setPackGameQueue(payloadsByType.keys.toList());
+          selectedPackId = packId;
+          await _syncPackFromBackend(pack);
 
-        final supportedTypes = [
-          'quiz',
-          'true_false',
-          'multiple_select',
-          'fill_blank',
-          'short_answer',
-          'ordering',
-        ];
-        Map<String, dynamic> selectedGame = {};
-        for (final type in supportedTypes) {
-          selectedGame = games.cast<Map<String, dynamic>>().firstWhere(
-                (game) => game['type'] == type && game['status'] == 'ready',
-                orElse: () => <String, dynamic>{},
-              );
-          if (selectedGame.isNotEmpty) {
-            break;
+          generationStatus = 'Creating games and quizzes...';
+          notifyListeners();
+
+          final games =
+              await backend.listGames(childId: childId, packId: packId);
+          final payloadsByType = <String, Map<String, dynamic>>{};
+          final idsByType = <String, String>{};
+          for (final entry in games.cast<Map<String, dynamic>>()) {
+            final status = entry['status']?.toString();
+            final type = entry['type']?.toString();
+            final payload = entry['payload'];
+            final id = _extractId(entry);
+            if (status == 'ready' &&
+                type != null &&
+                payload is Map<String, dynamic>) {
+              payloadsByType[type] = payload;
+              if (id != null) idsByType[type] = id;
+            }
           }
-        }
+          gamePayloads = payloadsByType;
+          gameIds = idsByType;
+          flashcardsPayload = payloadsByType['flashcards'];
+          matchingPayload = payloadsByType['matching'];
+          _setPackGameQueue(payloadsByType.keys.toList());
 
-        if (selectedGame.isNotEmpty) {
-          _loadQuizFromPayload(selectedGame);
-          return;
+          final selectedType = _pickNextGameType(packGameQueue);
+          if (selectedType != null) {
+            final selectedIndex = packGameQueue.indexOf(selectedType);
+            if (selectedIndex >= 0) {
+              packGameIndex = selectedIndex;
+            }
+            startGameType(selectedType);
+            return;
+          }
         }
       }
 
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(delay);
+      delay = Duration(
+        seconds: (delay.inSeconds * 1.5).round().clamp(3, maxDelay.inSeconds),
+      );
     }
 
-    throw BackendException('Quiz generation timed out.');
+    throw BackendException('Quiz generation timed out. Please try again.');
   }
 
   Future<void> _syncPackFromBackend(Map<String, dynamic> pack) async {
-    final packId = pack['_id']?.toString() ?? '';
+    final packId = _extractId(pack) ?? pack['_id']?.toString() ?? '';
     final title = pack['title']?.toString() ?? 'Learning Pack';
     final summary = pack['summary']?.toString();
     final content = pack['content'] as Map<String, dynamic>?;
     final items = content?['items'] as List<dynamic>? ?? [];
+    final conceptKeys = (content?['concepts'] as List<dynamic>? ?? [])
+        .map(
+          (concept) =>
+              (concept as Map<String, dynamic>)['key']?.toString() ??
+              concept['concept_key']?.toString() ??
+              '',
+        )
+        .where((key) => key.isNotEmpty)
+        .toSet()
+        .toList();
     final subject = summary?.split(' ').first ?? 'Homework';
+    final masteryPct = (pack['mastery_percentage'] as num?)?.toInt() ?? 0;
+    final conceptsMastered = (pack['concepts_mastered'] as num?)?.toInt() ?? 0;
+    final conceptsTotal = (pack['concepts_total'] as num?)?.toInt() ?? 0;
 
     final style = _packStyleForSubject(subject);
     final newPack = LearningPack(
@@ -620,7 +734,10 @@ class AppState extends ChangeNotifier {
       minutes: 10,
       icon: style.icon,
       color: style.color,
-      progress: 0.0,
+      progress: masteryPct / 100.0,
+      conceptsMastered: conceptsMastered,
+      conceptsTotal: conceptsTotal,
+      conceptKeys: conceptKeys,
     );
 
     packs = [newPack, ...packs.where((existing) => existing.id != packId)];
@@ -629,99 +746,167 @@ class AppState extends ChangeNotifier {
 
   void _loadQuizFromPayload(Map<String, dynamic> game) {
     currentGameId = _extractId(game);
+    final packId =
+        _extractId({'_id': game['learning_pack_id']}) ??
+        game['learning_pack_id']?.toString() ??
+        selectedPackId ??
+        '';
     final type = game['type']?.toString() ?? 'quiz';
     final payload = game['payload'] as Map<String, dynamic>? ?? {};
     currentGameType = type;
     currentGameTitle = payload['title']?.toString();
+    lastAutoGameType = type;
     final mapped = <QuizQuestion>[];
 
     if (type == 'ordering') {
       final items = payload['items'] as List<dynamic>? ?? [];
       for (final item in items) {
         final data = item as Map<String, dynamic>;
-        final sequence = (data['sequence'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+        final sequence = (data['sequence'] as List<dynamic>? ?? [])
+            .map((e) => e.toString())
+            .toList();
         if (sequence.isEmpty) {
           continue;
         }
         final shuffled = List<String>.from(sequence)..shuffle();
-        mapped.add(QuizQuestion(
-          id: data['id']?.toString() ?? UniqueKey().toString(),
-          prompt: data['prompt']?.toString() ?? 'Put these in order',
-          options: shuffled,
-          correctIndex: 0,
-          orderedSequence: sequence,
-          hint: data['hint']?.toString(),
-          explanation: data['explanation']?.toString(),
-        ));
+        mapped.add(
+          QuizQuestion(
+            id: data['id']?.toString() ?? UniqueKey().toString(),
+            prompt: data['prompt']?.toString() ?? 'Put these in order',
+            options: shuffled,
+            correctIndex: 0,
+            orderedSequence: sequence,
+            hint: data['hint']?.toString(),
+            explanation: data['explanation']?.toString(),
+            topic: data['topic']?.toString(),
+          ),
+        );
       }
     } else {
       final questions = payload['questions'] as List<dynamic>? ?? [];
       for (final item in questions) {
         final data = item as Map<String, dynamic>;
         if (type == 'true_false') {
-          mapped.add(QuizQuestion(
-            id: data['id']?.toString() ?? UniqueKey().toString(),
-            prompt: data['statement']?.toString() ?? '',
-            options: const ['True', 'False'],
-            correctIndex: (data['answer'] == true) ? 0 : 1,
-            explanation: data['explanation']?.toString(),
-          ));
+          mapped.add(
+            QuizQuestion(
+              id: data['id']?.toString() ?? UniqueKey().toString(),
+              prompt: data['statement']?.toString() ?? '',
+              options: const ['True', 'False'],
+              correctIndex: (data['answer'] == true) ? 0 : 1,
+              explanation: data['explanation']?.toString(),
+              topic: data['topic']?.toString(),
+            ),
+          );
         } else if (type == 'multiple_select') {
           final indices = (data['answer_indices'] as List<dynamic>? ?? [])
               .map((e) => (e as num).toInt())
               .toList();
-          mapped.add(QuizQuestion(
-            id: data['id']?.toString() ?? UniqueKey().toString(),
-            prompt: data['prompt']?.toString() ?? '',
-            options: (data['choices'] as List<dynamic>? ?? []).map((e) => e.toString()).toList(),
-            correctIndex: indices.isNotEmpty ? indices.first : 0,
-            correctIndices: indices,
-            hint: data['hint']?.toString(),
-            explanation: data['explanation']?.toString(),
-          ));
+          mapped.add(
+            QuizQuestion(
+              id: data['id']?.toString() ?? UniqueKey().toString(),
+              prompt: data['prompt']?.toString() ?? '',
+              options: (data['choices'] as List<dynamic>? ?? [])
+                  .map((e) => e.toString())
+                  .toList(),
+              correctIndex: indices.isNotEmpty ? indices.first : 0,
+              correctIndices: indices,
+              hint: data['hint']?.toString(),
+              explanation: data['explanation']?.toString(),
+              topic: data['topic']?.toString(),
+            ),
+          );
         } else if (type == 'fill_blank' || type == 'short_answer') {
-          mapped.add(QuizQuestion(
-            id: data['id']?.toString() ?? UniqueKey().toString(),
-            prompt: data['prompt']?.toString() ?? '',
-            options: const [],
-            correctIndex: 0,
-            answerText: data['answer']?.toString(),
-            acceptedAnswers: (data['accepted_answers'] as List<dynamic>? ?? [])
-                .map((e) => e.toString())
-                .toList(),
-            hint: data['hint']?.toString(),
-            explanation: data['explanation']?.toString(),
-          ));
+          mapped.add(
+            QuizQuestion(
+              id: data['id']?.toString() ?? UniqueKey().toString(),
+              prompt: data['prompt']?.toString() ?? '',
+              options: const [],
+              correctIndex: 0,
+              answerText: data['answer']?.toString(),
+              acceptedAnswers:
+                  (data['accepted_answers'] as List<dynamic>? ?? [])
+                      .map((e) => e.toString())
+                      .toList(),
+              hint: data['hint']?.toString(),
+              explanation: data['explanation']?.toString(),
+              topic: data['topic']?.toString(),
+            ),
+          );
         } else {
-          mapped.add(QuizQuestion(
-            id: data['id']?.toString() ?? UniqueKey().toString(),
-            prompt: data['prompt']?.toString() ?? '',
-            options: (data['choices'] as List<dynamic>? ?? []).map((e) => e.toString()).toList(),
-            correctIndex: (data['answer_index'] as int?) ?? 0,
-            hint: data['hint']?.toString(),
-            explanation: data['explanation']?.toString(),
-          ));
+          mapped.add(
+            QuizQuestion(
+              id: data['id']?.toString() ?? UniqueKey().toString(),
+              prompt: data['prompt']?.toString() ?? '',
+              options: (data['choices'] as List<dynamic>? ?? [])
+                  .map((e) => e.toString())
+                  .toList(),
+              correctIndex: (data['answer_index'] as int?) ?? 0,
+              hint: data['hint']?.toString(),
+              explanation: data['explanation']?.toString(),
+              topic: data['topic']?.toString(),
+            ),
+          );
         }
       }
     }
 
-    quizSession = QuizSession(
-      packId: selectedPackId ?? '',
-      questions: mapped,
-    );
+    quizSession = QuizSession(packId: packId, questions: mapped);
   }
 
   void startGameType(String type) {
-    if (type == 'flashcards' || type == 'matching') {
+    final payload = gamePayloads[type];
+    currentGameType = type;
+    currentGameId = gameIds[type];
+    currentGameTitle = payload?['title']?.toString();
+    lastGameOutcome = null;
+    lastResultSyncError = null;
+
+    if (type == 'flashcards') {
+      if (payload != null) {
+        flashcardsPayload = payload;
+      }
+      notifyListeners();
       return;
     }
-    final payload = gamePayloads[type];
+
+    if (type == 'matching') {
+      if (payload != null) {
+        matchingPayload = payload;
+      }
+      notifyListeners();
+      return;
+    }
+
     if (payload != null) {
-      _loadQuizFromPayload({'type': type, 'payload': payload});
+      _loadQuizFromPayload({
+        'type': type,
+        'payload': payload,
+        '_id': gameIds[type],
+      });
       notifyListeners();
       return;
     }
     startQuiz();
+  }
+
+  String? _pickNextGameType(List<String> availableTypes) {
+    if (availableTypes.isEmpty) {
+      return null;
+    }
+    if (availableTypes.length == 1) {
+      return availableTypes.first;
+    }
+    final random = Random();
+    var choice = availableTypes[random.nextInt(availableTypes.length)];
+    if (lastAutoGameType != null && choice == lastAutoGameType) {
+      final fallback = availableTypes
+          .where((type) => type != lastAutoGameType)
+          .toList();
+      if (fallback.isNotEmpty) {
+        choice = fallback[random.nextInt(fallback.length)];
+      }
+    }
+    return choice;
   }
 
   void advancePackGame() {
@@ -779,7 +964,77 @@ class AppState extends ChangeNotifier {
     packGameIndex = 0;
   }
 
-  void answerCurrentQuestion(int selectedIndex) {
+  Future<void> completeFlashcardsGame(List<Map<String, dynamic>> cards) async {
+    final results = cards
+        .where((card) => (card['front']?.toString().trim().isNotEmpty ?? false))
+        .map(
+          (card) => <String, dynamic>{
+            'correct': true,
+            'prompt': card['front']?.toString() ?? '',
+            'topic': card['topic']?.toString(),
+            'response': 'Reviewed',
+            'expected': card['back']?.toString() ?? '',
+          },
+        )
+        .toList();
+    await _recordAndSubmitGameCompletion(
+      gameType: currentGameType ?? 'flashcards',
+      totalQuestions: results.length,
+      correctAnswers: results.length,
+      results: results,
+    );
+  }
+
+  Future<void> completeMatchingGame(List<Map<String, dynamic>> pairs) async {
+    final results = pairs
+        .where(
+          (pair) =>
+              (pair['left']?.toString().trim().isNotEmpty ?? false) &&
+              (pair['right']?.toString().trim().isNotEmpty ?? false),
+        )
+        .map(
+          (pair) => <String, dynamic>{
+            'correct': true,
+            'prompt': pair['left']?.toString() ?? '',
+            'topic': pair['topic']?.toString(),
+            'response': pair['right']?.toString() ?? '',
+            'expected': pair['right']?.toString() ?? '',
+          },
+        )
+        .toList();
+    await _recordAndSubmitGameCompletion(
+      gameType: currentGameType ?? 'matching',
+      totalQuestions: results.length,
+      correctAnswers: results.length,
+      results: results,
+    );
+  }
+
+  Future<void> _recordAndSubmitGameCompletion({
+    required String gameType,
+    required int totalQuestions,
+    required int correctAnswers,
+    required List<Map<String, dynamic>> results,
+  }) async {
+    final xpEstimate = correctAnswers * 10;
+
+    lastGameOutcome = GameOutcome(
+      gameType: gameType,
+      totalQuestions: totalQuestions,
+      correctAnswers: correctAnswers,
+      xpEarned: xpEstimate,
+    );
+    lastResultSyncError = null;
+
+    await _submitGameResults(
+      gameType: gameType,
+      totalQuestions: totalQuestions,
+      correctAnswers: correctAnswers,
+      results: results,
+    );
+  }
+
+  Future<void> answerCurrentQuestion(int selectedIndex) async {
     final session = quizSession;
     if (session == null) {
       return;
@@ -789,18 +1044,36 @@ class AppState extends ChangeNotifier {
       return;
     }
     final index = session.currentIndex;
-    if (selectedIndex == question.correctIndex) {
+    final isCorrect = selectedIndex == question.correctIndex;
+    if (isCorrect) {
       session.correctCount += 1;
-      xpToday += 5;
-      totalXp += 5;
     } else {
       session.incorrectIndices.add(index);
     }
+    session.results.add({
+      'correct': isCorrect,
+      'prompt': question.prompt,
+      'topic': question.topic,
+      'response': question.options.isNotEmpty
+          ? question.options[selectedIndex]
+          : '',
+      'expected': question.options.isNotEmpty
+          ? question.options[question.correctIndex]
+          : '',
+    });
     session.currentIndex += 1;
+    if (session.isComplete) {
+      await _recordAndSubmitGameCompletion(
+        gameType: currentGameType ?? 'quiz',
+        totalQuestions: session.questions.length,
+        correctAnswers: session.correctCount,
+        results: List<Map<String, dynamic>>.from(session.results),
+      );
+    }
     notifyListeners();
   }
 
-  void answerCurrentQuestionMulti(List<int> selectedIndices) {
+  Future<void> answerCurrentQuestionMulti(List<int> selectedIndices) async {
     final session = quizSession;
     if (session == null) {
       return;
@@ -810,20 +1083,44 @@ class AppState extends ChangeNotifier {
       return;
     }
     final index = session.currentIndex;
-    final correct = (question.correctIndices ?? [question.correctIndex]).toSet();
+    final correct = (question.correctIndices ?? [question.correctIndex])
+        .toSet();
     final selected = selectedIndices.toSet();
-    if (selected.isNotEmpty && selected.length == correct.length && selected.containsAll(correct)) {
+    final isCorrect =
+        selected.isNotEmpty &&
+        selected.length == correct.length &&
+        selected.containsAll(correct);
+    if (isCorrect) {
       session.correctCount += 1;
-      xpToday += 5;
-      totalXp += 5;
     } else {
       session.incorrectIndices.add(index);
     }
+    final responseText = selectedIndices
+        .map((i) => i < question.options.length ? question.options[i] : '')
+        .join(', ');
+    final expectedText = correct
+        .map((i) => i < question.options.length ? question.options[i] : '')
+        .join(', ');
+    session.results.add({
+      'correct': isCorrect,
+      'prompt': question.prompt,
+      'topic': question.topic,
+      'response': responseText,
+      'expected': expectedText,
+    });
     session.currentIndex += 1;
+    if (session.isComplete) {
+      await _recordAndSubmitGameCompletion(
+        gameType: currentGameType ?? 'quiz',
+        totalQuestions: session.questions.length,
+        correctAnswers: session.correctCount,
+        results: List<Map<String, dynamic>>.from(session.results),
+      );
+    }
     notifyListeners();
   }
 
-  void answerCurrentQuestionText(String value) {
+  Future<void> answerCurrentQuestionText(String value) async {
     final session = quizSession;
     if (session == null) {
       return;
@@ -841,18 +1138,32 @@ class AppState extends ChangeNotifier {
     for (final item in question.acceptedAnswers ?? <String>[]) {
       answers.add(item.trim().toLowerCase());
     }
-    if (answers.contains(normalized)) {
+    final isCorrect = answers.contains(normalized);
+    if (isCorrect) {
       session.correctCount += 1;
-      xpToday += 5;
-      totalXp += 5;
     } else {
       session.incorrectIndices.add(index);
     }
+    session.results.add({
+      'correct': isCorrect,
+      'prompt': question.prompt,
+      'topic': question.topic,
+      'response': value,
+      'expected': question.answerText ?? '',
+    });
     session.currentIndex += 1;
+    if (session.isComplete) {
+      await _recordAndSubmitGameCompletion(
+        gameType: currentGameType ?? 'quiz',
+        totalQuestions: session.questions.length,
+        correctAnswers: session.correctCount,
+        results: List<Map<String, dynamic>>.from(session.results),
+      );
+    }
     notifyListeners();
   }
 
-  void answerCurrentQuestionOrdering(List<String> ordered) {
+  Future<void> answerCurrentQuestionOrdering(List<String> ordered) async {
     final session = quizSession;
     if (session == null) {
       return;
@@ -863,17 +1174,150 @@ class AppState extends ChangeNotifier {
     }
     final index = session.currentIndex;
     final expected = question.orderedSequence!;
-    final isCorrect = ordered.length == expected.length &&
-        List.generate(ordered.length, (index) => ordered[index] == expected[index]).every((v) => v);
+    final isCorrect =
+        ordered.length == expected.length &&
+        List.generate(
+          ordered.length,
+          (index) => ordered[index] == expected[index],
+        ).every((v) => v);
     if (isCorrect) {
       session.correctCount += 1;
-      xpToday += 5;
-      totalXp += 5;
     } else {
       session.incorrectIndices.add(index);
     }
+    session.results.add({
+      'correct': isCorrect,
+      'prompt': question.prompt,
+      'topic': question.topic,
+      'response': ordered.join(' → '),
+      'expected': expected.join(' → '),
+    });
     session.currentIndex += 1;
+    if (session.isComplete) {
+      await _recordAndSubmitGameCompletion(
+        gameType: currentGameType ?? 'ordering',
+        totalQuestions: session.questions.length,
+        correctAnswers: session.correctCount,
+        results: List<Map<String, dynamic>>.from(session.results),
+      );
+    }
     notifyListeners();
+  }
+
+  Future<void> _submitGameResults({
+    required String gameType,
+    required int totalQuestions,
+    required int correctAnswers,
+    required List<Map<String, dynamic>> results,
+  }) async {
+    if (results.isEmpty) {
+      return;
+    }
+
+    final childId = backendChildId;
+    final session = quizSession;
+    final packId = session != null && session.packId.isNotEmpty
+        ? session.packId
+        : selectedPackId;
+    final gameId = currentGameId;
+    if (childId == null || packId == null || gameId == null) {
+      _applyLocalGamificationFallback(correctAnswers: correctAnswers);
+      lastResultSyncError =
+          'Game result sync skipped: missing childId/packId/gameId.';
+      debugPrint(lastResultSyncError);
+      notifyListeners();
+      await _refreshReviewCount();
+      return;
+    }
+
+    Object? lastError;
+    for (var attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        final response = await backend.submitGameResult(
+          childId: childId,
+          packId: packId,
+          gameId: gameId,
+          gameType: gameType,
+          results: results,
+          totalQuestions: totalQuestions,
+          correctAnswers: correctAnswers,
+        );
+
+        final streak = (response['streak_days'] as num?)?.toInt();
+        final total = (response['total_xp'] as num?)?.toInt();
+        final xpEarned = (response['xp_earned'] as num?)?.toInt();
+        if (streak != null) {
+          streakDays = streak;
+          _lastLocalStreakAwardDate = DateTime.now().toIso8601String().split(
+            'T',
+          )[0];
+        }
+        if (total != null) {
+          totalXp = total;
+        }
+        if (xpEarned != null) {
+          xpToday += xpEarned;
+        }
+        if (lastGameOutcome != null && xpEarned != null) {
+          lastGameOutcome = lastGameOutcome!.copyWith(xpEarned: xpEarned);
+        }
+        lastResultSyncError = null;
+        notifyListeners();
+        await _refreshReviewCount();
+        return;
+      } catch (error) {
+        lastError = error;
+        if (attempt == 0) {
+          await Future.delayed(_submitRetryDelay);
+        }
+      }
+    }
+
+    _applyLocalGamificationFallback(correctAnswers: correctAnswers);
+    lastResultSyncError = lastError.toString();
+    debugPrint('Game result submission failed: $lastError');
+    notifyListeners();
+    await _refreshReviewCount();
+  }
+
+  Future<void> _refreshReviewCount() async {
+    final childId = backendChildId;
+    if (childId == null) {
+      return;
+    }
+
+    try {
+      final response = await backend.fetchReviewQueue(childId: childId);
+      if (response != null) {
+        reviewDueCount = (response['total_due'] as num?)?.toInt() ?? 0;
+        reviewDueConceptKeys = (response['data'] as List<dynamic>? ?? [])
+            .whereType<Map<String, dynamic>>()
+            .map((item) => item['concept_key']?.toString() ?? '')
+            .where((key) => key.isNotEmpty)
+            .toSet()
+            .toList();
+        notifyListeners();
+      }
+    } catch (_) {
+      // Ignore transient refresh failures.
+    }
+  }
+
+  void _applyLocalGamificationFallback({required int correctAnswers}) {
+    final fallbackXp = correctAnswers * 10;
+    if (fallbackXp > 0) {
+      xpToday += fallbackXp;
+      totalXp += fallbackXp;
+      if (lastGameOutcome != null) {
+        lastGameOutcome = lastGameOutcome!.copyWith(xpEarned: fallbackXp);
+      }
+    }
+
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    if (_lastLocalStreakAwardDate != today) {
+      streakDays = (streakDays <= 0) ? 1 : streakDays + 1;
+      _lastLocalStreakAwardDate = today;
+    }
   }
 
   void resetQuiz() {
@@ -883,6 +1327,7 @@ class AppState extends ChangeNotifier {
     currentGameType = null;
     currentGameTitle = null;
     currentGameId = null;
+    lastResultSyncError = null;
     notifyListeners();
   }
 
@@ -894,23 +1339,22 @@ class AppState extends ChangeNotifier {
     try {
       final session = await _ensureBackendSession();
       final data = await backend.listDocuments(childId: session.childId);
-      documents = data
-          .cast<Map<String, dynamic>>()
-          .map((doc) {
-            final id = _extractId(doc) ?? '';
-            final title = doc['original_filename']?.toString() ?? 'Homework';
-            final subject = doc['subject']?.toString() ?? 'Homework';
-            final status = doc['status']?.toString() ?? 'unknown';
-            final createdAt = DateTime.tryParse(doc['created_at']?.toString() ?? '') ?? DateTime.now();
-            return DocumentItem(
-              id: id,
-              title: title,
-              subject: subject,
-              createdAt: createdAt,
-              statusLabel: _statusLabelForDocument(status),
-            );
-          })
-          .toList();
+      documents = data.cast<Map<String, dynamic>>().map((doc) {
+        final id = _extractId(doc) ?? '';
+        final title = doc['original_filename']?.toString() ?? 'Homework';
+        final subject = doc['subject']?.toString() ?? 'Homework';
+        final status = doc['status']?.toString() ?? 'unknown';
+        final createdAt =
+            DateTime.tryParse(doc['created_at']?.toString() ?? '') ??
+            DateTime.now();
+        return DocumentItem(
+          id: id,
+          title: title,
+          subject: subject,
+          createdAt: createdAt,
+          statusLabel: _statusLabelForDocument(status),
+        );
+      }).toList();
     } catch (error) {
       documentSyncError = error.toString();
     } finally {
@@ -938,10 +1382,14 @@ class AppState extends ChangeNotifier {
 
   Future<void> regenerateDocument(String documentId) async {
     final session = await _ensureBackendSession();
-    await backend.regenerateDocument(childId: session.childId, documentId: documentId);
+    await backend.regenerateDocument(
+      childId: session.childId,
+      documentId: documentId,
+    );
     documents = documents
         .map(
-          (doc) => doc.id == documentId ? doc.copyWith(statusLabel: 'Queued') : doc,
+          (doc) =>
+              doc.id == documentId ? doc.copyWith(statusLabel: 'Queued') : doc,
         )
         .toList();
     notifyListeners();
@@ -952,7 +1400,12 @@ class AppState extends ChangeNotifier {
     if (session == null || session.incorrectIndices.isEmpty) {
       return;
     }
-    final packId = session.packId;
+    final packId = session.packId.isNotEmpty
+        ? session.packId
+        : (selectedPackId ?? '');
+    if (packId.isEmpty) {
+      throw BackendException('Missing learning pack id for retry.');
+    }
     if (currentGameId != null) {
       final backendSession = await _ensureBackendSession();
       final retryGame = await backend.createRetryGame(
@@ -1017,12 +1470,35 @@ class _PackStyle {
   final Color color;
 }
 
-enum PackSessionStage {
-  flashcards,
-  quiz,
-  matching,
-  results,
+class GameOutcome {
+  const GameOutcome({
+    required this.gameType,
+    required this.totalQuestions,
+    required this.correctAnswers,
+    required this.xpEarned,
+  });
+
+  final String gameType;
+  final int totalQuestions;
+  final int correctAnswers;
+  final int xpEarned;
+
+  GameOutcome copyWith({
+    String? gameType,
+    int? totalQuestions,
+    int? correctAnswers,
+    int? xpEarned,
+  }) {
+    return GameOutcome(
+      gameType: gameType ?? this.gameType,
+      totalQuestions: totalQuestions ?? this.totalQuestions,
+      correctAnswers: correctAnswers ?? this.correctAnswers,
+      xpEarned: xpEarned ?? this.xpEarned,
+    );
+  }
 }
+
+enum PackSessionStage { flashcards, quiz, matching, results }
 
 class _BackendSession {
   const _BackendSession({required this.childId});

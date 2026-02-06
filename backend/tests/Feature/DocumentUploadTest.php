@@ -59,8 +59,10 @@ class DocumentUploadTest extends TestCase
         $file = UploadedFile::fake()->create('worksheet.pdf', 120, 'application/pdf');
 
         $response = $this->withHeader('Authorization', 'Bearer '.$token)
-            ->postJson('/api/v1/children/'.$child->_id.'/documents', [
+            ->withHeader('Accept', 'application/json')
+            ->post('/api/v1/children/'.$child->_id.'/documents', [
                 'file' => $file,
+                'subject' => 'Division basics',
             ]);
 
         $response->assertStatus(201);

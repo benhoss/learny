@@ -1,9 +1,13 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import '../../models/learning_pack.dart';
 import '../../routes/app_routes.dart';
-import '../../theme/app_assets.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/app_tokens.dart';
 import '../../state/app_state_scope.dart';
-import '../shared/placeholder_screen.dart';
+import '../../widgets/animations/fade_in_slide.dart';
+import '../../widgets/games/pressable_scale.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -12,254 +16,215 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final profile = state.profile;
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Row(
+    final tokens = context.tokens;
+    final featuredPacks = state.packs.take(2).toList();
+
+    return Container(
+      decoration: BoxDecoration(gradient: tokens.gradientWelcome),
+      child: SafeArea(
+        child: ListView(
+          padding: EdgeInsets.all(tokens.spaceLg),
           children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: LearnyColors.peach,
-              backgroundImage: AssetImage(profile.avatarAsset),
+            // Header
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Good morning,',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: LearnyColors.neutralLight,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Hi ${profile.name}! 👋',
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: LearnyColors.neutralDark,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: tokens.gradientAccent,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    LucideIcons.sparkles,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
+
+            SizedBox(height: tokens.spaceLg),
+
+            // Welcome message card with blur effect
+            FadeInSlide(
+              delay: const Duration(milliseconds: 100),
+              child: ClipRRect(
+                borderRadius: tokens.radiusXl,
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    padding: EdgeInsets.all(tokens.spaceMd + 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      borderRadius: tokens.radiusXl,
+                    ),
+                    child: Text(
+                      'Ready to learn something new today? Let\'s turn your school lessons into fun games!',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: LearnyColors.neutralMedium,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            SizedBox(height: tokens.spaceLg),
+
+            // Primary CTA: Start Learning
+            FadeInSlide(
+              delay: const Duration(milliseconds: 200),
+              child: _PrimaryActionCard(
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.cameraCapture),
+                icon: LucideIcons.bookOpen,
+                title: 'Start Learning',
+                subtitle: 'Upload your lesson and play',
+              ),
+            ),
+
+            SizedBox(height: tokens.spaceMd),
+
+            // Secondary CTA: Revision Express
+            FadeInSlide(
+              delay: const Duration(milliseconds: 300),
+              child: _SecondaryActionCard(
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.revisionSetup),
+                icon: LucideIcons.zap,
+                title: 'Revision Express',
+                subtitle: 'Quick 5-minute review',
+              ),
+            ),
+
+            // Review prompt (shown when concepts are due)
+            if (state.reviewDueCount > 0) ...[
+              SizedBox(height: tokens.spaceMd),
+              FadeInSlide(
+                delay: const Duration(milliseconds: 350),
+                child: _ReviewCard(
+                  dueCount: state.reviewDueCount,
+                  onTap: () {
+                    final route = state.startReviewFromDueConcepts();
+                    if (route != null) {
+                      Navigator.pushNamed(context, route);
+                      return;
+                    }
+                    Navigator.pushNamed(context, AppRoutes.revisionSetup);
+                  },
+                ),
+              ),
+            ],
+
+            SizedBox(height: tokens.spaceLg),
+
+            // Weekly Progress
+            FadeInSlide(
+              delay: const Duration(milliseconds: 400),
+              child: _ProgressCard(sessionsCompleted: state.streakDays),
+            ),
+
+            if (featuredPacks.isNotEmpty) ...[
+              SizedBox(height: tokens.spaceLg),
+              FadeInSlide(
+                delay: const Duration(milliseconds: 450),
+                child: _PackMasterySection(
+                  packs: featuredPacks,
+                  onTapPack: (pack) {
+                    state.selectPack(pack.id);
+                    Navigator.pushNamed(context, AppRoutes.packDetail);
+                  },
+                ),
+              ),
+            ],
+
+            SizedBox(height: tokens.spaceLg),
+
+            // Recent Topics
+            FadeInSlide(
+              delay: const Duration(milliseconds: 500),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Hi ${profile.name}!',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(fontWeight: FontWeight.w700),
+                    'Recent Topics',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: LearnyColors.neutralMedium,
+                    ),
                   ),
-                  Text(
-                    '${state.streakDays}-day streak • ${state.xpToday} XP today',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: LearnyColors.slateMedium),
+                  SizedBox(height: tokens.spaceSm + 4),
+                  SizedBox(
+                    height: 48,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: const [
+                        _TopicChip(label: 'Photosynthesis'),
+                        SizedBox(width: 12),
+                        _TopicChip(label: 'Fractions'),
+                        SizedBox(width: 12),
+                        _TopicChip(label: 'World War II'),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-            IconButton(
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.notifications),
-              icon: const Icon(Icons.notifications_none_rounded),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        SectionCard(
-          child: Row(
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: LearnyColors.peach.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Image.asset(AppImages.foxStudying),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Learny Tip',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Keep answers short — the app turns them into games.',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(color: LearnyColors.slateMedium),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        SectionCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Today\'s Quest',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Finish 1 quiz and review 10 flashcards.',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: LearnyColors.slateMedium),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  state.startQuiz();
-                  Navigator.pushNamed(context, AppRoutes.quiz);
-                },
-                child: const Text('Start Quiz'),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _QuickTile(
-                title: 'Snap Homework',
-                icon: Icons.camera_alt_rounded,
-                color: LearnyColors.coral,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.cameraCapture),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _QuickTile(
-                title: 'Learning Packs',
-                icon: Icons.auto_stories_rounded,
-                color: LearnyColors.teal,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.packsList),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _QuickTile(
-                title: 'Revision Express',
-                icon: Icons.flash_on_rounded,
-                color: LearnyColors.purple,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.revisionSetup),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _QuickTile(
-                title: 'Achievements',
-                icon: Icons.emoji_events_rounded,
-                color: LearnyColors.coralLight,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.achievements),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        Text(
-          'Explore',
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _NavChip(label: 'Parent Dashboard', route: AppRoutes.parentDashboard),
-            _NavChip(label: 'Progress Overview', route: AppRoutes.progressOverview),
-            _NavChip(label: 'Safety & Privacy', route: AppRoutes.safetyPrivacy),
-            _NavChip(label: 'Support', route: AppRoutes.contactSupport),
-            _NavChip(label: 'Subscription', route: AppRoutes.subscription),
-          ],
-        ),
-        const SizedBox(height: 12),
-        SectionCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'System States',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
+
+            SizedBox(height: tokens.spaceLg),
+
+            // Quick access row (simplified)
+            FadeInSlide(
+              delay: const Duration(milliseconds: 600),
+              child: Row(
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.emptyState),
-                    child: const Text('Empty'),
+                  Expanded(
+                    child: _QuickAccessTile(
+                      icon: LucideIcons.trophy,
+                      label: 'Achievements',
+                      color: LearnyColors.sunshine,
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.achievements),
+                    ),
                   ),
-                  TextButton(
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.errorState),
-                    child: const Text('Error'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.offline),
-                    child: const Text('Offline'),
+                  SizedBox(width: tokens.spaceMd),
+                  Expanded(
+                    child: _QuickAccessTile(
+                      icon: LucideIcons.barChart2,
+                      label: 'Progress',
+                      color: LearnyColors.lavender,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        AppRoutes.progressOverview,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _QuickTile extends StatelessWidget {
-  const _QuickTile({
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  final String title;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(24),
-      onTap: onTap,
-      child: Ink(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.2),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: color.withValues(alpha: 0.2),
-              child: Icon(icon, color: color),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -268,19 +233,477 @@ class _QuickTile extends StatelessWidget {
   }
 }
 
-class _NavChip extends StatelessWidget {
-  const _NavChip({required this.label, required this.route});
+class _PrimaryActionCard extends StatelessWidget {
+  const _PrimaryActionCard({
+    required this.onTap,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
 
-  final String label;
-  final String route;
+  final VoidCallback onTap;
+  final IconData icon;
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
-    return ActionChip(
-      label: Text(label),
-      onPressed: () => Navigator.pushNamed(context, route),
-      backgroundColor: LearnyColors.sky,
-      labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+    final tokens = context.tokens;
+
+    return PressableScale(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(tokens.spaceLg),
+        decoration: BoxDecoration(
+          gradient: tokens.gradientAccent,
+          borderRadius: tokens.radiusXl,
+          boxShadow: [
+            BoxShadow(
+              color: LearnyColors.skyPrimary.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      borderRadius: tokens.radiusLg,
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 24),
+                  ),
+                  SizedBox(height: tokens.spaceMd),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              LucideIcons.chevronRight,
+              color: Colors.white.withValues(alpha: 0.6),
+              size: 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SecondaryActionCard extends StatelessWidget {
+  const _SecondaryActionCard({
+    required this.onTap,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final VoidCallback onTap;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return PressableScale(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(tokens.spaceLg),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: tokens.radiusXl,
+          border: Border.all(color: LearnyColors.sunshine, width: 2),
+          boxShadow: tokens.cardShadow,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: LearnyColors.sunshineLight,
+                      borderRadius: tokens.radiusLg,
+                    ),
+                    child: Icon(icon, color: LearnyColors.sunshine, size: 24),
+                  ),
+                  SizedBox(height: tokens.spaceMd),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: LearnyColors.neutralDark,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: LearnyColors.neutralLight,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              LucideIcons.chevronRight,
+              color: LearnyColors.neutralLight,
+              size: 24,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProgressCard extends StatelessWidget {
+  const _ProgressCard({required this.sessionsCompleted});
+
+  final int sessionsCompleted;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final progress = (sessionsCompleted / 7).clamp(0.0, 1.0);
+
+    return Container(
+      padding: EdgeInsets.all(tokens.spaceLg),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: tokens.radiusXl,
+        boxShadow: tokens.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'This Week',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: LearnyColors.neutralMedium,
+            ),
+          ),
+          SizedBox(height: tokens.spaceSm + 4),
+          // Progress bar
+          Container(
+            height: 8,
+            decoration: BoxDecoration(
+              color: LearnyColors.neutralSoft,
+              borderRadius: tokens.radiusFull,
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: progress,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: tokens.gradientAccent,
+                  borderRadius: tokens.radiusFull,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: tokens.spaceSm + 4),
+          Text(
+            'You\'ve completed $sessionsCompleted learning sessions. Great work!',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: LearnyColors.neutralLight),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TopicChip extends StatelessWidget {
+  const _TopicChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: tokens.spaceMd,
+        vertical: tokens.spaceSm + 4,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: tokens.radiusLg,
+        border: Border.all(color: LearnyColors.neutralSoft),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w500,
+          color: LearnyColors.neutralDark,
+        ),
+      ),
+    );
+  }
+}
+
+class _ReviewCard extends StatelessWidget {
+  const _ReviewCard({required this.dueCount, required this.onTap});
+
+  final int dueCount;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return PressableScale(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(tokens.spaceMd + 4),
+        decoration: BoxDecoration(
+          color: LearnyColors.sunshineLight,
+          borderRadius: tokens.radiusXl,
+          border: Border.all(
+            color: LearnyColors.sunshine.withValues(alpha: 0.4),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: LearnyColors.sunshine.withValues(alpha: 0.2),
+                borderRadius: tokens.radiusMd,
+              ),
+              child: const Icon(
+                LucideIcons.refreshCw,
+                color: LearnyColors.sunshine,
+                size: 22,
+              ),
+            ),
+            SizedBox(width: tokens.spaceMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$dueCount concept${dueCount == 1 ? '' : 's'} to review',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: LearnyColors.neutralDark,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Review now to keep learning!',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: LearnyColors.neutralMedium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              LucideIcons.chevronRight,
+              color: LearnyColors.sunshine,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickAccessTile extends StatelessWidget {
+  const _QuickAccessTile({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return PressableScale(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(tokens.spaceMd),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: tokens.radiusXl,
+          boxShadow: tokens.cardShadow,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.2),
+                borderRadius: tokens.radiusMd,
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            SizedBox(height: tokens.spaceSm + 4),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: LearnyColors.neutralDark,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PackMasterySection extends StatelessWidget {
+  const _PackMasterySection({required this.packs, required this.onTapPack});
+
+  final List<LearningPack> packs;
+  final void Function(LearningPack pack) onTapPack;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+
+    return Container(
+      padding: EdgeInsets.all(tokens.spaceLg),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: tokens.radiusXl,
+        boxShadow: tokens.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Pack Mastery',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: LearnyColors.neutralDark,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...packs.map(
+            (pack) => _PackMasteryRow(pack: pack, onTap: () => onTapPack(pack)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PackMasteryRow extends StatelessWidget {
+  const _PackMasteryRow({required this.pack, required this.onTap});
+
+  final LearningPack pack;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final progress = pack.progress.clamp(0.0, 1.0);
+
+    return PressableScale(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: tokens.spaceSm + 2),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: pack.color.withValues(alpha: 0.15),
+              child: Icon(pack.icon, size: 16, color: pack.color),
+            ),
+            SizedBox(width: tokens.spaceSm + 2),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    pack.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: LearnyColors.neutralDark,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 6,
+                      backgroundColor: LearnyColors.neutralSoft,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        progress >= 0.8
+                            ? LearnyColors.mintPrimary
+                            : progress >= 0.5
+                            ? LearnyColors.skyPrimary
+                            : LearnyColors.sunshine,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: tokens.spaceSm),
+            Text(
+              '${(progress * 100).round()}%',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: LearnyColors.neutralMedium,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

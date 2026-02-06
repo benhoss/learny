@@ -18,6 +18,8 @@ class MasteryProfile extends Model
         'total_attempts',
         'correct_attempts',
         'last_attempt_at',
+        'next_review_at',
+        'consecutive_correct',
     ];
 
     protected $casts = [
@@ -25,6 +27,8 @@ class MasteryProfile extends Model
         'total_attempts' => 'integer',
         'correct_attempts' => 'integer',
         'last_attempt_at' => 'datetime',
+        'next_review_at' => 'datetime',
+        'consecutive_correct' => 'integer',
     ];
 
     public function childProfile()

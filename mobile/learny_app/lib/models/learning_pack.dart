@@ -10,6 +10,9 @@ class LearningPack {
     required this.icon,
     required this.color,
     required this.progress,
+    this.conceptsMastered = 0,
+    this.conceptsTotal = 0,
+    this.conceptKeys = const [],
   });
 
   final String id;
@@ -20,6 +23,9 @@ class LearningPack {
   final IconData icon;
   final Color color;
   final double progress;
+  final int conceptsMastered;
+  final int conceptsTotal;
+  final List<String> conceptKeys;
 
   LearningPack copyWith({
     String? id,
@@ -30,6 +36,9 @@ class LearningPack {
     IconData? icon,
     Color? color,
     double? progress,
+    int? conceptsMastered,
+    int? conceptsTotal,
+    List<String>? conceptKeys,
   }) {
     return LearningPack(
       id: id ?? this.id,
@@ -40,6 +49,9 @@ class LearningPack {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       progress: progress ?? this.progress,
+      conceptsMastered: conceptsMastered ?? this.conceptsMastered,
+      conceptsTotal: conceptsTotal ?? this.conceptsTotal,
+      conceptKeys: conceptKeys ?? this.conceptKeys,
     );
   }
 }

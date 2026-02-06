@@ -20,6 +20,16 @@ class ChildProfile extends Model
 
     protected $casts = [
         'birth_year' => 'integer',
+        'streak_days' => 'integer',
+        'longest_streak' => 'integer',
+        'total_xp' => 'integer',
+    ];
+
+    protected $attributes = [
+        'streak_days' => 0,
+        'longest_streak' => 0,
+        'last_activity_date' => null,
+        'total_xp' => 0,
     ];
 
     public function user()

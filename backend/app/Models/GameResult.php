@@ -23,6 +23,7 @@ class GameResult extends Model
         'score',
         'total_questions',
         'correct_answers',
+        'xp_earned',
         'language',
         'metadata',
         'completed_at',
@@ -34,6 +35,7 @@ class GameResult extends Model
         'score' => 'float',
         'total_questions' => 'integer',
         'correct_answers' => 'integer',
+        'xp_earned' => 'integer',
         'metadata' => 'array',
         'completed_at' => 'datetime',
     ];

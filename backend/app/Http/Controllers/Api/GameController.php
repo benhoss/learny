@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Concerns\FindsOwnedChild;
 use App\Http\Controllers\Controller;
 use App\Models\ChildProfile;
 use App\Models\Game;
@@ -14,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 class GameController extends Controller
 {
+    use FindsOwnedChild;
     public function index(string $childId, string $packId): JsonResponse
     {
         $child = $this->findOwnedChild($childId);
@@ -164,12 +166,4 @@ class GameController extends Controller
         return $copy;
     }
 
-    protected function findOwnedChild(string $childId): ChildProfile
-    {
-        $userId = (string) Auth::guard('api')->id();
-
-        return ChildProfile::where('_id', $childId)
-            ->where('user_id', $userId)
-            ->firstOrFail();
-    }
 }

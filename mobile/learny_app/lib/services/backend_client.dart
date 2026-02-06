@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -5,14 +6,17 @@ import 'package:http/http.dart' as http;
 
 class BackendClient {
   BackendClient({required this.baseUrl, http.Client? client})
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   final String baseUrl;
   final http.Client _client;
 
   String? token;
 
-  Future<Map<String, dynamic>> login({required String email, required String password}) async {
+  Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
     final response = await _client.post(
       Uri.parse('$baseUrl/api/v1/auth/login'),
       headers: _jsonHeaders(includeContentType: true),
@@ -74,10 +78,7 @@ class BackendClient {
     final response = await _client.post(
       Uri.parse('$baseUrl/api/v1/children'),
       headers: _authHeaders(includeContentType: true),
-      body: jsonEncode({
-        'name': name,
-        'grade_level': gradeLevel,
-      }),
+      body: jsonEncode({'name': name, 'grade_level': gradeLevel}),
     );
 
     if (response.statusCode != 201) {
@@ -104,7 +105,9 @@ class BackendClient {
       Uri.parse('$baseUrl/api/v1/children/$childId/documents'),
     );
     request.headers.addAll(_authHeaders());
-    request.files.add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
+    request.files.add(
+      http.MultipartFile.fromBytes('file', bytes, filename: filename),
+    );
     if (subject != null && subject.isNotEmpty) {
       request.fields['subject'] = subject;
     }
@@ -122,7 +125,8 @@ class BackendClient {
     }
     if (requestedGameTypes != null && requestedGameTypes.isNotEmpty) {
       for (var index = 0; index < requestedGameTypes.length; index += 1) {
-        request.fields['requested_game_types[$index]'] = requestedGameTypes[index];
+        request.fields['requested_game_types[$index]'] =
+            requestedGameTypes[index];
       }
     }
 
@@ -154,8 +158,16 @@ class BackendClient {
     );
     request.headers.addAll(_authHeaders());
     for (var index = 0; index < files.length; index += 1) {
-      final filename = index < filenames.length ? filenames[index] : 'page-${index + 1}.jpg';
-      request.files.add(http.MultipartFile.fromBytes('files[]', files[index], filename: filename));
+      final filename = index < filenames.length
+          ? filenames[index]
+          : 'page-${index + 1}.jpg';
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'files[]',
+          files[index],
+          filename: filename,
+        ),
+      );
     }
     if (subject != null && subject.isNotEmpty) {
       request.fields['subject'] = subject;
@@ -174,7 +186,8 @@ class BackendClient {
     }
     if (requestedGameTypes != null && requestedGameTypes.isNotEmpty) {
       for (var index = 0; index < requestedGameTypes.length; index += 1) {
-        request.fields['requested_game_types[$index]'] = requestedGameTypes[index];
+        request.fields['requested_game_types[$index]'] =
+            requestedGameTypes[index];
       }
     }
 
@@ -208,7 +221,9 @@ class BackendClient {
     required String documentId,
   }) async {
     final response = await _client.post(
-      Uri.parse('$baseUrl/api/v1/children/$childId/documents/$documentId/regenerate'),
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/documents/$documentId/regenerate',
+      ),
       headers: _authHeaders(includeContentType: true),
     );
 
@@ -242,7 +257,9 @@ class BackendClient {
     String? documentId,
   }) async {
     final uri = Uri.parse('$baseUrl/api/v1/children/$childId/learning-packs');
-    final url = documentId == null ? uri : uri.replace(queryParameters: {'document_id': documentId});
+    final url = documentId == null
+        ? uri
+        : uri.replace(queryParameters: {'document_id': documentId});
     final response = await _client.get(url, headers: _authHeaders());
 
     if (response.statusCode != 200) {
@@ -258,7 +275,9 @@ class BackendClient {
     required String packId,
   }) async {
     final response = await _client.get(
-      Uri.parse('$baseUrl/api/v1/children/$childId/learning-packs/$packId/games'),
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/learning-packs/$packId/games',
+      ),
       headers: _authHeaders(),
     );
 
@@ -270,6 +289,69 @@ class BackendClient {
     return (payload['data'] as List<dynamic>?) ?? [];
   }
 
+  Future<Map<String, dynamic>> submitGameResult({
+    required String childId,
+    required String packId,
+    required String gameId,
+    required String gameType,
+    required List<Map<String, dynamic>> results,
+    required int totalQuestions,
+    required int correctAnswers,
+  }) async {
+    try {
+      final response = await _client
+          .post(
+            Uri.parse(
+              '$baseUrl/api/v1/children/$childId/learning-packs/$packId/games/$gameId/results',
+            ),
+            headers: _authHeaders(includeContentType: true),
+            body: jsonEncode({
+              'game_type': gameType,
+              'results': results,
+              'total_questions': totalQuestions,
+              'correct_answers': correctAnswers,
+              'completed_at': DateTime.now().toUtc().toIso8601String(),
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 201) {
+        throw BackendException(
+          'Submit game result failed: ${response.statusCode} ${response.body}',
+        );
+      }
+
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } on TimeoutException {
+      throw BackendException('Submit game result timed out.');
+    } on BackendException {
+      rethrow;
+    } catch (error) {
+      throw BackendException('Submit game result failed: $error');
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchReviewQueue({
+    required String childId,
+  }) async {
+    try {
+      final response = await _client
+          .get(
+            Uri.parse('$baseUrl/api/v1/children/$childId/review-queue'),
+            headers: _authHeaders(),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<Map<String, dynamic>> createRetryGame({
     required String childId,
     required String packId,
@@ -277,7 +359,9 @@ class BackendClient {
     required List<int> questionIndices,
   }) async {
     final response = await _client.post(
-      Uri.parse('$baseUrl/api/v1/children/$childId/learning-packs/$packId/games/$gameId/retry'),
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/learning-packs/$packId/games/$gameId/retry',
+      ),
       headers: _authHeaders(includeContentType: true),
       body: jsonEncode({'question_indices': questionIndices}),
     );

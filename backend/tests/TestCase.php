@@ -19,6 +19,7 @@ abstract class TestCase extends BaseTestCase
             'documents',
             'learning_packs',
             'games',
+            'game_results',
         ]);
     }
 

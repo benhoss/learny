@@ -6,6 +6,7 @@ use App\Models\ChildProfile;
 use App\Models\MasteryProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -14,6 +15,7 @@ class ApiContractTest extends TestCase
     public function test_health_endpoint_contract(): void
     {
         Storage::fake('s3');
+        Redis::shouldReceive('connection->ping')->once()->andReturn('PONG');
 
         $response = $this->getJson('/api/health');
 
@@ -23,7 +25,7 @@ class ApiContractTest extends TestCase
                 'checks' => [
                     'mongodb' => ['ok'],
                     'redis' => ['ok'],
-                    's3' => ['ok'],
+                    'storage' => ['ok'],
                 ],
             ]);
     }

@@ -10,6 +10,7 @@ class QuizQuestion {
     this.answerText,
     this.acceptedAnswers,
     this.orderedSequence,
+    this.topic,
   });
 
   final String id;
@@ -22,6 +23,7 @@ class QuizQuestion {
   final String? answerText;
   final List<String>? acceptedAnswers;
   final List<String>? orderedSequence;
+  final String? topic;
 
   bool get isMultiSelect => (correctIndices?.length ?? 0) > 1;
   bool get isTextInput => answerText != null;

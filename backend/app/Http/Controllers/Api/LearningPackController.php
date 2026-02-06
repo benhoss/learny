@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Concerns\FindsOwnedChild;
 use App\Http\Controllers\Controller;
 use App\Models\ChildProfile;
 use App\Models\Document;
 use App\Models\LearningPack;
+use App\Models\MasteryProfile;
 use App\Services\Schemas\JsonSchemaValidator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 
 class LearningPackController extends Controller
 {
+    use FindsOwnedChild;
     public function index(Request $request, string $childId): JsonResponse
     {
         $child = $this->findOwnedChild($childId);
@@ -25,8 +28,39 @@ class LearningPackController extends Controller
 
         $packs = $query->orderBy('created_at', 'desc')->get();
 
+        $childId = (string) $child->_id;
+        $masteryByKey = MasteryProfile::where('child_profile_id', $childId)
+            ->get(['concept_key', 'mastery_level'])
+            ->keyBy('concept_key');
+
+        $enriched = $packs->map(function ($pack) use ($masteryByKey) {
+            $concepts = $pack->content['concepts'] ?? [];
+            $keys = array_map(fn ($c) => $c['key'] ?? $c['concept_key'] ?? '', $concepts);
+            $keys = array_filter($keys);
+            $total = count($keys);
+
+            $sumMastery = 0.0;
+            $mastered = 0;
+            foreach ($keys as $key) {
+                $profile = $masteryByKey->get($key);
+                if ($profile) {
+                    $sumMastery += $profile->mastery_level;
+                    if ($profile->mastery_level >= 0.8) {
+                        $mastered++;
+                    }
+                }
+            }
+
+            $data = $pack->toArray();
+            $data['mastery_percentage'] = $total > 0 ? round($sumMastery / $total * 100) : 0;
+            $data['concepts_mastered'] = $mastered;
+            $data['concepts_total'] = $total;
+
+            return $data;
+        });
+
         return response()->json([
-            'data' => $packs,
+            'data' => $enriched->values(),
         ]);
     }
 
@@ -77,12 +111,4 @@ class LearningPackController extends Controller
         ]);
     }
 
-    protected function findOwnedChild(string $childId): ChildProfile
-    {
-        $userId = (string) Auth::guard('api')->id();
-
-        return ChildProfile::where('_id', $childId)
-            ->where('user_id', $userId)
-            ->firstOrFail();
-    }
 }

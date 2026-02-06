@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChildProfileController;
 use App\Http\Controllers\Api\ChildProgressController;
 use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\DocumentMetadataSuggestionController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\GameResultController;
 use App\Http\Controllers\Api\HealthController;
@@ -31,6 +32,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('children/{child}/documents', [DocumentController::class, 'index']);
         Route::get('children/{child}/documents/{document}', [DocumentController::class, 'show']);
+        Route::post('children/{child}/documents/metadata-suggestions', [DocumentMetadataSuggestionController::class, 'suggest']);
 
         Route::get('children/{child}/learning-packs', [LearningPackController::class, 'index']);
         Route::get('children/{child}/learning-packs/{pack}', [LearningPackController::class, 'show']);

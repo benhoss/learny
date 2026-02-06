@@ -108,6 +108,9 @@ class DocumentController extends Controller
             'learning_goal' => $data['learning_goal'] ?? null,
             'context_text' => $data['context_text'] ?? null,
             'requested_game_types' => $data['requested_game_types'] ?? null,
+            'pipeline_stage' => 'queued',
+            'stage_started_at' => now(),
+            'progress_hint' => 5,
         ]);
 
         ProcessDocumentOcr::dispatch((string) $document->_id);
@@ -139,6 +142,10 @@ class DocumentController extends Controller
             ->firstOrFail();
 
         $document->status = 'queued';
+        $document->pipeline_stage = 'queued';
+        $document->stage_started_at = now();
+        $document->stage_completed_at = null;
+        $document->progress_hint = 5;
         $document->ocr_error = null;
         $document->save();
 

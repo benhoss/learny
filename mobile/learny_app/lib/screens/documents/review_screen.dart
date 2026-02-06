@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
+import '../../state/app_state.dart';
 import '../../state/app_state_scope.dart';
 import 'game_type_selector.dart';
 import '../shared/placeholder_screen.dart';
@@ -31,6 +32,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
     'multiple_select',
     'short_answer',
   ];
+  bool _isSuggestingMetadata = false;
+  String? _suggestionFeedback;
 
   @override
   void dispose() {
@@ -44,7 +47,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final hasContext = _subjectController.text.trim().isNotEmpty ||
+    final hasContext =
+        _subjectController.text.trim().isNotEmpty ||
         _goalController.text.trim().isNotEmpty;
     return PlaceholderScreen(
       title: 'Review Capture',
@@ -60,7 +64,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: const Center(
-                    child: Icon(Icons.photo, size: 80, color: LearnyColors.slateLight),
+                    child: Icon(
+                      Icons.photo,
+                      size: 80,
+                      color: LearnyColors.slateLight,
+                    ),
                   ),
                 )
               : SizedBox(
@@ -88,6 +96,33 @@ class _ReviewScreenState extends State<ReviewScreen> {
             icon: const Icon(Icons.add_photo_alternate_outlined),
             label: const Text('Add Another Page'),
           ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: _isSuggestingMetadata
+                ? null
+                : () => _suggestMetadata(state),
+            icon: _isSuggestingMetadata
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.auto_awesome_rounded),
+            label: Text(
+              _isSuggestingMetadata
+                  ? 'Analyzing...'
+                  : 'Suggest Metadata with AI',
+            ),
+          ),
+          if (_suggestionFeedback != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _suggestionFeedback!,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: LearnyColors.slateMedium),
+            ),
+          ],
           _ReviewContextFields(
             subjectController: _subjectController,
             languageController: _languageController,
@@ -111,16 +146,18 @@ class _ReviewScreenState extends State<ReviewScreen> {
       primaryAction: ElevatedButton(
         onPressed: hasContext
             ? () {
-          state.setPendingContext(
-            subject: _subjectController.text.trim(),
-            language: _languageController.text.trim(),
-            learningGoal: _goalController.text.trim(),
-            contextText: _contextController.text.trim(),
-          );
-          state.setPendingGameTypes(List<String>.from(_selectedGameTypes));
-          state.generateQuizFromPendingImage();
-          Navigator.pushNamed(context, AppRoutes.processing);
-        }
+                state.setPendingContext(
+                  subject: _subjectController.text.trim(),
+                  language: _languageController.text.trim(),
+                  learningGoal: _goalController.text.trim(),
+                  contextText: _contextController.text.trim(),
+                );
+                state.setPendingGameTypes(
+                  List<String>.from(_selectedGameTypes),
+                );
+                state.generateQuizFromPendingImage();
+                Navigator.pushNamed(context, AppRoutes.processing);
+              }
             : null,
         child: const Text('Looks Good'),
       ),
@@ -166,7 +203,56 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (!mounted) {
       return;
     }
-    state.addPendingImage(bytes: bytes, filename: file.name.isEmpty ? 'capture.jpg' : file.name);
+    state.addPendingImage(
+      bytes: bytes,
+      filename: file.name.isEmpty ? 'capture.jpg' : file.name,
+    );
+  }
+
+  Future<void> _suggestMetadata(AppState state) async {
+    setState(() {
+      _isSuggestingMetadata = true;
+      _suggestionFeedback = null;
+    });
+
+    final suggestion = await state.suggestDocumentMetadata(
+      filename: state.pendingImageNames.isNotEmpty
+          ? state.pendingImageNames.first
+          : 'capture.jpg',
+      contextText: _contextController.text.trim(),
+      languageHint: _languageController.text.trim(),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isSuggestingMetadata = false;
+      if (suggestion == null) {
+        _suggestionFeedback = 'Suggestion unavailable right now.';
+        return;
+      }
+
+      final subject = suggestion['subject']?.toString() ?? '';
+      final language = suggestion['language']?.toString() ?? '';
+      final learningGoal = suggestion['learning_goal']?.toString() ?? '';
+      final confidence = (suggestion['confidence'] as num?)?.toDouble() ?? 0.0;
+
+      if (_subjectController.text.trim().isEmpty && subject.isNotEmpty) {
+        _subjectController.text = subject;
+      }
+      if (_languageController.text.trim().isEmpty && language.isNotEmpty) {
+        _languageController.text = language;
+      }
+      if (_goalController.text.trim().isEmpty && learningGoal.isNotEmpty) {
+        _goalController.text = learningGoal;
+      }
+
+      _suggestionFeedback =
+          'Suggested from capture context (confidence ${(confidence * 100).round()}%). '
+          'Edit any field before continuing.';
+    });
   }
 }
 

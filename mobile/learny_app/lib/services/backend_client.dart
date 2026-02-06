@@ -414,6 +414,36 @@ class BackendClient {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> suggestDocumentMetadata({
+    required String childId,
+    String? filename,
+    String? contextText,
+    String? ocrSnippet,
+    String? languageHint,
+  }) async {
+    final response = await _client.post(
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/documents/metadata-suggestions',
+      ),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        if (filename != null && filename.isNotEmpty) 'filename': filename,
+        if (contextText != null && contextText.isNotEmpty)
+          'context_text': contextText,
+        if (ocrSnippet != null && ocrSnippet.isNotEmpty)
+          'ocr_snippet': ocrSnippet,
+        if (languageHint != null && languageHint.isNotEmpty)
+          'language_hint': languageHint,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Metadata suggestion failed: ${response.body}');
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   Map<String, String> _jsonHeaders({bool includeContentType = false}) {
     return {
       'Accept': 'application/json',

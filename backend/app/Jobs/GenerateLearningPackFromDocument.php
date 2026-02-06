@@ -39,6 +39,12 @@ class GenerateLearningPackFromDocument implements ShouldQueue
             return;
         }
 
+        $document->pipeline_stage = 'learning_pack_generation';
+        $document->stage_started_at = now();
+        $document->stage_completed_at = null;
+        $document->progress_hint = 65;
+        $document->save();
+
         $concepts = Concept::where('document_id', (string) $document->_id)->get()->toArray();
 
         try {
@@ -56,8 +62,18 @@ class GenerateLearningPackFromDocument implements ShouldQueue
                 'content' => $content,
             ]);
 
+            $document->pipeline_stage = 'game_generation_queued';
+            $document->stage_completed_at = now();
+            $document->progress_hint = 80;
+            $document->save();
+
             GenerateGamesFromLearningPack::dispatch((string) $pack->_id);
         } catch (Throwable $e) {
+            $document->status = 'failed';
+            $document->pipeline_stage = 'learning_pack_failed';
+            $document->stage_completed_at = now();
+            $document->ocr_error = $e->getMessage();
+            $document->save();
             throw $e;
         }
     }

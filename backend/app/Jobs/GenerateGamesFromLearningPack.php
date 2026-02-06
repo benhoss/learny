@@ -30,6 +30,15 @@ class GenerateGamesFromLearningPack implements ShouldQueue
             return;
         }
 
+        $document = Document::find((string) $pack->document_id);
+        if ($document) {
+            $document->pipeline_stage = 'game_generation';
+            $document->stage_started_at = now();
+            $document->stage_completed_at = null;
+            $document->progress_hint = 85;
+            $document->save();
+        }
+
         $types = [
             'flashcards',
             'quiz',
@@ -57,8 +66,24 @@ class GenerateGamesFromLearningPack implements ShouldQueue
                     'status' => 'ready',
                 ]);
             } catch (Throwable $e) {
+                if ($document) {
+                    $document->status = 'failed';
+                    $document->pipeline_stage = 'game_generation_failed';
+                    $document->stage_completed_at = now();
+                    $document->ocr_error = $e->getMessage();
+                    $document->save();
+                }
                 throw $e;
             }
+        }
+
+        if ($document) {
+            $document->status = 'ready';
+            $document->pipeline_stage = 'ready';
+            $document->processed_at = now();
+            $document->stage_completed_at = now();
+            $document->progress_hint = 100;
+            $document->save();
         }
     }
 

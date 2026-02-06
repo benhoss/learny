@@ -532,6 +532,29 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<Map<String, dynamic>?> suggestDocumentMetadata({
+    String? filename,
+    String? contextText,
+    String? languageHint,
+  }) async {
+    try {
+      final session = await _ensureBackendSession();
+      final payload = await backend.suggestDocumentMetadata(
+        childId: session.childId,
+        filename: filename,
+        contextText: contextText,
+        languageHint: languageHint,
+      );
+      final data = payload['data'];
+      if (data is Map<String, dynamic>) {
+        return data;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> generateQuizFromBytes({
     required Uint8List bytes,
     required String filename,
@@ -729,16 +752,17 @@ class AppState extends ChangeNotifier {
         documentId: documentId,
       );
       final status = doc['status']?.toString();
+      final pipelineStage = doc['pipeline_stage']?.toString();
+      final progressHint = (doc['progress_hint'] as num?)?.toInt();
 
       // Update status message based on document status
-      if (status == 'queued') {
-        generationStatus = 'Waiting in queue...';
-        notifyListeners();
-      } else if (status == 'processing') {
-        generationStatus = 'Processing document...';
-        notifyListeners();
-      } else if (status == 'processed') {
-        generationStatus = 'Generating learning content...';
+      final stageMessage = _generationStatusForStage(
+        pipelineStage: pipelineStage,
+        status: status,
+        progressHint: progressHint,
+      );
+      if (stageMessage != null) {
+        generationStatus = stageMessage;
         notifyListeners();
       }
 
@@ -808,6 +832,36 @@ class AppState extends ChangeNotifier {
     }
 
     throw BackendException('Quiz generation timed out. Please try again.');
+  }
+
+  String? _generationStatusForStage({
+    required String? pipelineStage,
+    required String? status,
+    required int? progressHint,
+  }) {
+    final prefix = progressHint == null ? '' : '$progressHint% • ';
+    return switch (pipelineStage) {
+      'queued' => '${prefix}Waiting in queue...',
+      'ocr' => '${prefix}Reading your document...',
+      'concept_extraction_queued' => '${prefix}Preparing concepts...',
+      'concept_extraction' => '${prefix}Extracting key concepts...',
+      'learning_pack_queued' => '${prefix}Preparing learning pack...',
+      'learning_pack_generation' => '${prefix}Building learning pack...',
+      'game_generation_queued' => '${prefix}Preparing games...',
+      'game_generation' => '${prefix}Generating games and quizzes...',
+      'ready' => '100% • Quiz ready!',
+      'ocr_failed' => 'OCR failed. Please retry.',
+      'concept_extraction_failed' => 'Concept extraction failed. Please retry.',
+      'learning_pack_failed' => 'Pack generation failed. Please retry.',
+      'game_generation_failed' => 'Game generation failed. Please retry.',
+      _ => switch (status) {
+        'queued' => '${prefix}Waiting in queue...',
+        'processing' => '${prefix}Processing document...',
+        'processed' => '${prefix}Generating learning content...',
+        'ready' => '100% • Quiz ready!',
+        _ => null,
+      },
+    };
   }
 
   void _syncPackFromBackend(

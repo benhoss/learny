@@ -82,3 +82,37 @@ Revision is still locally fake, memory events are not persisted as first-class e
 **Learnings:**
 - Revision can be backend-first while retaining a local fallback for resilience.
 - Bound-child testing mode is safe only with explicit production startup guard.
+
+### 2026-02-06 - Track B + Track C Partial Slice Implemented
+
+**By:** Codex
+
+**Actions:**
+- Added document pipeline stage telemetry fields and stage transitions through job chain:
+  - `backend/app/Models/Document.php`
+  - `backend/app/Http/Controllers/Api/DocumentController.php`
+  - `backend/app/Jobs/ProcessDocumentOcr.php`
+  - `backend/app/Jobs/ExtractConceptsFromDocument.php`
+  - `backend/app/Jobs/GenerateLearningPackFromDocument.php`
+  - `backend/app/Jobs/GenerateGamesFromLearningPack.php`
+- Added metadata suggestion endpoint and service:
+  - `backend/app/Http/Controllers/Api/DocumentMetadataSuggestionController.php`
+  - `backend/app/Services/Documents/MetadataSuggestionService.php`
+  - `backend/routes/api.php`
+  - `backend/tests/Feature/DocumentMetadataSuggestionTest.php`
+- Integrated metadata suggestion UI into upload/review screens:
+  - `mobile/learny_app/lib/services/backend_client.dart`
+  - `mobile/learny_app/lib/state/app_state.dart`
+  - `mobile/learny_app/lib/screens/documents/review_screen.dart`
+  - `mobile/learny_app/lib/screens/documents/upload_screen.dart`
+- Added stage-aware generation status mapping in mobile poll loop.
+
+**Validation:**
+- `php -l` passed for changed backend files.
+- `flutter test test/widget_test.dart` passed.
+- `flutter test test/state/app_state_result_submission_test.dart` passed.
+- `flutter analyze` reports existing info-level diagnostics.
+
+**Learnings:**
+- Stage-level document telemetry materially improves user-facing progress messaging even before transfer-progress instrumentation is added.
+- Metadata suggestion UX works best as "prefill + confirm/edit", not auto-apply.

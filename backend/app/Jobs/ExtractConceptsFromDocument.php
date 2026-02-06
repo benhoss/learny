@@ -36,6 +36,12 @@ class ExtractConceptsFromDocument implements ShouldQueue
             return;
         }
 
+        $document->pipeline_stage = 'concept_extraction';
+        $document->stage_started_at = now();
+        $document->stage_completed_at = null;
+        $document->progress_hint = 45;
+        $document->save();
+
         try {
             if ($hasText) {
                 $concepts = $extractor->extract($document->extracted_text);
@@ -56,8 +62,18 @@ class ExtractConceptsFromDocument implements ShouldQueue
                 }
             }
 
+            $document->pipeline_stage = 'learning_pack_queued';
+            $document->stage_completed_at = now();
+            $document->progress_hint = 60;
+            $document->save();
+
             GenerateLearningPackFromDocument::dispatch((string) $document->_id);
         } catch (Throwable $e) {
+            $document->status = 'failed';
+            $document->pipeline_stage = 'concept_extraction_failed';
+            $document->stage_completed_at = now();
+            $document->ocr_error = $e->getMessage();
+            $document->save();
             throw $e;
         }
     }

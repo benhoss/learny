@@ -451,7 +451,7 @@ Pseudo files:
 
 ### Track B - Upload Latency and Progressive Readiness
 
-- [ ] Backend: add stage/progress fields to document model and API response.
+- [x] Backend: add stage/progress fields to document model and API response.
 - [ ] Backend: separate queue lanes and capture per-stage timing telemetry.
 - [ ] Mobile: display transfer progress and processing stage as separate UI elements.
 - [ ] Mobile: allow entering first available game before full pipeline completion.
@@ -459,8 +459,8 @@ Pseudo files:
 
 ### Track C - AI Metadata Suggestion and Confirmation
 
-- [ ] Backend: add metadata suggestion endpoint and confidence/alternatives schema.
-- [ ] Mobile: add interactive suggestion confirmation step in review flow.
+- [x] Backend: add metadata suggestion endpoint and confidence/alternatives schema.
+- [x] Mobile: add interactive suggestion confirmation step in review flow.
 - [ ] Telemetry: capture accepted/edited/rejected outcomes and confidence buckets.
 - [ ] Tests: widget/state tests for low-confidence and edit-heavy paths.
 
@@ -524,7 +524,7 @@ Decision: Defer until memory event infrastructure is stable.
 
 - [x] Quick Revision sessions are generated from backend data linked to uploaded documents.
 - [x] Revision outcomes persist and update mastery/review scheduling.
-- [ ] Metadata is AI-prefilled post-capture, with explicit user confirmation/edit before submit.
+- [x] Metadata is AI-prefilled post-capture, with explicit user confirmation/edit before submit.
 - [ ] Upload flow exposes transfer progress + pipeline stage status distinctly.
 - [ ] Child can begin first available game without waiting for all game types.
 - [ ] Memory signals influence home recommendations and revision queue composition.

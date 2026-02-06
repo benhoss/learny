@@ -30,6 +30,10 @@ class Document extends Model
         'learning_goal',
         'context_text',
         'requested_game_types',
+        'pipeline_stage',
+        'stage_started_at',
+        'stage_completed_at',
+        'progress_hint',
     ];
 
     protected $casts = [
@@ -38,6 +42,9 @@ class Document extends Model
         'storage_paths' => 'array',
         'mime_types' => 'array',
         'requested_game_types' => 'array',
+        'stage_started_at' => 'datetime',
+        'stage_completed_at' => 'datetime',
+        'progress_hint' => 'integer',
     ];
 
     public function childProfile()

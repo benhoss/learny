@@ -29,12 +29,19 @@ class ProcessDocumentOcr implements ShouldQueue
         }
 
         $document->status = 'processing';
+        $document->pipeline_stage = 'ocr';
+        $document->stage_started_at = now();
+        $document->stage_completed_at = null;
+        $document->progress_hint = 20;
         $document->ocr_error = null;
         $document->save();
 
         if ($this->shouldSkipOcr($document)) {
             $document->status = 'processed';
+            $document->pipeline_stage = 'concept_extraction_queued';
             $document->processed_at = now();
+            $document->stage_completed_at = now();
+            $document->progress_hint = 40;
             $document->save();
 
             ExtractConceptsFromDocument::dispatch((string) $document->_id);
@@ -49,12 +56,17 @@ class ProcessDocumentOcr implements ShouldQueue
                 $document->mime_type
             );
             $document->status = 'processed';
+            $document->pipeline_stage = 'concept_extraction_queued';
             $document->processed_at = now();
+            $document->stage_completed_at = now();
+            $document->progress_hint = 40;
             $document->save();
 
             ExtractConceptsFromDocument::dispatch((string) $document->_id);
         } catch (Throwable $e) {
             $document->status = 'failed';
+            $document->pipeline_stage = 'ocr_failed';
+            $document->stage_completed_at = now();
             $document->ocr_error = $e->getMessage();
             $document->save();
 

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\Concepts\ConceptExtractorInterface;
+use App\Services\Concepts\PrismConceptExtractor;
 use App\Services\Concepts\StubConceptExtractor;
 use App\Services\Generation\LearningPackGeneratorInterface;
 use App\Services\Generation\PrismLearningPackGenerator;
@@ -31,7 +32,11 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind(OcrClientInterface::class, StubOcrClient::class);
         }
 
-        $this->app->bind(ConceptExtractorInterface::class, StubConceptExtractor::class);
+        if (config('prism.providers.openrouter.api_key')) {
+            $this->app->bind(ConceptExtractorInterface::class, PrismConceptExtractor::class);
+        } else {
+            $this->app->bind(ConceptExtractorInterface::class, StubConceptExtractor::class);
+        }
 
         if (config('prism.providers.openrouter.api_key')) {
             $this->app->bind(LearningPackGeneratorInterface::class, PrismLearningPackGenerator::class);

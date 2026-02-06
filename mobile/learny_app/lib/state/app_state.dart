@@ -305,17 +305,7 @@ class AppState extends ChangeNotifier {
     if (!inPackSession) {
       return;
     }
-    final packId = selectedPackId;
-    if (packId != null) {
-      packs = packs
-          .map(
-            (pack) => pack.id == packId
-                ? pack.copyWith(progress: (pack.progress + 0.2).clamp(0.0, 1.0))
-                : pack,
-          )
-          .toList();
-    }
-    notifyListeners();
+    // Pack progress is derived from backend mastery and should not be faked locally.
   }
 
   void endPackSession() {
@@ -656,13 +646,15 @@ class AppState extends ChangeNotifier {
             throw BackendException('Pack missing id.');
           }
           selectedPackId = packId;
-          await _syncPackFromBackend(pack);
+          _syncPackFromBackend(pack, selectPack: true);
 
           generationStatus = 'Creating games and quizzes...';
           notifyListeners();
 
-          final games =
-              await backend.listGames(childId: childId, packId: packId);
+          final games = await backend.listGames(
+            childId: childId,
+            packId: packId,
+          );
           final payloadsByType = <String, Map<String, dynamic>>{};
           final idsByType = <String, String>{};
           for (final entry in games.cast<Map<String, dynamic>>()) {
@@ -704,8 +696,34 @@ class AppState extends ChangeNotifier {
     throw BackendException('Quiz generation timed out. Please try again.');
   }
 
-  Future<void> _syncPackFromBackend(Map<String, dynamic> pack) async {
+  void _syncPackFromBackend(
+    Map<String, dynamic> pack, {
+    bool selectPack = false,
+  }) {
+    final newPack = _learningPackFromBackend(pack);
+    if (newPack == null) {
+      return;
+    }
+
+    final existingIndex = packs.indexWhere((item) => item.id == newPack.id);
+    if (existingIndex >= 0) {
+      final updated = List<LearningPack>.from(packs);
+      updated[existingIndex] = newPack;
+      packs = updated;
+    } else {
+      packs = [newPack, ...packs];
+    }
+
+    if (selectPack || selectedPackId == null) {
+      selectedPackId = newPack.id;
+    }
+  }
+
+  LearningPack? _learningPackFromBackend(Map<String, dynamic> pack) {
     final packId = _extractId(pack) ?? pack['_id']?.toString() ?? '';
+    if (packId.isEmpty) {
+      return null;
+    }
     final title = pack['title']?.toString() ?? 'Learning Pack';
     final summary = pack['summary']?.toString();
     final content = pack['content'] as Map<String, dynamic>?;
@@ -740,8 +758,43 @@ class AppState extends ChangeNotifier {
       conceptKeys: conceptKeys,
     );
 
-    packs = [newPack, ...packs.where((existing) => existing.id != packId)];
-    selectedPackId = packId;
+    return newPack;
+  }
+
+  Future<void> _refreshPacksFromBackend() async {
+    final childId = backendChildId;
+    if (childId == null) {
+      return;
+    }
+
+    try {
+      final data = await backend.listLearningPacks(childId: childId);
+      if (data.isEmpty) {
+        return;
+      }
+
+      final before = packs
+          .map((pack) {
+            return '${pack.id}:${pack.progress}:${pack.conceptsMastered}:${pack.conceptsTotal}';
+          })
+          .join('|');
+
+      for (final entry in data.whereType<Map<String, dynamic>>()) {
+        _syncPackFromBackend(entry);
+      }
+
+      final after = packs
+          .map((pack) {
+            return '${pack.id}:${pack.progress}:${pack.conceptsMastered}:${pack.conceptsTotal}';
+          })
+          .join('|');
+
+      if (before != after) {
+        notifyListeners();
+      }
+    } catch (_) {
+      // Ignore transient refresh failures.
+    }
   }
 
   void _loadQuizFromPayload(Map<String, dynamic> game) {
@@ -1264,6 +1317,7 @@ class AppState extends ChangeNotifier {
         lastResultSyncError = null;
         notifyListeners();
         await _refreshReviewCount();
+        await _refreshPacksFromBackend();
         return;
       } catch (error) {
         lastError = error;

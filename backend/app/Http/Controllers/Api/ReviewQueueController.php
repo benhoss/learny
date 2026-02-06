@@ -15,17 +15,21 @@ class ReviewQueueController extends Controller
     {
         $child = $this->findOwnedChild($childId);
 
-        $due = MasteryProfile::where('child_profile_id', (string) $child->_id)
-            ->where('next_review_at', '<=', now())
+        $dueQuery = MasteryProfile::where('child_profile_id', (string) $child->_id)
+            ->where('next_review_at', '<=', now());
+        $totalDue = (clone $dueQuery)->count();
+
+        $due = $dueQuery
             ->orderBy('next_review_at', 'asc')
             ->limit(20)
             ->get(['concept_key', 'concept_label', 'mastery_level', 'next_review_at']);
 
         return response()->json([
             'data' => $due,
-            'total_due' => $due->count(),
+            'total_due' => $totalDue,
             'meta' => [
-                'total_due' => $due->count(),
+                'total_due' => $totalDue,
+                'limit' => 20,
             ],
         ]);
     }

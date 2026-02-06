@@ -16,6 +16,10 @@ class ChildProfile extends Model
         'grade_level',
         'birth_year',
         'notes',
+        'streak_days',
+        'longest_streak',
+        'last_activity_date',
+        'total_xp',
     ];
 
     protected $casts = [

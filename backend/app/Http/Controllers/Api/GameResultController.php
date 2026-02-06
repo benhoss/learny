@@ -219,20 +219,26 @@ class GameResultController extends Controller
         $childId = (string) $child->_id;
         $sourceId = (string) $record->_id;
         $userId = (string) Auth::guard('api')->id();
+        $baseOrder = $this->nextEventOrder($childId);
 
-        foreach ($results as $result) {
+        foreach ($results as $index => $result) {
             $conceptKey = trim((string) ($result['topic'] ?? ''));
             if ($conceptKey === '') {
                 continue;
             }
 
             $isCorrect = (bool) ($result['correct'] ?? false);
+            $eventKey = sha1('game_result:'.$sourceId.':'.$conceptKey.':'.$index);
 
-            LearningMemoryEvent::create([
+            LearningMemoryEvent::updateOrCreate([
+                'event_key' => $eventKey,
+            ], [
                 'user_id' => $userId,
                 'child_profile_id' => $childId,
                 'concept_key' => $conceptKey,
                 'event_type' => 'play',
+                'event_key' => $eventKey,
+                'event_order' => $baseOrder + $index,
                 'source_type' => 'game_result',
                 'source_id' => $sourceId,
                 'occurred_at' => $record->completed_at ?? now(),
@@ -247,6 +253,13 @@ class GameResultController extends Controller
                 ],
             ]);
         }
+    }
+
+    protected function nextEventOrder(string $childId): int
+    {
+        $maxOrder = LearningMemoryEvent::where('child_profile_id', $childId)->max('event_order');
+
+        return is_numeric($maxOrder) ? ((int) $maxOrder + 1) : 1;
     }
 
 }

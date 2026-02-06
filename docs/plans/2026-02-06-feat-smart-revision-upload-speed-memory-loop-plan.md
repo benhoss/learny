@@ -467,7 +467,7 @@ Pseudo files:
 ### Track D - Memory Events, Projections, and Recommendations
 
 - [x] Backend: create `LearningMemoryEvent` model + migration + writer hooks.
-- [ ] Backend: enforce event idempotency and per-child monotonic ordering.
+- [x] Backend: enforce event idempotency and per-child monotonic ordering.
 - [ ] Backend: implement sync incremental projector + nightly reconciliation.
 - [x] Backend: expose home recommendation API with explainability metadata.
 - [x] Mobile: integrate memory-driven home cards and revision prioritization.

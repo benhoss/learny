@@ -118,11 +118,12 @@ class RevisionSessionTest extends TestCase
             ->assertJsonPath('data.correct_items', count($results));
 
         $this->assertSame(1, RevisionSession::where('_id', $sessionId)->count());
+        $eventCount = LearningMemoryEvent::where('child_profile_id', (string) $child->_id)
+            ->where('event_type', 'review')
+            ->count();
         $this->assertGreaterThan(
             0,
-            LearningMemoryEvent::where('child_profile_id', (string) $child->_id)
-                ->where('event_type', 'review')
-                ->count()
+            $eventCount
         );
 
         $replay = $this->withHeader('Authorization', 'Bearer '.$token)
@@ -132,5 +133,12 @@ class RevisionSessionTest extends TestCase
 
         $replay->assertOk()
             ->assertJsonPath('idempotent_replay', true);
+
+        $this->assertSame(
+            $eventCount,
+            LearningMemoryEvent::where('child_profile_id', (string) $child->_id)
+                ->where('event_type', 'review')
+                ->count()
+        );
     }
 }

@@ -141,3 +141,19 @@ Revision is still locally fake, memory events are not persisted as first-class e
 **Learnings:**
 - Explainability payloads are easy to include early and significantly improve trust/debuggability.
 - Recommendation cards can be integrated incrementally without redesigning the full home layout.
+
+### 2026-02-06 - Memory Event Idempotency + Ordering
+
+**By:** Codex
+
+**Actions:**
+- Added `event_key` + `event_order` to learning memory events model and index migration.
+- Updated game-result and revision-session writers to use `updateOrCreate` by `event_key`.
+- Added child-level event ordering allocation (`nextEventOrder`) for deterministic per-child event sequence.
+- Extended revision replay test to assert no duplicate review events on idempotent submit replay.
+
+**Validation:**
+- `php -l` passed for changed backend files.
+
+**Learnings:**
+- Event idempotency can be enforced at write-time without adding queue-level complexity.

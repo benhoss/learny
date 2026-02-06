@@ -69,8 +69,9 @@ class RevisionSessionController extends Controller
         $itemById = collect($session->items ?? [])->keyBy('id');
         $scored = [];
         $correctCount = 0;
+        $baseOrder = $this->nextEventOrder((string) $child->_id);
 
-        foreach ($payload['results'] as $result) {
+        foreach ($payload['results'] as $index => $result) {
             $item = $itemById->get($result['item_id']);
             if (! is_array($item)) {
                 continue;
@@ -92,7 +93,14 @@ class RevisionSessionController extends Controller
                 'source' => (string) ($item['source'] ?? ''),
             ];
 
-            $this->recordLearningMemoryEvent((string) $child->_id, $sessionId, $item, $isCorrect, $result);
+            $this->recordLearningMemoryEvent(
+                (string) $child->_id,
+                $sessionId,
+                $item,
+                $isCorrect,
+                $result,
+                $baseOrder + $index
+            );
             $this->updateMasteryFromRevision((string) $child->_id, $item, $isCorrect);
         }
 
@@ -118,18 +126,25 @@ class RevisionSessionController extends Controller
         string $sessionId,
         array $item,
         bool $isCorrect,
-        array $result
+        array $result,
+        int $eventOrder
     ): void {
         $conceptKey = (string) ($item['concept_key'] ?? '');
         if ($conceptKey === '') {
             return;
         }
+        $itemId = (string) ($item['id'] ?? '');
+        $eventKey = sha1('revision_session:'.$sessionId.':'.$conceptKey.':'.$itemId);
 
-        LearningMemoryEvent::create([
+        LearningMemoryEvent::updateOrCreate([
+            'event_key' => $eventKey,
+        ], [
             'user_id' => (string) Auth::guard('api')->id(),
             'child_profile_id' => $childId,
             'concept_key' => $conceptKey,
             'event_type' => 'review',
+            'event_key' => $eventKey,
+            'event_order' => $eventOrder,
             'source_type' => 'revision_session',
             'source_id' => $sessionId,
             'occurred_at' => now(),
@@ -199,5 +214,12 @@ class RevisionSessionController extends Controller
             'items' => array_values($session->items ?? []),
             'results' => array_values($session->results ?? []),
         ];
+    }
+
+    protected function nextEventOrder(string $childId): int
+    {
+        $maxOrder = LearningMemoryEvent::where('child_profile_id', $childId)->max('event_order');
+
+        return is_numeric($maxOrder) ? ((int) $maxOrder + 1) : 1;
     }
 }

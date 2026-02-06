@@ -16,6 +16,8 @@ class LearningMemoryEvent extends Model
         'child_profile_id',
         'concept_key',
         'event_type',
+        'event_key',
+        'event_order',
         'source_type',
         'source_id',
         'occurred_at',
@@ -26,6 +28,7 @@ class LearningMemoryEvent extends Model
     protected $casts = [
         'occurred_at' => 'datetime',
         'confidence' => 'float',
+        'event_order' => 'integer',
         'metadata' => 'array',
     ];
 }

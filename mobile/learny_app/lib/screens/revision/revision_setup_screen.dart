@@ -32,6 +32,18 @@ class RevisionSetupScreen extends StatelessWidget {
               pack == null ? 'Pick a pack' : '${pack.subject} • ${pack.title}',
             ),
           ),
+          ListTile(
+            leading: const Icon(
+              Icons.psychology_alt_rounded,
+              color: LearnyColors.skyPrimary,
+            ),
+            title: const Text('Adaptive mix'),
+            subtitle: Text(
+              state.reviewDueCount > 0
+                  ? 'Due concepts + recent mistakes + latest uploads'
+                  : 'Recent mistakes + latest uploads',
+            ),
+          ),
         ],
       ),
       primaryAction: ElevatedButton(

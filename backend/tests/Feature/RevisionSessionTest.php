@@ -90,7 +90,7 @@ class RevisionSessionTest extends TestCase
                 'data' => [
                     'id',
                     'items' => [
-                        ['id', 'prompt', 'options', 'correct_index'],
+                        ['id', 'prompt', 'options', 'correct_index', 'selection_reason', 'confidence'],
                     ],
                 ],
             ]);

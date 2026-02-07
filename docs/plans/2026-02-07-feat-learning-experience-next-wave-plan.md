@@ -198,7 +198,7 @@ Decision: Deferred until wave completion metrics stabilize.
 ### Functional Requirements
 
 - [x] Child can start at least one game before full pipeline completion in partial-ready scenarios.
-- [ ] Revision sessions are adaptively composed from due + weak + recent document signals.
+- [x] Revision sessions are adaptively composed from due + weak + recent document signals.
 - [ ] Progress/home surfaces expose actionable next steps tied to real learner state.
 - [ ] Parent can pause personalization, clear memory scope, and inspect recommendation rationale.
 - [ ] Activity and motivation surfaces remain robust under repeated actions and network failures.
@@ -255,8 +255,8 @@ Mitigations:
 
 ### Track 2 - Adaptive Revision
 
-- [ ] Revision ranking v2 + explainability payload.
-- [ ] Mobile adaptive session variants.
+- [x] Revision ranking v2 + explainability payload.
+- [x] Mobile adaptive session variants.
 - [ ] Deterministic ranking and submission idempotency tests.
 
 ### Track 3 - Motivation Loop
@@ -280,6 +280,7 @@ Mitigations:
 ## Execution Notes
 
 - 2026-02-07 iteration 1 completed Track 1 implementation in backend and mobile.
+- 2026-02-07 iteration 2 completed adaptive revision explainability (backend scoring/reasons + mobile reason/confidence surfaces).
 - Flutter validation passed for updated flows and state tests.
 - Backend PHPUnit feature tests remain blocked in this environment due missing `MongoDB\\Driver\\Manager`; syntax checks and targeted test additions are in place.
 

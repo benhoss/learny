@@ -26,6 +26,7 @@ class RevisionComposer
 
         return $items
             ->unique(fn (array $item) => $item['source'].'::'.$item['concept_key'].'::'.$item['prompt'])
+            ->sortByDesc(fn (array $item) => (int) ($item['priority_score'] ?? 0))
             ->take($limit)
             ->values()
             ->all();
@@ -86,6 +87,12 @@ class RevisionComposer
                 'prompt' => 'Which concept should you review now?',
                 'options' => $options,
                 'correct_index' => max(0, (int) array_search($label, $options, true)),
+                'selection_reason' => 'Due now in your review queue',
+                'confidence' => 0.95,
+                'priority_score' => 100,
+                'explainability' => [
+                    'reasons' => ['due_review', 'spaced_repetition'],
+                ],
             ];
         });
     }
@@ -133,6 +140,12 @@ class RevisionComposer
                     'prompt' => $prompt,
                     'options' => $options,
                     'correct_index' => max(0, (int) array_search($expected, $options, true)),
+                    'selection_reason' => 'Based on a recent wrong answer',
+                    'confidence' => 0.9,
+                    'priority_score' => 90,
+                    'explainability' => [
+                        'reasons' => ['recent_mistake', 'needs_reinforcement'],
+                    ],
                 ]);
             }
         }
@@ -176,6 +189,12 @@ class RevisionComposer
                     'options' => $options,
                     'correct_index' => max(0, (int) array_search($concept['label'], $options, true)),
                     'document_id' => $concept['document_id'],
+                    'selection_reason' => 'From your latest uploaded document',
+                    'confidence' => 0.75,
+                    'priority_score' => 70,
+                    'explainability' => [
+                        'reasons' => ['recent_upload', 'fresh_content'],
+                    ],
                 ]);
             }
         }

@@ -452,6 +452,8 @@ class AppState extends ChangeNotifier {
             prompt: promptText,
             options: options,
             correctIndex: correctIndex.clamp(0, options.length - 1),
+            selectionReason: item['selection_reason']?.toString(),
+            confidence: (item['confidence'] as num?)?.toDouble(),
           );
         })
         .whereType<RevisionPrompt>()

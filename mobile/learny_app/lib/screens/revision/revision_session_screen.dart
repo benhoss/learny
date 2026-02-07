@@ -86,6 +86,23 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
+            if (prompt != null &&
+                ((prompt.selectionReason ?? '').isNotEmpty ||
+                    prompt.confidence != null)) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if ((prompt.selectionReason ?? '').isNotEmpty)
+                    _ReasonChip(text: prompt.selectionReason!),
+                  if (prompt.confidence != null)
+                    _ReasonChip(
+                      text: 'Confidence ${(prompt.confidence! * 100).round()}%',
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: 20),
             if (prompt != null)
               ...List.generate(
@@ -109,6 +126,30 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReasonChip extends StatelessWidget {
+  const _ReasonChip({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: LearnyColors.skyLight.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: LearnyColors.skyPrimary,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

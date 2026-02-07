@@ -133,9 +133,16 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function regenerate(string $childId, string $documentId): JsonResponse
+    public function regenerate(Request $request, string $childId, string $documentId): JsonResponse
     {
         $child = $this->findOwnedChild($childId);
+        $data = $request->validate([
+            'requested_game_types' => ['nullable', 'array'],
+            'requested_game_types.*' => [
+                'string',
+                'in:flashcards,quiz,matching,true_false,fill_blank,ordering,multiple_select,short_answer',
+            ],
+        ]);
 
         $document = Document::where('_id', $documentId)
             ->where('child_profile_id', (string) $child->_id)
@@ -147,6 +154,9 @@ class DocumentController extends Controller
         $document->stage_completed_at = null;
         $document->progress_hint = 5;
         $document->ocr_error = null;
+        if (array_key_exists('requested_game_types', $data) && ! empty($data['requested_game_types'])) {
+            $document->requested_game_types = array_values(array_unique($data['requested_game_types']));
+        }
         $document->save();
 
         GenerateLearningPackFromDocument::dispatch((string) $document->_id);

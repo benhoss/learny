@@ -219,12 +219,17 @@ class BackendClient {
   Future<Map<String, dynamic>> regenerateDocument({
     required String childId,
     required String documentId,
+    List<String>? requestedGameTypes,
   }) async {
     final response = await _client.post(
       Uri.parse(
         '$baseUrl/api/v1/children/$childId/documents/$documentId/regenerate',
       ),
       headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        if (requestedGameTypes != null && requestedGameTypes.isNotEmpty)
+          'requested_game_types': requestedGameTypes,
+      }),
     );
 
     if (response.statusCode != 202) {
@@ -350,6 +355,23 @@ class BackendClient {
     } catch (_) {
       return null;
     }
+  }
+
+  Future<List<dynamic>> listActivities({
+    required String childId,
+    int limit = 50,
+  }) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/v1/children/$childId/activities?limit=$limit'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('List activities failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return (payload['data'] as List<dynamic>?) ?? [];
   }
 
   Future<Map<String, dynamic>> createRetryGame({

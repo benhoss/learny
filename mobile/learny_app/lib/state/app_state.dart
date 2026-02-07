@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../app/backend_config.dart';
 import '../routes/app_routes.dart';
+import '../models/activity_item.dart';
 import '../models/achievement.dart';
 import '../models/child_profile.dart';
 import '../models/daily_learning_time.dart';
@@ -43,6 +44,7 @@ class AppState extends ChangeNotifier {
   late ParentProfile parentProfile;
   late List<LearningPack> packs;
   late List<Achievement> achievements;
+  late List<ActivityItem> activities;
   late List<ChildProfile> children;
   late List<DocumentItem> documents;
   late List<NotificationItem> notifications;
@@ -96,6 +98,8 @@ class AppState extends ChangeNotifier {
   String? currentGameId;
   bool isSyncingDocuments = false;
   String? documentSyncError;
+  bool isSyncingActivities = false;
+  String? activitySyncError;
   List<Map<String, dynamic>> _revisionSubmissionPayload = [];
 
   int _docCounter = 0;
@@ -120,6 +124,7 @@ class AppState extends ChangeNotifier {
     children = const [];
     packs = const [];
     achievements = const [];
+    activities = const [];
     mastery = const {};
     documents = const [];
     notifications = const [];
@@ -141,6 +146,7 @@ class AppState extends ChangeNotifier {
     supportTopics = const [];
     selectedPackId = null;
     _docCounter = 0;
+    activitySyncError = null;
   }
 
   void _initializeBackendSession() {
@@ -154,6 +160,7 @@ class AppState extends ChangeNotifier {
         _backendSessionReady = true;
         await _hydrateFromBackend();
         await _refreshReviewCount();
+        await refreshActivitiesFromBackend();
         await _refreshHomeRecommendations();
       } catch (_) {
         // Surface errors during upload instead of at boot time.
@@ -751,6 +758,19 @@ class AppState extends ChangeNotifier {
       _docCounter = documents.length;
     } catch (_) {
       documents = const [];
+    }
+
+    try {
+      final rawActivities = await backend.listActivities(
+        childId: childId,
+        limit: 50,
+      );
+      activities = rawActivities
+          .whereType<Map<String, dynamic>>()
+          .map(ActivityItem.fromJson)
+          .toList();
+    } catch (_) {
+      activities = const [];
     }
 
     try {
@@ -1630,6 +1650,7 @@ class AppState extends ChangeNotifier {
         notifyListeners();
         await _refreshReviewCount();
         await _refreshPacksFromBackend();
+        await refreshActivitiesFromBackend();
         return;
       } catch (error) {
         lastError = error;
@@ -1643,6 +1664,7 @@ class AppState extends ChangeNotifier {
     debugPrint('Game result submission failed: $lastError');
     notifyListeners();
     await _refreshReviewCount();
+    await refreshActivitiesFromBackend();
     await _refreshHomeRecommendations();
   }
 
@@ -1690,6 +1712,31 @@ class AppState extends ChangeNotifier {
       notifyListeners();
     } catch (_) {
       // Ignore transient refresh failures.
+    }
+  }
+
+  Future<void> refreshActivitiesFromBackend() async {
+    final childId = backendChildId;
+    if (childId == null) {
+      activities = const [];
+      return;
+    }
+
+    isSyncingActivities = true;
+    activitySyncError = null;
+    notifyListeners();
+
+    try {
+      final data = await backend.listActivities(childId: childId, limit: 50);
+      activities = data
+          .whereType<Map<String, dynamic>>()
+          .map(ActivityItem.fromJson)
+          .toList();
+    } catch (error) {
+      activitySyncError = error.toString();
+    } finally {
+      isSyncingActivities = false;
+      notifyListeners();
     }
   }
 
@@ -1742,11 +1789,15 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> regenerateDocument(String documentId) async {
+  Future<void> regenerateDocument(
+    String documentId, {
+    List<String>? requestedGameTypes,
+  }) async {
     final session = await _ensureBackendSession();
     await backend.regenerateDocument(
       childId: session.childId,
       documentId: documentId,
+      requestedGameTypes: requestedGameTypes,
     );
     documents = documents
         .map(
@@ -1755,6 +1806,7 @@ class AppState extends ChangeNotifier {
         )
         .toList();
     notifyListeners();
+    await refreshDocumentsFromBackend();
   }
 
   Future<void> retryIncorrectQuestions() async {

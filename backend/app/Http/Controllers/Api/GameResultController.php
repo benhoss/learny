@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Concerns\FindsOwnedChild;
 use App\Http\Controllers\Controller;
 use App\Models\ChildProfile;
+use App\Models\Document;
 use App\Models\Game;
 use App\Models\GameResult;
 use App\Models\LearningMemoryEvent;
@@ -17,6 +18,108 @@ use Illuminate\Support\Facades\Auth;
 class GameResultController extends Controller
 {
     use FindsOwnedChild;
+
+    protected const SUPPORTED_GAME_TYPES = [
+        'flashcards',
+        'quiz',
+        'matching',
+        'true_false',
+        'fill_blank',
+        'ordering',
+        'multiple_select',
+        'short_answer',
+    ];
+
+    public function index(Request $request, string $childId): JsonResponse
+    {
+        $child = $this->findOwnedChild($childId);
+        $validated = $request->validate([
+            'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
+        ]);
+        $limit = (int) ($validated['limit'] ?? 50);
+
+        $results = GameResult::where('child_profile_id', (string) $child->_id)
+            ->orderBy('completed_at', 'desc')
+            ->limit($limit)
+            ->get();
+
+        $packIds = $results->pluck('learning_pack_id')
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $packs = LearningPack::whereIn('_id', $packIds)
+            ->get()
+            ->keyBy(fn (LearningPack $pack) => (string) $pack->_id);
+
+        $documentIds = $packs->pluck('document_id')
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $documents = Document::whereIn('_id', $documentIds)
+            ->get()
+            ->keyBy(fn (Document $document) => (string) $document->_id);
+
+        $games = Game::whereIn('learning_pack_id', $packIds)
+            ->where('status', 'ready')
+            ->get(['learning_pack_id', 'type'])
+            ->groupBy(fn (Game $game) => (string) $game->learning_pack_id);
+
+        $itemsAsc = [];
+        $previousScoreBySubject = [];
+        foreach ($results->reverse()->values() as $result) {
+            $pack = $packs->get((string) ($result->learning_pack_id ?? ''));
+            $document = $pack
+                ? $documents->get((string) ($pack->document_id ?? ''))
+                : null;
+
+            $subject = $this->subjectForActivity($pack, $document);
+            $totalQuestions = (int) ($result->total_questions ?? 0);
+            $correctAnswers = (int) ($result->correct_answers ?? 0);
+            $scorePercent = $this->scorePercentForActivity($result, $correctAnswers, $totalQuestions);
+            $progressionDelta = array_key_exists($subject, $previousScoreBySubject)
+                ? $scorePercent - $previousScoreBySubject[$subject]
+                : null;
+            $previousScoreBySubject[$subject] = $scorePercent;
+
+            $packGameTypes = collect($games->get((string) ($result->learning_pack_id ?? ''), collect()))
+                ->pluck('type')
+                ->filter()
+                ->map(fn ($type) => (string) $type)
+                ->unique()
+                ->values()
+                ->all();
+
+            $itemsAsc[] = [
+                'id' => $this->stringifyId($result->_id ?? null),
+                'completed_at' => $result->completed_at,
+                'game_type' => (string) ($result->game_type ?? ''),
+                'pack_id' => $pack ? $this->stringifyId($pack->_id) : null,
+                'pack_title' => $pack?->title,
+                'document_id' => $document ? $this->stringifyId($document->_id) : null,
+                'document_title' => $document?->original_filename,
+                'subject' => $subject,
+                'score_percent' => $scorePercent,
+                'correct_answers' => $correctAnswers,
+                'total_questions' => $totalQuestions,
+                'xp_earned' => (int) ($result->xp_earned ?? 0),
+                'progression_delta' => $progressionDelta,
+                'cheer_message' => $this->cheerMessageForActivity($scorePercent, $progressionDelta),
+                'available_game_types' => $packGameTypes,
+                'remaining_game_types' => array_values(array_diff(self::SUPPORTED_GAME_TYPES, $packGameTypes)),
+            ];
+        }
+
+        return response()->json([
+            'data' => array_reverse($itemsAsc),
+        ]);
+    }
+
     public function store(Request $request, string $childId, string $packId, string $gameId): JsonResponse
     {
         $child = $this->findOwnedChild($childId);
@@ -260,6 +363,74 @@ class GameResultController extends Controller
         $maxOrder = LearningMemoryEvent::where('child_profile_id', $childId)->max('event_order');
 
         return is_numeric($maxOrder) ? ((int) $maxOrder + 1) : 1;
+    }
+
+    protected function stringifyId(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_array($value)) {
+            $oid = $value['$oid'] ?? $value['oid'] ?? null;
+
+            return $oid ? (string) $oid : null;
+        }
+
+        return (string) $value;
+    }
+
+    protected function subjectForActivity(?LearningPack $pack, ?Document $document): string
+    {
+        if (! empty($document?->subject)) {
+            return (string) $document->subject;
+        }
+
+        if (! empty($pack?->summary)) {
+            $first = explode(' ', trim((string) $pack->summary))[0] ?? '';
+            if ($first !== '') {
+                return $first;
+            }
+        }
+
+        if (! empty($pack?->title)) {
+            return (string) $pack->title;
+        }
+
+        return 'General';
+    }
+
+    protected function scorePercentForActivity(
+        GameResult $result,
+        int $correctAnswers,
+        int $totalQuestions
+    ): int {
+        if ($totalQuestions > 0) {
+            return (int) round(($correctAnswers / $totalQuestions) * 100);
+        }
+
+        return (int) round(((float) ($result->score ?? 0.0)) * 100);
+    }
+
+    protected function cheerMessageForActivity(int $scorePercent, ?int $progressionDelta): string
+    {
+        if ($scorePercent >= 90 && ($progressionDelta ?? 0) >= 5) {
+            return 'Amazing jump. Your consistency is paying off.';
+        }
+        if ($scorePercent >= 90) {
+            return 'Excellent focus. Keep this rhythm going.';
+        }
+        if (($progressionDelta ?? 0) > 0) {
+            return 'Nice improvement from your last attempt.';
+        }
+        if ($scorePercent >= 70) {
+            return 'Solid progress. You are building mastery.';
+        }
+        if ($scorePercent >= 50) {
+            return 'You are building momentum. One more run can lift this.';
+        }
+
+        return 'Every attempt strengthens memory. Try again while it is fresh.';
     }
 
 }

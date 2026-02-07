@@ -41,6 +41,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('children/{child}/learning-packs/{pack}/games', [GameController::class, 'index']);
         Route::get('children/{child}/learning-packs/{pack}/games/{game}', [GameController::class, 'show']);
+        Route::get('children/{child}/activities', [GameResultController::class, 'index']);
 
         Route::get('children/{child}/review-queue', [ReviewQueueController::class, 'index']);
         Route::get('children/{child}/revision-session', [RevisionSessionController::class, 'start']);

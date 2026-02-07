@@ -209,6 +209,34 @@ class _QuizScreenState extends State<QuizScreen> {
         ? 0.65
         : state.mastery.values.reduce((a, b) => a + b) / state.mastery.length;
 
+    if (session == null) {
+      return const GameScaffold(
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (total == 0) {
+      return GameScaffold(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'No generated quiz is ready for this pack yet.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () =>
+                    Navigator.pushNamed(context, AppRoutes.cameraCapture),
+                child: const Text('Upload Document'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final hasSelection =
         question != null &&
         (question.isTextInput

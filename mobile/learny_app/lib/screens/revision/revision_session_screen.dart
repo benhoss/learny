@@ -44,9 +44,24 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final session = state.revisionSession;
-    final prompt = session?.currentPrompt;
-    final total = session?.prompts.length ?? 0;
-    final progress = total == 0 ? 0.0 : (session!.currentIndex / total);
+    if (session == null) {
+      return GradientScaffold(
+        gradient: LearnyGradients.hero,
+        appBar: AppBar(title: const Text('Express Session')),
+        child: const Padding(
+          padding: EdgeInsets.all(20),
+          child: Center(
+            child: Text(
+              'No revision session is ready yet.\nUpload and complete a game to unlock revision.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+    final prompt = session.currentPrompt;
+    final total = session.prompts.length;
+    final progress = total == 0 ? 0.0 : (session.currentIndex / total);
 
     return GradientScaffold(
       gradient: LearnyGradients.hero,
@@ -57,7 +72,7 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              session?.subjectLabel ?? 'Quick review',
+              session.subjectLabel,
               style: Theme.of(
                 context,
               ).textTheme.bodyLarge?.copyWith(color: LearnyColors.slateMedium),
@@ -89,7 +104,7 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
                     ? null
                     : () async => _submitAnswer(state),
                 child: Text(
-                  (session?.currentIndex ?? 0) + 1 >= total ? 'Finish' : 'Next',
+                  session.currentIndex + 1 >= total ? 'Finish' : 'Next',
                 ),
               ),
             ),

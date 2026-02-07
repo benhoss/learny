@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
+import '../../state/app_state.dart';
 import '../../state/app_state_scope.dart';
 import '../shared/placeholder_screen.dart';
 
@@ -10,8 +11,10 @@ class PackDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final pack = state.selectedPack ?? (state.packs.isNotEmpty ? state.packs.first : null);
-    final games = _defaultGames();
+    final pack =
+        state.selectedPack ??
+        (state.packs.isNotEmpty ? state.packs.first : null);
+    final games = _gamesFromState(state);
     return PlaceholderScreen(
       title: pack?.title ?? 'Learning Pack',
       subtitle: pack == null
@@ -20,15 +23,25 @@ class PackDetailScreen extends StatelessWidget {
       gradient: LearnyGradients.trust,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: games
-            .map(
-              (game) => ListTile(
-                leading: Icon(game.icon, color: game.color),
-                title: Text(game.label),
-                subtitle: Text(game.subtitle),
-              ),
-            )
-            .toList(),
+        children: games.isEmpty
+            ? const [
+                ListTile(
+                  leading: Icon(Icons.hourglass_empty_rounded),
+                  title: Text('No generated games yet'),
+                  subtitle: Text(
+                    'Upload or regenerate this document to create games.',
+                  ),
+                ),
+              ]
+            : games
+                  .map(
+                    (game) => ListTile(
+                      leading: Icon(game.icon, color: game.color),
+                      title: Text(game.label),
+                      subtitle: Text(game.subtitle),
+                    ),
+                  )
+                  .toList(),
       ),
       primaryAction: ElevatedButton(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.packSession),
@@ -37,57 +50,100 @@ class PackDetailScreen extends StatelessWidget {
     );
   }
 
-  List<_GameDetailItem> _defaultGames() {
-    return const [
-      _GameDetailItem(
-        label: 'Warm-up flashcards',
-        subtitle: '10 cards',
-        icon: Icons.flash_on_rounded,
-        color: LearnyColors.coral,
-      ),
-      _GameDetailItem(
-        label: 'Quick quiz',
-        subtitle: '5 questions',
-        icon: Icons.quiz_rounded,
-        color: LearnyColors.teal,
-      ),
-      _GameDetailItem(
-        label: 'True or False',
-        subtitle: 'Fast judgments',
-        icon: Icons.rule_rounded,
-        color: LearnyColors.coralLight,
-      ),
-      _GameDetailItem(
-        label: 'Fill in the Blank',
-        subtitle: 'Complete the sentence',
-        icon: Icons.edit_rounded,
-        color: LearnyColors.coralLight,
-      ),
-      _GameDetailItem(
-        label: 'Choose All That Apply',
-        subtitle: 'Multiple correct answers',
-        icon: Icons.checklist_rounded,
-        color: LearnyColors.coralLight,
-      ),
-      _GameDetailItem(
-        label: 'Short Answer',
-        subtitle: 'Write a quick response',
-        icon: Icons.short_text_rounded,
-        color: LearnyColors.coralLight,
-      ),
-      _GameDetailItem(
-        label: 'Ordering Challenge',
-        subtitle: 'Drag into order',
-        icon: Icons.reorder_rounded,
-        color: LearnyColors.coralLight,
-      ),
-      _GameDetailItem(
-        label: 'Matching pairs',
-        subtitle: '3 rounds',
-        icon: Icons.extension_rounded,
-        color: LearnyColors.purple,
-      ),
-    ];
+  List<_GameDetailItem> _gamesFromState(AppState state) {
+    final queue = state.packGameQueue.isNotEmpty
+        ? state.packGameQueue
+        : state.gamePayloads.keys.toList();
+    return queue
+        .map(
+          (type) => _GameDetailItem(
+            label: _labelForType(type),
+            subtitle: _subtitleForType(type),
+            icon: _iconForType(type),
+            color: _colorForType(type),
+          ),
+        )
+        .toList();
+  }
+
+  String _labelForType(String type) {
+    switch (type) {
+      case 'true_false':
+        return 'True or False';
+      case 'multiple_select':
+        return 'Choose All That Apply';
+      case 'fill_blank':
+        return 'Fill in the Blank';
+      case 'short_answer':
+        return 'Short Answer';
+      case 'ordering':
+        return 'Ordering Challenge';
+      case 'matching':
+        return 'Matching Pairs';
+      case 'flashcards':
+        return 'Flashcards';
+      case 'quiz':
+      default:
+        return 'Quiz';
+    }
+  }
+
+  String _subtitleForType(String type) {
+    switch (type) {
+      case 'true_false':
+        return 'Quick judgments';
+      case 'multiple_select':
+        return 'Multiple correct answers';
+      case 'fill_blank':
+        return 'Complete the sentence';
+      case 'short_answer':
+        return 'Write a quick response';
+      case 'ordering':
+        return 'Drag items into order';
+      case 'matching':
+        return 'Match linked concepts';
+      case 'flashcards':
+        return 'Warm-up concepts';
+      case 'quiz':
+      default:
+        return 'Multiple choice questions';
+    }
+  }
+
+  IconData _iconForType(String type) {
+    switch (type) {
+      case 'flashcards':
+        return Icons.flash_on_rounded;
+      case 'quiz':
+        return Icons.quiz_rounded;
+      case 'true_false':
+        return Icons.rule_rounded;
+      case 'fill_blank':
+        return Icons.edit_rounded;
+      case 'multiple_select':
+        return Icons.checklist_rounded;
+      case 'short_answer':
+        return Icons.short_text_rounded;
+      case 'ordering':
+        return Icons.reorder_rounded;
+      case 'matching':
+        return Icons.extension_rounded;
+      default:
+        return Icons.gamepad_rounded;
+    }
+  }
+
+  Color _colorForType(String type) {
+    switch (type) {
+      case 'flashcards':
+        return LearnyColors.coral;
+      case 'quiz':
+        return LearnyColors.teal;
+      case 'matching':
+        return LearnyColors.purple;
+      default:
+        return LearnyColors.coralLight;
+    }
   }
 }
 

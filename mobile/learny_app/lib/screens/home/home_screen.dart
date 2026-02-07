@@ -19,25 +19,7 @@ class HomeScreen extends StatelessWidget {
     final tokens = context.tokens;
     final featuredPacks = state.packs.take(2).toList();
     final recommendations = state.homeRecommendations.take(3).toList();
-    final fallbackRecommendations = [
-      {
-        'title': state.reviewDueCount > 0
-            ? 'Review ${state.reviewDueCount} due concepts'
-            : 'Start a quick 5-minute revision',
-        'subtitle': state.reviewDueCount > 0
-            ? 'Strengthen concepts scheduled for today.'
-            : 'Warm up with an express review session.',
-        'action': 'start_revision',
-      },
-      {
-        'title': 'Upload and generate a new game',
-        'subtitle': 'Turn a worksheet photo into playable practice.',
-        'action': 'start_learning',
-      },
-    ];
-    final smartNextSteps = recommendations.isNotEmpty
-        ? recommendations
-        : fallbackRecommendations;
+    final smartNextSteps = recommendations;
 
     return Container(
       decoration: BoxDecoration(gradient: tokens.gradientWelcome),
@@ -149,12 +131,17 @@ class HomeScreen extends StatelessWidget {
                 child: _ReviewCard(
                   dueCount: state.reviewDueCount,
                   onTap: () {
-                    final route = state.startReviewFromDueConcepts();
-                    if (route != null) {
-                      Navigator.pushNamed(context, route);
-                      return;
-                    }
-                    Navigator.pushNamed(context, AppRoutes.revisionSetup);
+                    () async {
+                      final route = await state.startReviewFromDueConcepts();
+                      if (!context.mounted) {
+                        return;
+                      }
+                      if (route != null) {
+                        Navigator.pushNamed(context, route);
+                        return;
+                      }
+                      Navigator.pushNamed(context, AppRoutes.revisionSetup);
+                    }();
                   },
                 ),
               ),
@@ -174,28 +161,48 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: tokens.spaceSm),
-                  ...smartNextSteps.map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _SmartRecommendationCard(
-                        title: item['title']?.toString() ?? 'Continue learning',
-                        subtitle:
-                            item['subtitle']?.toString() ??
-                            'Based on your recent activity',
-                        onTap: () {
-                          final action = item['action']?.toString();
-                          if (action == 'start_revision') {
+                  if (smartNextSteps.isEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(tokens.spaceMd),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        borderRadius: tokens.radiusLg,
+                      ),
+                      child: Text(
+                        'Upload a document to get AI recommendations based on real study data.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: LearnyColors.neutralMedium,
+                        ),
+                      ),
+                    )
+                  else
+                    ...smartNextSteps.map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _SmartRecommendationCard(
+                          title:
+                              item['title']?.toString() ?? 'Continue learning',
+                          subtitle:
+                              item['subtitle']?.toString() ??
+                              'Based on your recent activity',
+                          onTap: () {
+                            final action = item['action']?.toString();
+                            if (action == 'start_revision') {
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.revisionSetup,
+                              );
+                              return;
+                            }
                             Navigator.pushNamed(
                               context,
-                              AppRoutes.revisionSetup,
+                              AppRoutes.cameraCapture,
                             );
-                            return;
-                          }
-                          Navigator.pushNamed(context, AppRoutes.cameraCapture);
-                        },
+                          },
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -221,39 +228,6 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ],
-
-            SizedBox(height: tokens.spaceLg),
-
-            // Recent Topics
-            FadeInSlide(
-              delay: const Duration(milliseconds: 500),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Recent Topics',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: LearnyColors.neutralMedium,
-                    ),
-                  ),
-                  SizedBox(height: tokens.spaceSm + 4),
-                  SizedBox(
-                    height: 48,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: const [
-                        _TopicChip(label: 'Photosynthesis'),
-                        SizedBox(width: 12),
-                        _TopicChip(label: 'Fractions'),
-                        SizedBox(width: 12),
-                        _TopicChip(label: 'World War II'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
             SizedBox(height: tokens.spaceLg),
 
@@ -571,43 +545,6 @@ class _ProgressCard extends StatelessWidget {
             ).textTheme.bodyMedium?.copyWith(color: LearnyColors.neutralLight),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _TopicChip extends StatelessWidget {
-  const _TopicChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.tokens;
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: tokens.spaceMd,
-        vertical: tokens.spaceSm + 4,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: tokens.radiusLg,
-        border: Border.all(color: LearnyColors.neutralSoft),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w500,
-          color: LearnyColors.neutralDark,
-        ),
       ),
     );
   }

@@ -36,8 +36,18 @@ class RevisionSetupScreen extends StatelessWidget {
       ),
       primaryAction: ElevatedButton(
         onPressed: () async {
-          await state.startRevision(packId: pack?.id);
+          final started = await state.startRevision(packId: pack?.id);
           if (!context.mounted) {
+            return;
+          }
+          if (!started) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'No revision items are ready yet. Complete a game first.',
+                ),
+              ),
+            );
             return;
           }
           Navigator.pushNamed(context, AppRoutes.revisionSession);

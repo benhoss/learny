@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../app/backend_config.dart';
 import '../routes/app_routes.dart';
-import '../data/fake_repositories.dart';
 import '../models/achievement.dart';
 import '../models/child_profile.dart';
 import '../models/daily_learning_time.dart';
@@ -26,12 +25,10 @@ import '../theme/app_theme.dart';
 
 class AppState extends ChangeNotifier {
   AppState({
-    FakeRepositories? repositories,
     BackendClient? backendClient,
     bool initializeBackendSession = true,
     Duration submitRetryDelay = const Duration(seconds: 2),
-  }) : _repositories = repositories ?? FakeRepositories(),
-       backend = backendClient ?? BackendClient(baseUrl: BackendConfig.baseUrl),
+  }) : backend = backendClient ?? BackendClient(baseUrl: BackendConfig.baseUrl),
        _submitRetryDelay = submitRetryDelay {
     _load();
     if (initializeBackendSession) {
@@ -39,7 +36,6 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  final FakeRepositories _repositories;
   final BackendClient backend;
   final Duration _submitRetryDelay;
 
@@ -112,31 +108,39 @@ class AppState extends ChangeNotifier {
   final String _demoPassword = BackendConfig.demoPassword;
   bool _backendSessionReady = false;
   bool _backendSessionInitializing = false;
-  String? _lastLocalStreakAwardDate;
 
   void _load() {
-    profile = _repositories.user.loadProfile();
-    children = _repositories.user.loadChildren();
-    packs = List<LearningPack>.from(_repositories.packs.loadPacks());
-    achievements = _repositories.progress.loadAchievements();
-    mastery = _repositories.progress.loadMastery();
-    documents = List<DocumentItem>.from(
-      _repositories.documents.loadDocuments(),
+    profile = const UserProfile(
+      id: 'pending',
+      name: 'Learner',
+      avatarAsset: 'assets/avatars/avatar_1.png',
+      gradeLabel: BackendConfig.childGrade,
+      planName: 'Starter',
     );
-    notifications = _repositories.notifications.loadNotifications();
-    weeklySummary = _repositories.user.loadWeeklySummary();
-    weakAreas = _repositories.user.loadWeakAreas();
-    learningTimes = _repositories.user.loadLearningTimes();
-    streakDays = _repositories.progress.loadStreakDays();
-    xpToday = _repositories.progress.loadXpToday();
-    totalXp = _repositories.progress.loadTotalXp();
-    parentProfile = _repositories.account.loadParentProfile();
-    currentPlan = _repositories.billing.loadCurrentPlan();
-    planOptions = _repositories.billing.loadPlanOptions();
-    faqs = _repositories.support.loadFaqs();
-    supportTopics = _repositories.support.loadSupportTopics();
-    selectedPackId = packs.isNotEmpty ? packs.first.id : null;
-    _docCounter = documents.length;
+    children = const [];
+    packs = const [];
+    achievements = const [];
+    mastery = const {};
+    documents = const [];
+    notifications = const [];
+    weeklySummary = const WeeklySummary(
+      minutesSpent: 0,
+      newBadges: 0,
+      sessionsCompleted: 0,
+      topSubject: 'N/A',
+    );
+    weakAreas = const [];
+    learningTimes = _emptyLearningTimes();
+    streakDays = 0;
+    xpToday = 0;
+    totalXp = 0;
+    parentProfile = const ParentProfile(name: 'Parent', email: '');
+    currentPlan = 'Starter';
+    planOptions = const [];
+    faqs = const [];
+    supportTopics = const [];
+    selectedPackId = null;
+    _docCounter = 0;
   }
 
   void _initializeBackendSession() {
@@ -148,6 +152,7 @@ class AppState extends ChangeNotifier {
       try {
         await _ensureBackendSession();
         _backendSessionReady = true;
+        await _hydrateFromBackend();
         await _refreshReviewCount();
         await _refreshHomeRecommendations();
       } catch (_) {
@@ -243,7 +248,19 @@ class AppState extends ChangeNotifier {
     return _PackStyle(Icons.auto_stories_rounded, LearnyColors.coralLight);
   }
 
-  void startQuiz({String? packId}) {
+  List<DailyLearningTime> _emptyLearningTimes() {
+    return const [
+      DailyLearningTime(dayLabel: 'Mon', minutes: 0),
+      DailyLearningTime(dayLabel: 'Tue', minutes: 0),
+      DailyLearningTime(dayLabel: 'Wed', minutes: 0),
+      DailyLearningTime(dayLabel: 'Thu', minutes: 0),
+      DailyLearningTime(dayLabel: 'Fri', minutes: 0),
+      DailyLearningTime(dayLabel: 'Sat', minutes: 0),
+      DailyLearningTime(dayLabel: 'Sun', minutes: 0),
+    ];
+  }
+
+  Future<void> startQuiz({String? packId}) async {
     final id =
         packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
     if (id == null) {
@@ -251,18 +268,30 @@ class AppState extends ChangeNotifier {
     }
     selectedPackId = id;
     currentGameType = 'quiz';
-    currentGameTitle = 'Quick Quiz';
+    currentGameTitle = 'Quiz';
     currentGameId = null;
     lastGameOutcome = null;
     lastResultSyncError = null;
-    quizSession = QuizSession(
-      packId: id,
-      questions: _repositories.packs.loadQuestions(id),
-    );
+
+    if (!gamePayloads.containsKey('quiz')) {
+      await _loadReadyGamesForPack(id);
+    }
+
+    final payload = gamePayloads['quiz'];
+    if (payload != null) {
+      _loadQuizFromPayload({
+        'type': 'quiz',
+        'payload': payload,
+        '_id': gameIds['quiz'],
+        'learning_pack_id': id,
+      });
+    } else {
+      quizSession = QuizSession(packId: id, questions: const []);
+    }
     notifyListeners();
   }
 
-  void startPackSession({String? packId}) {
+  Future<void> startPackSession({String? packId}) async {
     inPackSession = true;
     packSessionStage = PackSessionStage.flashcards;
     final id =
@@ -270,13 +299,13 @@ class AppState extends ChangeNotifier {
     if (id != null) {
       selectedPackId = id;
     }
-    if (packGameQueue.isEmpty) {
-      _setPackGameQueue(['flashcards', 'quiz', 'matching']);
+    if (id != null) {
+      await _loadReadyGamesForPack(id);
     }
     notifyListeners();
   }
 
-  String? startReviewFromDueConcepts() {
+  Future<String?> startReviewFromDueConcepts() async {
     if (packs.isEmpty) {
       return null;
     }
@@ -291,8 +320,11 @@ class AppState extends ChangeNotifier {
       targetPack = selectedPack ?? packs.first;
     }
 
-    startPackSession(packId: targetPack.id);
-    final firstType = currentPackGameType ?? 'quiz';
+    await startPackSession(packId: targetPack.id);
+    final firstType = currentPackGameType;
+    if (firstType == null) {
+      return null;
+    }
     startGameType(firstType);
     return routeForGameType(firstType);
   }
@@ -321,23 +353,15 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> startRevision({String? packId}) async {
+  Future<bool> startRevision({String? packId}) async {
     final id =
         packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
     if (id == null) {
-      return;
+      return false;
     }
     selectedPackId = id;
-    final pack = packs.firstWhere(
-      (item) => item.id == id,
-      orElse: () => packs.first,
-    );
     _revisionSubmissionPayload = [];
-
-    revisionSession = _buildFallbackRevisionSession(
-      packId: id,
-      subjectLabel: '${pack.subject} • ${pack.title}',
-    );
+    revisionSession = null;
     notifyListeners();
 
     try {
@@ -353,11 +377,11 @@ class AppState extends ChangeNotifier {
           revisionSession = backendSession;
           _revisionSubmissionPayload = [];
           notifyListeners();
+          return true;
         }
       }
-    } catch (_) {
-      // Keep local fallback session if backend revision session is unavailable.
-    }
+    } catch (_) {}
+    return false;
   }
 
   Future<void> answerRevisionPrompt(int selectedIndex) async {
@@ -371,10 +395,6 @@ class AppState extends ChangeNotifier {
     }
     if (selectedIndex == prompt.correctIndex) {
       session.correctCount += 1;
-      if (session.backendSessionId == null) {
-        xpToday += 3;
-        totalXp += 3;
-      }
     }
     _revisionSubmissionPayload = [
       ..._revisionSubmissionPayload,
@@ -391,17 +411,6 @@ class AppState extends ChangeNotifier {
     revisionSession = null;
     _revisionSubmissionPayload = [];
     notifyListeners();
-  }
-
-  RevisionSession _buildFallbackRevisionSession({
-    required String packId,
-    required String subjectLabel,
-  }) {
-    return RevisionSession(
-      prompts: _repositories.packs.loadRevisionPrompts(packId),
-      subjectLabel: subjectLabel,
-      durationMinutes: 5,
-    );
   }
 
   RevisionSession? _buildBackendRevisionSession(Map<String, dynamic> data) {
@@ -647,17 +656,26 @@ class AppState extends ChangeNotifier {
   Future<_BackendSession> _ensureBackendSession() async {
     if (backend.token == null) {
       try {
-        await backend.login(email: _demoEmail, password: _demoPassword);
+        final payload = await backend.login(
+          email: _demoEmail,
+          password: _demoPassword,
+        );
+        _syncProfileFromAuthPayload(payload);
       } catch (error) {
         try {
-          await backend.register(
+          final payload = await backend.register(
             name: BackendConfig.demoName,
             email: _demoEmail,
             password: _demoPassword,
           );
+          _syncProfileFromAuthPayload(payload);
         } catch (registerError) {
           if (_isEmailTaken(registerError)) {
-            await backend.login(email: _demoEmail, password: _demoPassword);
+            final payload = await backend.login(
+              email: _demoEmail,
+              password: _demoPassword,
+            );
+            _syncProfileFromAuthPayload(payload);
           } else {
             rethrow;
           }
@@ -666,12 +684,21 @@ class AppState extends ChangeNotifier {
     }
 
     if (backendChildId == null) {
-      final children = await backend.listChildren();
-      final selectedChild = children.firstWhere(
-        (child) => child['name']?.toString() == BackendConfig.childName,
-        orElse: () =>
-            children.isNotEmpty ? children.first : <String, dynamic>{},
-      );
+      final backendChildren = await backend.listChildren();
+      children = backendChildren
+          .whereType<Map<String, dynamic>>()
+          .map(_mapChildProfile)
+          .whereType<ChildProfile>()
+          .toList();
+
+      final selectedChild = backendChildren
+          .whereType<Map<String, dynamic>>()
+          .firstWhere(
+            (child) => child['name']?.toString() == BackendConfig.childName,
+            orElse: () => backendChildren.isNotEmpty
+                ? backendChildren.first as Map<String, dynamic>
+                : <String, dynamic>{},
+          );
       backendChildId = _extractId(selectedChild);
       _syncGamificationFromBackendChild(selectedChild);
 
@@ -684,6 +711,11 @@ class AppState extends ChangeNotifier {
         _syncGamificationFromBackendChild(created);
         if (backendChildId == null && children.isEmpty) {
           final refreshed = await backend.listChildren();
+          children = refreshed
+              .whereType<Map<String, dynamic>>()
+              .map(_mapChildProfile)
+              .whereType<ChildProfile>()
+              .toList();
           if (refreshed.isNotEmpty) {
             _syncGamificationFromBackendChild(
               refreshed.first as Map<String, dynamic>,
@@ -702,6 +734,143 @@ class AppState extends ChangeNotifier {
     }
 
     return _BackendSession(childId: childId);
+  }
+
+  Future<void> _hydrateFromBackend() async {
+    final childId = backendChildId;
+    if (childId == null) {
+      return;
+    }
+
+    try {
+      final rawDocuments = await backend.listDocuments(childId: childId);
+      documents = rawDocuments
+          .whereType<Map<String, dynamic>>()
+          .map(_mapDocumentItem)
+          .toList();
+      _docCounter = documents.length;
+    } catch (_) {
+      documents = const [];
+    }
+
+    try {
+      final rawPacks = await backend.listLearningPacks(childId: childId);
+      packs = rawPacks
+          .whereType<Map<String, dynamic>>()
+          .map(_learningPackFromBackend)
+          .whereType<LearningPack>()
+          .toList();
+      if (packs.isNotEmpty &&
+          (selectedPackId == null ||
+              !packs.any((pack) => pack.id == selectedPackId))) {
+        selectedPackId = packs.first.id;
+      }
+      mastery = {
+        for (final pack in packs)
+          if (pack.title.isNotEmpty) pack.title: pack.progress,
+      };
+    } catch (_) {
+      packs = const [];
+      mastery = const {};
+      selectedPackId = null;
+    }
+
+    weeklySummary = WeeklySummary(
+      minutesSpent: xpToday,
+      newBadges: achievements.where((item) => item.isUnlocked).length,
+      sessionsCompleted: streakDays,
+      topSubject: packs.isNotEmpty ? packs.first.subject : 'N/A',
+    );
+    notifyListeners();
+  }
+
+  Future<void> _loadReadyGamesForPack(String packId) async {
+    final childId = backendChildId;
+    if (childId == null) {
+      return;
+    }
+
+    try {
+      final games = await backend.listGames(childId: childId, packId: packId);
+      _setGamePayloadsFromBackendList(games.cast<Map<String, dynamic>>());
+    } catch (_) {}
+  }
+
+  void _setGamePayloadsFromBackendList(List<Map<String, dynamic>> games) {
+    final payloadsByType = <String, Map<String, dynamic>>{};
+    final idsByType = <String, String>{};
+    for (final entry in games) {
+      final status = entry['status']?.toString();
+      final type = entry['type']?.toString();
+      final payload = entry['payload'];
+      final id = _extractId(entry);
+      if (status == 'ready' &&
+          type != null &&
+          payload is Map<String, dynamic>) {
+        payloadsByType[type] = payload;
+        if (id != null) {
+          idsByType[type] = id;
+        }
+      }
+    }
+    gamePayloads = payloadsByType;
+    gameIds = idsByType;
+    flashcardsPayload = payloadsByType['flashcards'];
+    matchingPayload = payloadsByType['matching'];
+    _setPackGameQueue(payloadsByType.keys.toList());
+  }
+
+  void _syncProfileFromAuthPayload(Map<String, dynamic> payload) {
+    final rawUser = payload['user'];
+    if (rawUser is! Map<String, dynamic>) {
+      return;
+    }
+
+    final userId =
+        _extractId(rawUser) ?? rawUser['id']?.toString() ?? profile.id;
+    final name = rawUser['name']?.toString();
+    final email = rawUser['email']?.toString();
+
+    profile = profile.copyWith(
+      id: userId,
+      name: (name == null || name.isEmpty) ? profile.name : name,
+      gradeLabel: BackendConfig.childGrade,
+      planName: currentPlan,
+    );
+    parentProfile = ParentProfile(
+      name: (name == null || name.isEmpty) ? parentProfile.name : name,
+      email: email ?? parentProfile.email,
+    );
+    notifyListeners();
+  }
+
+  ChildProfile? _mapChildProfile(Map<String, dynamic> child) {
+    final id = _extractId(child);
+    if (id == null || id.isEmpty) {
+      return null;
+    }
+    return ChildProfile(
+      id: id,
+      name: child['name']?.toString() ?? BackendConfig.childName,
+      gradeLabel: child['grade_level']?.toString() ?? BackendConfig.childGrade,
+    );
+  }
+
+  DocumentItem _mapDocumentItem(Map<String, dynamic> doc) {
+    final id = _extractId(doc) ?? '';
+    final title = doc['original_filename']?.toString() ?? 'Document';
+    final subject = doc['subject']?.toString() ?? 'General';
+    final status = doc['status']?.toString() ?? 'unknown';
+    final createdAt =
+        DateTime.tryParse(doc['created_at']?.toString() ?? '') ??
+        DateTime.now();
+    return DocumentItem(
+      id: id,
+      title: title,
+      subject: subject,
+      createdAt: createdAt,
+      statusLabel: _statusLabelForDocument(status),
+    );
   }
 
   void _syncGamificationFromBackendChild(Map<String, dynamic> child) {
@@ -796,25 +965,9 @@ class AppState extends ChangeNotifier {
             childId: childId,
             packId: packId,
           );
-          final payloadsByType = <String, Map<String, dynamic>>{};
-          final idsByType = <String, String>{};
-          for (final entry in games.cast<Map<String, dynamic>>()) {
-            final status = entry['status']?.toString();
-            final type = entry['type']?.toString();
-            final payload = entry['payload'];
-            final id = _extractId(entry);
-            if (status == 'ready' &&
-                type != null &&
-                payload is Map<String, dynamic>) {
-              payloadsByType[type] = payload;
-              if (id != null) idsByType[type] = id;
-            }
-          }
-          gamePayloads = payloadsByType;
-          gameIds = idsByType;
-          flashcardsPayload = payloadsByType['flashcards'];
-          matchingPayload = payloadsByType['matching'];
-          _setPackGameQueue(payloadsByType.keys.toList());
+          _setGamePayloadsFromBackendList(
+            games.whereType<Map<String, dynamic>>().toList(),
+          );
 
           final selectedType = _pickNextGameType(packGameQueue);
           if (selectedType != null) {
@@ -940,29 +1093,21 @@ class AppState extends ChangeNotifier {
 
     try {
       final data = await backend.listLearningPacks(childId: childId);
-      if (data.isEmpty) {
-        return;
+      packs = data
+          .whereType<Map<String, dynamic>>()
+          .map(_learningPackFromBackend)
+          .whereType<LearningPack>()
+          .toList();
+      mastery = {
+        for (final pack in packs)
+          if (pack.title.isNotEmpty) pack.title: pack.progress,
+      };
+      if (packs.isEmpty) {
+        selectedPackId = null;
+      } else if (!packs.any((pack) => pack.id == selectedPackId)) {
+        selectedPackId = packs.first.id;
       }
-
-      final before = packs
-          .map((pack) {
-            return '${pack.id}:${pack.progress}:${pack.conceptsMastered}:${pack.conceptsTotal}';
-          })
-          .join('|');
-
-      for (final entry in data.whereType<Map<String, dynamic>>()) {
-        _syncPackFromBackend(entry);
-      }
-
-      final after = packs
-          .map((pack) {
-            return '${pack.id}:${pack.progress}:${pack.conceptsMastered}:${pack.conceptsTotal}';
-          })
-          .join('|');
-
-      if (before != after) {
-        notifyListeners();
-      }
+      notifyListeners();
     } catch (_) {
       // Ignore transient refresh failures.
     }
@@ -1110,7 +1255,11 @@ class AppState extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    startQuiz();
+    quizSession = QuizSession(
+      packId: selectedPackId ?? '',
+      questions: const [],
+    );
+    notifyListeners();
   }
 
   String? _pickNextGameType(List<String> availableTypes) {
@@ -1180,11 +1329,7 @@ class AppState extends ChangeNotifier {
     ];
     final normalized = availableTypes.toSet();
     final ordered = preferredOrder.where(normalized.contains).toList();
-    if (ordered.isEmpty) {
-      packGameQueue = ['flashcards', 'quiz', 'matching'];
-    } else {
-      packGameQueue = ordered;
-    }
+    packGameQueue = ordered;
     packGameIndex = 0;
   }
 
@@ -1445,7 +1590,6 @@ class AppState extends ChangeNotifier {
         : selectedPackId;
     final gameId = currentGameId;
     if (childId == null || packId == null || gameId == null) {
-      _applyLocalGamificationFallback(correctAnswers: correctAnswers);
       lastResultSyncError =
           'Game result sync skipped: missing childId/packId/gameId.';
       debugPrint(lastResultSyncError);
@@ -1472,9 +1616,6 @@ class AppState extends ChangeNotifier {
         final xpEarned = (response['xp_earned'] as num?)?.toInt();
         if (streak != null) {
           streakDays = streak;
-          _lastLocalStreakAwardDate = DateTime.now().toIso8601String().split(
-            'T',
-          )[0];
         }
         if (total != null) {
           totalXp = total;
@@ -1498,7 +1639,6 @@ class AppState extends ChangeNotifier {
       }
     }
 
-    _applyLocalGamificationFallback(correctAnswers: correctAnswers);
     lastResultSyncError = lastError.toString();
     debugPrint('Game result submission failed: $lastError');
     notifyListeners();
@@ -1523,6 +1663,10 @@ class AppState extends ChangeNotifier {
             .toSet()
             .toList();
         notifyListeners();
+      } else {
+        reviewDueCount = 0;
+        reviewDueConceptKeys = [];
+        notifyListeners();
       }
     } catch (_) {
       // Ignore transient refresh failures.
@@ -1537,33 +1681,15 @@ class AppState extends ChangeNotifier {
 
     try {
       final data = await backend.fetchHomeRecommendations(childId: childId);
-      if (data == null) {
-        return;
-      }
-      homeRecommendations = data
-          .whereType<Map<String, dynamic>>()
-          .map((item) => Map<String, dynamic>.from(item))
-          .toList();
+      homeRecommendations = data == null
+          ? []
+          : data
+                .whereType<Map<String, dynamic>>()
+                .map((item) => Map<String, dynamic>.from(item))
+                .toList();
       notifyListeners();
     } catch (_) {
       // Ignore transient refresh failures.
-    }
-  }
-
-  void _applyLocalGamificationFallback({required int correctAnswers}) {
-    final fallbackXp = correctAnswers * 10;
-    if (fallbackXp > 0) {
-      xpToday += fallbackXp;
-      totalXp += fallbackXp;
-      if (lastGameOutcome != null) {
-        lastGameOutcome = lastGameOutcome!.copyWith(xpEarned: fallbackXp);
-      }
-    }
-
-    final today = DateTime.now().toIso8601String().split('T')[0];
-    if (_lastLocalStreakAwardDate != today) {
-      streakDays = (streakDays <= 0) ? 1 : streakDays + 1;
-      _lastLocalStreakAwardDate = today;
     }
   }
 
@@ -1586,22 +1712,11 @@ class AppState extends ChangeNotifier {
     try {
       final session = await _ensureBackendSession();
       final data = await backend.listDocuments(childId: session.childId);
-      documents = data.cast<Map<String, dynamic>>().map((doc) {
-        final id = _extractId(doc) ?? '';
-        final title = doc['original_filename']?.toString() ?? 'Homework';
-        final subject = doc['subject']?.toString() ?? 'Homework';
-        final status = doc['status']?.toString() ?? 'unknown';
-        final createdAt =
-            DateTime.tryParse(doc['created_at']?.toString() ?? '') ??
-            DateTime.now();
-        return DocumentItem(
-          id: id,
-          title: title,
-          subject: subject,
-          createdAt: createdAt,
-          statusLabel: _statusLabelForDocument(status),
-        );
-      }).toList();
+      documents = data
+          .whereType<Map<String, dynamic>>()
+          .map(_mapDocumentItem)
+          .toList();
+      _docCounter = documents.length;
     } catch (error) {
       documentSyncError = error.toString();
     } finally {

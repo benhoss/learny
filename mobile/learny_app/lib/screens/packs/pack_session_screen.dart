@@ -22,19 +22,42 @@ class PackSessionScreen extends StatelessWidget {
       gradient: LearnyGradients.trust,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: List.generate(games.length, (index) {
-          final item = games[index];
-          return ListTile(
-            leading: Icon(_stepIcon(index), color: item.color),
-            title: Text(item.label),
-            subtitle: Text(item.subtitle),
-          );
-        }),
+        children: games.isEmpty
+            ? const [
+                ListTile(
+                  leading: Icon(Icons.hourglass_empty_rounded),
+                  title: Text('No ready games'),
+                  subtitle: Text(
+                    'Finish document processing, then start the session.',
+                  ),
+                ),
+              ]
+            : List.generate(games.length, (index) {
+                final item = games[index];
+                return ListTile(
+                  leading: Icon(_stepIcon(index), color: item.color),
+                  title: Text(item.label),
+                  subtitle: Text(item.subtitle),
+                );
+              }),
       ),
       primaryAction: ElevatedButton(
-        onPressed: () {
-          state.startPackSession(packId: pack?.id);
-          final firstType = state.currentPackGameType ?? 'flashcards';
+        onPressed: () async {
+          await state.startPackSession(packId: pack?.id);
+          if (!context.mounted) {
+            return;
+          }
+          final firstType = state.currentPackGameType;
+          if (firstType == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'No generated games are ready for this pack yet.',
+                ),
+              ),
+            );
+            return;
+          }
           state.startGameType(firstType);
           Navigator.pushNamed(context, state.routeForGameType(firstType));
         },
@@ -46,7 +69,7 @@ class PackSessionScreen extends StatelessWidget {
   List<_SessionGameItem> _sessionGames(AppState state) {
     final queue = state.packGameQueue.isNotEmpty
         ? state.packGameQueue
-        : ['flashcards', 'quiz', 'matching'];
+        : state.gamePayloads.keys.toList();
     return queue
         .map(
           (type) => _SessionGameItem(

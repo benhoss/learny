@@ -24,8 +24,6 @@ class ParentPinScreen extends StatelessWidget {
             decoration: InputDecoration(labelText: '4-digit PIN'),
             obscureText: true,
           ),
-          SizedBox(height: 12),
-          Text('This is a demo — any PIN works.'),
         ],
       ),
       primaryAction: ElevatedButton(

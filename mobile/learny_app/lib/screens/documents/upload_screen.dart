@@ -75,15 +75,6 @@ class _UploadScreenState extends State<UploadScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const ListTile(
-            leading: Icon(
-              Icons.picture_as_pdf_rounded,
-              color: LearnyColors.teal,
-            ),
-            title: Text('Math Worksheet.pdf'),
-            subtitle: Text('2.1 MB'),
-          ),
-          const SizedBox(height: 8),
           TextField(
             controller: _subjectController,
             onChanged: (_) => setState(() {}),

@@ -2,71 +2,92 @@
 
 namespace App\Services\Memory;
 
+use App\Models\ChildProfile;
 use App\Models\Document;
 use App\Models\LearningMemoryEvent;
 use App\Models\MasteryProfile;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 
 class MemorySignalProjector
 {
-    public function buildRecommendations(string $childId): array
+    public function buildRecommendations(ChildProfile $child): array
     {
+        $childId = (string) $child->_id;
+        $personalizationEnabled = (bool) ($child->memory_personalization_enabled ?? true);
+        $includeWhy = (bool) ($child->recommendation_why_enabled ?? true);
+
         $recommendations = [];
 
-        $due = MasteryProfile::where('child_profile_id', $childId)
-            ->where('next_review_at', '<=', now())
-            ->orderBy('next_review_at')
-            ->limit(3)
-            ->get(['concept_key', 'concept_label', 'next_review_at']);
+        if ($personalizationEnabled) {
+            $due = MasteryProfile::where('child_profile_id', $childId)
+                ->where('next_review_at', '<=', now())
+                ->orderBy('next_review_at')
+                ->limit(3)
+                ->get(['concept_key', 'concept_label', 'next_review_at']);
 
-        foreach ($due as $profile) {
-            $label = (string) ($profile->concept_label ?: $profile->concept_key);
-            $recommendations[] = [
-                'id' => 'due:'.$profile->concept_key,
-                'type' => 'review_due',
-                'title' => 'Review now: '.$label,
-                'subtitle' => 'This concept is due for spaced revision.',
-                'concept_key' => (string) $profile->concept_key,
-                'priority_score' => 100,
-                'action' => 'start_revision',
-                'explainability' => [
-                    'source' => 'mastery_profiles.next_review_at',
-                    'due_at' => optional($profile->next_review_at)->toISOString(),
-                ],
-            ];
-        }
-
-        $recentMistakes = LearningMemoryEvent::where('child_profile_id', $childId)
-            ->where('occurred_at', '>=', now()->subDays(14))
-            ->whereIn('event_type', ['play', 'review'])
-            ->where('metadata.correct', false)
-            ->orderBy('occurred_at', 'desc')
-            ->limit(100)
-            ->get(['concept_key']);
-
-        $mistakeBuckets = collect($recentMistakes)
-            ->groupBy('concept_key')
-            ->map(fn ($entries) => $entries->count())
-            ->sortDesc()
-            ->take(2);
-
-        foreach ($mistakeBuckets as $conceptKey => $count) {
-            if (! is_string($conceptKey) || $conceptKey === '') {
-                continue;
+            foreach ($due as $profile) {
+                $label = (string) ($profile->concept_label ?: $profile->concept_key);
+                $recommendations[] = [
+                    'id' => 'due:'.$profile->concept_key,
+                    'type' => 'review_due',
+                    'title' => 'Review now: '.$label,
+                    'subtitle' => 'This concept is due for spaced revision.',
+                    'concept_key' => (string) $profile->concept_key,
+                    'priority_score' => 100,
+                    'action' => 'start_revision',
+                    'action_payload' => [
+                        'concept_key' => (string) $profile->concept_key,
+                        'intent' => 'due_review',
+                    ],
+                    'explainability' => $includeWhy
+                        ? [
+                            'source' => 'mastery_profiles.next_review_at',
+                            'due_at' => optional($profile->next_review_at)->toISOString(),
+                        ]
+                        : null,
+                ];
             }
-            $recommendations[] = [
-                'id' => 'mistake:'.$conceptKey,
-                'type' => 'weak_area',
-                'title' => 'Practice weak area',
-                'subtitle' => $conceptKey.' had '.$count.' recent mistakes.',
-                'concept_key' => $conceptKey,
-                'priority_score' => 90,
-                'action' => 'start_revision',
-                'explainability' => [
-                    'source' => 'learning_memory_events',
-                    'recent_mistake_count' => $count,
-                    'window_days' => 14,
-                ],
-            ];
+
+            $recentMistakes = LearningMemoryEvent::where('child_profile_id', $childId)
+                ->where('occurred_at', '>=', now()->subDays(14))
+                ->whereIn('event_type', ['play', 'review'])
+                ->where('metadata.correct', false)
+                ->orderBy('occurred_at', 'desc')
+                ->limit(100)
+                ->get(['concept_key']);
+
+            $mistakeBuckets = collect($recentMistakes)
+                ->groupBy('concept_key')
+                ->map(fn ($entries) => $entries->count())
+                ->sortDesc()
+                ->take(2);
+
+            foreach ($mistakeBuckets as $conceptKey => $count) {
+                if (! is_string($conceptKey) || $conceptKey === '') {
+                    continue;
+                }
+                $recommendations[] = [
+                    'id' => 'mistake:'.$conceptKey,
+                    'type' => 'weak_area',
+                    'title' => 'Practice weak area',
+                    'subtitle' => $conceptKey.' had '.$count.' recent mistakes.',
+                    'concept_key' => $conceptKey,
+                    'priority_score' => 90,
+                    'action' => 'start_revision',
+                    'action_payload' => [
+                        'concept_key' => $conceptKey,
+                        'intent' => 'weak_area',
+                    ],
+                    'explainability' => $includeWhy
+                        ? [
+                            'source' => 'learning_memory_events',
+                            'recent_mistake_count' => $count,
+                            'window_days' => 14,
+                        ]
+                        : null,
+                ];
+            }
         }
 
         $recentDocument = Document::where('child_profile_id', $childId)
@@ -82,11 +103,52 @@ class MemorySignalProjector
                 'subtitle' => (string) ($recentDocument->subject ?: $recentDocument->original_filename),
                 'concept_key' => null,
                 'priority_score' => 70,
-                'action' => 'start_learning',
-                'explainability' => [
-                    'source' => 'documents',
+                'action' => 'resume_recent_upload',
+                'action_payload' => [
                     'document_id' => (string) $recentDocument->_id,
                 ],
+                'explainability' => $includeWhy
+                    ? [
+                        'source' => 'documents',
+                        'document_id' => (string) $recentDocument->_id,
+                    ]
+                    : null,
+            ];
+        }
+
+        if ($this->shouldRescueStreak($child)) {
+            $recommendations[] = [
+                'id' => 'streak-rescue:'.$childId,
+                'type' => 'streak_rescue',
+                'title' => 'Streak rescue session',
+                'subtitle' => 'Keep your streak alive with a 2-minute quick review.',
+                'concept_key' => null,
+                'priority_score' => 95,
+                'action' => 'start_streak_rescue',
+                'action_payload' => [
+                    'target_minutes' => 2,
+                ],
+                'explainability' => $includeWhy
+                    ? [
+                        'source' => 'child_profiles',
+                        'streak_days' => (int) ($child->streak_days ?? 0),
+                        'last_activity_date' => optional($this->parseDate($child->last_activity_date))->toISOString(),
+                    ]
+                    : null,
+            ];
+        }
+
+        if (! $personalizationEnabled) {
+            $recommendations[] = [
+                'id' => 'generic:resume',
+                'type' => 'generic_practice',
+                'title' => 'Start a quick practice',
+                'subtitle' => 'Personalization is paused. You can still learn from uploads.',
+                'concept_key' => null,
+                'priority_score' => 80,
+                'action' => 'start_learning',
+                'action_payload' => null,
+                'explainability' => $includeWhy ? ['source' => 'memory_preferences'] : null,
             ];
         }
 
@@ -95,5 +157,34 @@ class MemorySignalProjector
             ->take(5)
             ->values()
             ->all();
+    }
+
+    protected function shouldRescueStreak(ChildProfile $child): bool
+    {
+        $streak = (int) ($child->streak_days ?? 0);
+        if ($streak <= 0) {
+            return false;
+        }
+
+        $lastActivity = $this->parseDate($child->last_activity_date);
+
+        return $lastActivity !== null && $lastActivity->lt(now()->subDay());
+    }
+
+    protected function parseDate(mixed $value): ?CarbonInterface
+    {
+        if ($value instanceof CarbonInterface) {
+            return $value;
+        }
+
+        if (is_string($value) && $value !== '') {
+            try {
+                return Carbon::parse($value);
+            } catch (\Throwable) {
+                return null;
+            }
+        }
+
+        return null;
     }
 }

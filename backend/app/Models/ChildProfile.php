@@ -20,6 +20,11 @@ class ChildProfile extends Model
         'longest_streak',
         'last_activity_date',
         'total_xp',
+        'memory_personalization_enabled',
+        'recommendation_why_enabled',
+        'recommendation_why_level',
+        'last_memory_reset_at',
+        'last_memory_reset_scope',
     ];
 
     protected $casts = [
@@ -27,6 +32,9 @@ class ChildProfile extends Model
         'streak_days' => 'integer',
         'longest_streak' => 'integer',
         'total_xp' => 'integer',
+        'memory_personalization_enabled' => 'boolean',
+        'recommendation_why_enabled' => 'boolean',
+        'last_memory_reset_at' => 'datetime',
     ];
 
     protected $attributes = [
@@ -34,6 +42,11 @@ class ChildProfile extends Model
         'longest_streak' => 0,
         'last_activity_date' => null,
         'total_xp' => 0,
+        'memory_personalization_enabled' => true,
+        'recommendation_why_enabled' => true,
+        'recommendation_why_level' => 'detailed',
+        'last_memory_reset_at' => null,
+        'last_memory_reset_scope' => null,
     ];
 
     public function user()

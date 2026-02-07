@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learny_app/services/backend_client.dart';
+import 'package:learny_app/routes/app_routes.dart';
 import 'package:learny_app/state/app_state.dart';
 
 class _TestBackendClient extends BackendClient {
@@ -130,6 +131,113 @@ class _ProgressFlowBackendClient extends BackendClient {
   }
 }
 
+class _MemoryRecommendationBackendClient extends BackendClient {
+  _MemoryRecommendationBackendClient() : super(baseUrl: 'http://localhost');
+
+  int trackCalls = 0;
+  int updatePreferenceCalls = 0;
+  int clearScopeCalls = 0;
+  String? lastScope;
+  String? lastTrackedAction;
+
+  @override
+  Future<Map<String, dynamic>> updateMemoryPreferences({
+    required String childId,
+    bool? memoryPersonalizationEnabled,
+    bool? recommendationWhyEnabled,
+    String? recommendationWhyLevel,
+  }) async {
+    updatePreferenceCalls += 1;
+    return {
+      'memory_personalization_enabled': memoryPersonalizationEnabled ?? true,
+      'recommendation_why_enabled': recommendationWhyEnabled ?? true,
+      'recommendation_why_level': recommendationWhyLevel ?? 'detailed',
+      'last_memory_reset_at': null,
+      'last_memory_reset_scope': null,
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> clearMemoryScope({
+    required String childId,
+    required String scope,
+  }) async {
+    clearScopeCalls += 1;
+    lastScope = scope;
+    return {
+      'scope': scope,
+      'preferences': {
+        'memory_personalization_enabled': true,
+        'recommendation_why_enabled': true,
+        'recommendation_why_level': 'detailed',
+        'last_memory_reset_at': DateTime.now().toUtc().toIso8601String(),
+        'last_memory_reset_scope': scope,
+      },
+    };
+  }
+
+  @override
+  Future<void> trackRecommendationEvent({
+    required String childId,
+    required String recommendationId,
+    required String recommendationType,
+    required String action,
+    String event = 'tap',
+    Map<String, dynamic>? metadata,
+  }) async {
+    trackCalls += 1;
+    lastTrackedAction = action;
+  }
+
+  @override
+  Future<List<dynamic>> listLearningPacks({
+    required String childId,
+    String? documentId,
+  }) async {
+    return [
+      {
+        '_id': 'pack-1',
+        'title': 'Fractions Pack',
+        'summary': 'Math',
+        'mastery_percentage': 0,
+        'concepts_mastered': 0,
+        'concepts_total': 1,
+        'content': {
+          'items': [],
+          'concepts': [
+            {'key': 'fractions.addition', 'label': 'Adding fractions'},
+          ],
+        },
+      },
+    ];
+  }
+
+  @override
+  Future<List<dynamic>> listGames({
+    required String childId,
+    required String packId,
+  }) async {
+    return [
+      {
+        '_id': 'game-1',
+        'type': 'quiz',
+        'status': 'ready',
+        'payload': {
+          'title': 'Quick Quiz',
+          'questions': [
+            {
+              'id': 'q1',
+              'prompt': '1+1',
+              'choices': ['1', '2'],
+              'answer_index': 1,
+            },
+          ],
+        },
+      },
+    ];
+  }
+}
+
 void main() {
   group('AppState result submission flow', () {
     test('skips submission when identifiers are missing', () async {
@@ -232,6 +340,60 @@ void main() {
         expect(state.activities.length, 3);
         expect(state.hasMoreActivities, isFalse);
         expect(backend.listActivitiesCalls, 2);
+      },
+    );
+  });
+
+  group('AppState recommendation and memory controls', () {
+    test('recommendation action routes and telemetry are executed', () async {
+      final backend = _MemoryRecommendationBackendClient()..token = 'token';
+      final state = AppState(
+        backendClient: backend,
+        initializeBackendSession: false,
+      );
+
+      state.backendChildId = 'child-1';
+
+      final route = await state.runRecommendationAction({
+        'id': 'recent-doc:1',
+        'type': 'recent_upload',
+        'action': 'resume_recent_upload',
+        'action_payload': {'document_id': 'doc-1'},
+      });
+
+      expect(route, AppRoutes.quiz);
+      expect(backend.trackCalls, 1);
+      expect(backend.lastTrackedAction, 'resume_recent_upload');
+    });
+
+    test(
+      'memory preference update and clear scope mutate local state',
+      () async {
+        final backend = _MemoryRecommendationBackendClient()..token = 'token';
+        final state = AppState(
+          backendClient: backend,
+          initializeBackendSession: false,
+        );
+
+        state.backendChildId = 'child-1';
+
+        await state.updateMemoryPreferences(
+          memoryPersonalizationEnabled: false,
+          recommendationWhyEnabled: false,
+          recommendationWhyLevel: 'brief',
+        );
+
+        expect(backend.updatePreferenceCalls, 1);
+        expect(state.memoryPersonalizationEnabled, isFalse);
+        expect(state.recommendationWhyEnabled, isFalse);
+        expect(state.recommendationWhyLevel, 'brief');
+
+        final cleared = await state.clearMemoryScope('events');
+        expect(cleared, isTrue);
+        expect(backend.clearScopeCalls, 1);
+        expect(backend.lastScope, 'events');
+        expect(state.lastMemoryResetScope, 'events');
+        expect(state.lastMemoryResetAt, isNotNull);
       },
     );
   });

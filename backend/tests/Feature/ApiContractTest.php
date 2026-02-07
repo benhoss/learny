@@ -40,6 +40,9 @@ class ApiContractTest extends TestCase
         MasteryProfile::factory()->create([
             'child_profile_id' => (string) $child->_id,
             'mastery_level' => 0.9,
+            'concept_key' => 'fractions.addition',
+            'concept_label' => 'Adding fractions',
+            'next_review_at' => now()->subHour(),
         ]);
 
         $token = Auth::guard('api')->login($user);
@@ -64,6 +67,36 @@ class ApiContractTest extends TestCase
                     'total_concepts',
                     'mastered_concepts',
                     'average_mastery',
+                ],
+            ]);
+
+        $home = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/children/'.$child->_id.'/home-recommendations');
+        $home->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    [
+                        'id',
+                        'type',
+                        'title',
+                        'subtitle',
+                        'priority_score',
+                        'action',
+                        'explainability',
+                    ],
+                ],
+            ]);
+
+        $memory = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/children/'.$child->_id.'/memory/preferences');
+        $memory->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'memory_personalization_enabled',
+                    'recommendation_why_enabled',
+                    'recommendation_why_level',
+                    'last_memory_reset_at',
+                    'last_memory_reset_scope',
                 ],
             ]);
     }

@@ -488,6 +488,102 @@ class BackendClient {
     }
   }
 
+  Future<Map<String, dynamic>?> fetchMemoryPreferences({
+    required String childId,
+  }) async {
+    try {
+      final response = await _client.get(
+        Uri.parse('$baseUrl/api/v1/children/$childId/memory/preferences'),
+        headers: _authHeaders(),
+      );
+
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      final payload = jsonDecode(response.body) as Map<String, dynamic>;
+      return payload['data'] as Map<String, dynamic>?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> updateMemoryPreferences({
+    required String childId,
+    bool? memoryPersonalizationEnabled,
+    bool? recommendationWhyEnabled,
+    String? recommendationWhyLevel,
+  }) async {
+    final response = await _client.put(
+      Uri.parse('$baseUrl/api/v1/children/$childId/memory/preferences'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        if (memoryPersonalizationEnabled != null)
+          'memory_personalization_enabled': memoryPersonalizationEnabled,
+        if (recommendationWhyEnabled != null)
+          'recommendation_why_enabled': recommendationWhyEnabled,
+        if (recommendationWhyLevel != null)
+          'recommendation_why_level': recommendationWhyLevel,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException(
+        'Update memory preferences failed: ${response.body}',
+      );
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> clearMemoryScope({
+    required String childId,
+    required String scope,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/children/$childId/memory/clear-scope'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({'scope': scope}),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Clear memory scope failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<void> trackRecommendationEvent({
+    required String childId,
+    required String recommendationId,
+    required String recommendationType,
+    required String action,
+    String event = 'tap',
+    Map<String, dynamic>? metadata,
+  }) async {
+    final response = await _client.post(
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/home-recommendations/events',
+      ),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        'recommendation_id': recommendationId,
+        'recommendation_type': recommendationType,
+        'action': action,
+        'event': event,
+        if (metadata != null) 'metadata': metadata,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException(
+        'Track recommendation event failed: ${response.body}',
+      );
+    }
+  }
+
   Map<String, String> _jsonHeaders({bool includeContentType = false}) {
     return {
       'Accept': 'application/json',

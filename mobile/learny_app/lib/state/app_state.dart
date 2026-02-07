@@ -111,6 +111,13 @@ class AppState extends ChangeNotifier {
   bool notificationsEnabled = true;
   bool soundEnabled = true;
   bool remindersEnabled = true;
+  bool memoryPersonalizationEnabled = true;
+  bool recommendationWhyEnabled = true;
+  String recommendationWhyLevel = 'detailed';
+  DateTime? lastMemoryResetAt;
+  String? lastMemoryResetScope;
+  bool memorySettingsBusy = false;
+  String? memorySettingsError;
 
   final String _demoEmail = BackendConfig.demoEmail;
   final String _demoPassword = BackendConfig.demoPassword;
@@ -158,6 +165,13 @@ class AppState extends ChangeNotifier {
     uploadProgressPercent = 0;
     processingProgressPercent = 0;
     processingStageLabel = 'Waiting';
+    memoryPersonalizationEnabled = true;
+    recommendationWhyEnabled = true;
+    recommendationWhyLevel = 'detailed';
+    lastMemoryResetAt = null;
+    lastMemoryResetScope = null;
+    memorySettingsBusy = false;
+    memorySettingsError = null;
   }
 
   void _initializeBackendSession() {
@@ -172,6 +186,7 @@ class AppState extends ChangeNotifier {
         await _hydrateFromBackend();
         await _refreshReviewCount();
         await refreshActivitiesFromBackend();
+        await _refreshMemoryPreferences();
         await _refreshHomeRecommendations();
       } catch (_) {
         // Surface errors during upload instead of at boot time.
@@ -1804,6 +1819,182 @@ class AppState extends ChangeNotifier {
       notifyListeners();
     } catch (_) {
       // Ignore transient refresh failures.
+    }
+  }
+
+  Future<void> _refreshMemoryPreferences() async {
+    final childId = backendChildId;
+    if (childId == null) {
+      return;
+    }
+
+    try {
+      final data = await backend.fetchMemoryPreferences(childId: childId);
+      if (data == null) {
+        return;
+      }
+      _syncMemoryPreferencesFromBackend(data);
+      notifyListeners();
+    } catch (_) {
+      // Ignore transient refresh failures.
+    }
+  }
+
+  void _syncMemoryPreferencesFromBackend(Map<String, dynamic> data) {
+    memoryPersonalizationEnabled =
+        (data['memory_personalization_enabled'] as bool?) ?? true;
+    recommendationWhyEnabled =
+        (data['recommendation_why_enabled'] as bool?) ?? true;
+    recommendationWhyLevel =
+        data['recommendation_why_level']?.toString() ?? 'detailed';
+    lastMemoryResetScope = data['last_memory_reset_scope']?.toString();
+    final rawResetAt = data['last_memory_reset_at']?.toString();
+    lastMemoryResetAt = rawResetAt == null
+        ? null
+        : DateTime.tryParse(rawResetAt);
+  }
+
+  Future<void> updateMemoryPreferences({
+    bool? memoryPersonalizationEnabled,
+    bool? recommendationWhyEnabled,
+    String? recommendationWhyLevel,
+  }) async {
+    final childId = backendChildId;
+    if (childId == null) {
+      return;
+    }
+
+    memorySettingsBusy = true;
+    memorySettingsError = null;
+    notifyListeners();
+    try {
+      final data = await backend.updateMemoryPreferences(
+        childId: childId,
+        memoryPersonalizationEnabled: memoryPersonalizationEnabled,
+        recommendationWhyEnabled: recommendationWhyEnabled,
+        recommendationWhyLevel: recommendationWhyLevel,
+      );
+      _syncMemoryPreferencesFromBackend(data);
+      await _refreshHomeRecommendations();
+    } catch (error) {
+      memorySettingsError = error.toString();
+    } finally {
+      memorySettingsBusy = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> clearMemoryScope(String scope) async {
+    final childId = backendChildId;
+    if (childId == null) {
+      return false;
+    }
+
+    memorySettingsBusy = true;
+    memorySettingsError = null;
+    notifyListeners();
+
+    try {
+      final payload = await backend.clearMemoryScope(
+        childId: childId,
+        scope: scope,
+      );
+      final preferences = payload['preferences'];
+      if (preferences is Map<String, dynamic>) {
+        _syncMemoryPreferencesFromBackend(preferences);
+      } else {
+        lastMemoryResetScope = scope;
+        lastMemoryResetAt = DateTime.now().toUtc();
+      }
+      await _refreshReviewCount();
+      await refreshActivitiesFromBackend();
+      await _refreshHomeRecommendations();
+      return true;
+    } catch (error) {
+      memorySettingsError = error.toString();
+      return false;
+    } finally {
+      memorySettingsBusy = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String> runRecommendationAction(
+    Map<String, dynamic> recommendation,
+  ) async {
+    final action = recommendation['action']?.toString() ?? 'start_learning';
+    await _trackRecommendationEvent(recommendation, event: 'tap');
+
+    switch (action) {
+      case 'start_revision':
+        return AppRoutes.revisionSetup;
+      case 'start_streak_rescue':
+        final rescueRoute = await startReviewFromDueConcepts();
+        return rescueRoute ?? AppRoutes.revisionSetup;
+      case 'resume_recent_upload':
+        final payload = recommendation['action_payload'];
+        final documentId = payload is Map
+            ? payload['document_id']?.toString()
+            : null;
+        final route = await _startLearningFromDocument(documentId);
+        return route ?? AppRoutes.cameraCapture;
+      case 'start_learning':
+      default:
+        return AppRoutes.cameraCapture;
+    }
+  }
+
+  Future<String?> _startLearningFromDocument(String? documentId) async {
+    final childId = backendChildId;
+    if (childId == null || documentId == null || documentId.isEmpty) {
+      return null;
+    }
+
+    try {
+      final packsData = await backend.listLearningPacks(
+        childId: childId,
+        documentId: documentId,
+      );
+      if (packsData.isEmpty) {
+        return null;
+      }
+      final firstPack = packsData.first as Map<String, dynamic>;
+      final packId = _extractId(firstPack);
+      if (packId == null || packId.isEmpty) {
+        return null;
+      }
+      _syncPackFromBackend(firstPack, selectPack: true);
+      await _loadReadyGamesForPack(packId);
+      final gameType = currentPackGameType;
+      if (gameType == null) {
+        return null;
+      }
+      startGameType(gameType);
+      return routeForGameType(gameType);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _trackRecommendationEvent(
+    Map<String, dynamic> recommendation, {
+    String event = 'tap',
+  }) async {
+    final childId = backendChildId;
+    if (childId == null) {
+      return;
+    }
+
+    try {
+      await backend.trackRecommendationEvent(
+        childId: childId,
+        recommendationId: recommendation['id']?.toString() ?? 'unknown',
+        recommendationType: recommendation['type']?.toString() ?? 'unknown',
+        action: recommendation['action']?.toString() ?? 'unknown',
+        event: event,
+      );
+    } catch (_) {
+      // Ignore telemetry failures.
     }
   }
 

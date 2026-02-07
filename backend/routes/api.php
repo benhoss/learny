@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\GameResultController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\HomeRecommendationController;
 use App\Http\Controllers\Api\LearningPackController;
+use App\Http\Controllers\Api\MemoryPreferencesController;
 use App\Http\Controllers\Api\RevisionSessionController;
 use App\Http\Controllers\Api\ReviewQueueController;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,7 @@ Route::prefix('v1')->group(function () {
         Route::get('children/{child}/mastery', [ChildProgressController::class, 'mastery']);
         Route::get('children/{child}/progress', [ChildProgressController::class, 'progress']);
         Route::get('children/{child}/home-recommendations', [HomeRecommendationController::class, 'index']);
+        Route::get('children/{child}/memory/preferences', [MemoryPreferencesController::class, 'show']);
 
         Route::get('children/{child}/documents', [DocumentController::class, 'index']);
         Route::get('children/{child}/documents/{document}', [DocumentController::class, 'show']);
@@ -52,6 +54,9 @@ Route::prefix('v1')->group(function () {
                 ->only(['store', 'update', 'destroy']);
 
             Route::post('children/{child}/mastery', [ChildProgressController::class, 'upsertMastery']);
+            Route::put('children/{child}/memory/preferences', [MemoryPreferencesController::class, 'update']);
+            Route::post('children/{child}/memory/clear-scope', [MemoryPreferencesController::class, 'clearScope']);
+            Route::post('children/{child}/home-recommendations/events', [HomeRecommendationController::class, 'track']);
 
             Route::post('children/{child}/documents', [DocumentController::class, 'store']);
             Route::post('children/{child}/documents/{document}/regenerate', [DocumentController::class, 'regenerate']);

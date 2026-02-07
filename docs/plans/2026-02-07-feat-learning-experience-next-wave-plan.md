@@ -199,8 +199,8 @@ Decision: Deferred until wave completion metrics stabilize.
 
 - [x] Child can start at least one game before full pipeline completion in partial-ready scenarios.
 - [x] Revision sessions are adaptively composed from due + weak + recent document signals.
-- [ ] Progress/home surfaces expose actionable next steps tied to real learner state.
-- [ ] Parent can pause personalization, clear memory scope, and inspect recommendation rationale.
+- [x] Progress/home surfaces expose actionable next steps tied to real learner state.
+- [x] Parent can pause personalization, clear memory scope, and inspect recommendation rationale.
 - [ ] Activity and motivation surfaces remain robust under repeated actions and network failures.
 
 ### Non-Functional Requirements
@@ -213,9 +213,9 @@ Decision: Deferred until wave completion metrics stabilize.
 
 ### Quality Gates
 
-- [ ] Backend tests for stage transitions, first-playable semantics, adaptive revision ranking.
-- [ ] Flutter tests for progress CTA routing, memory controls, and recommendation explainability views.
-- [ ] Contract tests for pagination, recommendation `why`, and memory preference endpoints.
+- [x] Backend tests for stage transitions, first-playable semantics, adaptive revision ranking.
+- [x] Flutter tests for progress CTA routing, memory controls, and recommendation explainability views.
+- [x] Contract tests for pagination, recommendation `why`, and memory preference endpoints.
 - [ ] End-to-end smoke flow: upload -> play first-ready -> complete -> revise -> accept recommendation.
 
 ## Success Metrics
@@ -257,19 +257,19 @@ Mitigations:
 
 - [x] Revision ranking v2 + explainability payload.
 - [x] Mobile adaptive session variants.
-- [ ] Deterministic ranking and submission idempotency tests.
+- [x] Deterministic ranking and submission idempotency tests.
 
 ### Track 3 - Motivation Loop
 
-- [ ] Next-best-action cards in home/progress.
-- [ ] Streak rescue session entry point.
-- [ ] CTA telemetry and funnel instrumentation.
+- [x] Next-best-action cards in home/progress.
+- [x] Streak rescue session entry point.
+- [x] CTA telemetry and funnel instrumentation.
 
 ### Track 4 - Memory Governance
 
-- [ ] Memory preferences and clear-scope APIs.
-- [ ] Settings UI controls and recommendation “why” dialogs.
-- [ ] Contract and policy-copy validation.
+- [x] Memory preferences and clear-scope APIs.
+- [x] Settings UI controls and recommendation “why” dialogs.
+- [x] Contract and policy-copy validation.
 
 ### Track 5 - Metrics and Optimization
 
@@ -281,6 +281,7 @@ Mitigations:
 
 - 2026-02-07 iteration 1 completed Track 1 implementation in backend and mobile.
 - 2026-02-07 iteration 2 completed adaptive revision explainability (backend scoring/reasons + mobile reason/confidence surfaces).
+- 2026-02-07 iteration 3 completed deterministic revision tests, recommendation action routing/telemetry, streak rescue flow, and memory governance APIs + settings controls.
 - Flutter validation passed for updated flows and state tests.
 - Backend PHPUnit feature tests remain blocked in this environment due missing `MongoDB\\Driver\\Manager`; syntax checks and targeted test additions are in place.
 

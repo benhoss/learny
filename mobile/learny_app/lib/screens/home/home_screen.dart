@@ -186,20 +186,19 @@ class HomeScreen extends StatelessWidget {
                           subtitle:
                               item['subtitle']?.toString() ??
                               'Based on your recent activity',
-                          onTap: () {
-                            final action = item['action']?.toString();
-                            if (action == 'start_revision') {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.revisionSetup,
-                              );
+                          onTap: () async {
+                            final route = await state.runRecommendationAction(
+                              item,
+                            );
+                            if (!context.mounted) {
                               return;
                             }
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.cameraCapture,
-                            );
+                            Navigator.pushNamed(context, route);
                           },
+                          onWhy: state.recommendationWhyEnabled
+                              ? () =>
+                                    _showRecommendationWhyDialog(context, item)
+                              : null,
                         ),
                       ),
                     ),
@@ -262,6 +261,49 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showRecommendationWhyDialog(
+    BuildContext context,
+    Map<String, dynamic> recommendation,
+  ) {
+    final explainability = recommendation['explainability'];
+    final details = <String>[];
+    if (explainability is Map) {
+      for (final entry in explainability.entries) {
+        details.add('${entry.key}: ${entry.value}');
+      }
+    }
+    if (details.isEmpty) {
+      details.add('No additional rationale available for this suggestion.');
+    }
+
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Why this recommendation?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(recommendation['title']?.toString() ?? 'Recommendation'),
+            const SizedBox(height: 8),
+            ...details.map(
+              (line) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(line),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
       ),
     );
   }
@@ -349,11 +391,13 @@ class _SmartRecommendationCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.onWhy,
   });
 
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final VoidCallback? onWhy;
 
   @override
   Widget build(BuildContext context) {
@@ -407,6 +451,16 @@ class _SmartRecommendationCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (onWhy != null)
+              IconButton(
+                tooltip: 'Why this?',
+                onPressed: onWhy,
+                icon: const Icon(
+                  LucideIcons.info,
+                  size: 16,
+                  color: LearnyColors.slateMedium,
+                ),
+              ),
             const Icon(
               LucideIcons.chevronRight,
               size: 16,

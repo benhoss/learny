@@ -98,6 +98,12 @@ class RevisionSessionTest extends TestCase
         $sessionId = (string) $start->json('data.id');
         $items = collect($start->json('data.items'));
         $this->assertNotEmpty($items->all());
+        $this->assertTrue(
+            $items->pluck('priority_score')->filter()->values()->all()
+                === collect($items->pluck('priority_score')->filter()->values()->all())->sortDesc()->values()->all()
+        );
+        $this->assertContains('Due now in your review queue', $items->pluck('selection_reason')->all());
+        $this->assertContains('Based on a recent wrong answer', $items->pluck('selection_reason')->all());
 
         $results = $items->take(3)->map(function (array $item) {
             return [
@@ -121,6 +127,7 @@ class RevisionSessionTest extends TestCase
         $eventCount = LearningMemoryEvent::where('child_profile_id', (string) $child->_id)
             ->where('event_type', 'review')
             ->count();
+        $completedSession = RevisionSession::where('_id', $sessionId)->firstOrFail();
         $this->assertGreaterThan(
             0,
             $eventCount
@@ -139,6 +146,16 @@ class RevisionSessionTest extends TestCase
             LearningMemoryEvent::where('child_profile_id', (string) $child->_id)
                 ->where('event_type', 'review')
                 ->count()
+        );
+
+        $replayedSession = RevisionSession::where('_id', $sessionId)->firstOrFail();
+        $this->assertSame((string) $completedSession->status, (string) $replayedSession->status);
+        $this->assertSame((int) $completedSession->correct_items, (int) $replayedSession->correct_items);
+        $this->assertSame((int) $completedSession->total_items, (int) $replayedSession->total_items);
+        $this->assertSame((int) $completedSession->xp_earned, (int) $replayedSession->xp_earned);
+        $this->assertSame(
+            collect($completedSession->results ?? [])->values()->all(),
+            collect($replayedSession->results ?? [])->values()->all()
         );
     }
 }

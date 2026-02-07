@@ -19,6 +19,25 @@ class HomeScreen extends StatelessWidget {
     final tokens = context.tokens;
     final featuredPacks = state.packs.take(2).toList();
     final recommendations = state.homeRecommendations.take(3).toList();
+    final fallbackRecommendations = [
+      {
+        'title': state.reviewDueCount > 0
+            ? 'Review ${state.reviewDueCount} due concepts'
+            : 'Start a quick 5-minute revision',
+        'subtitle': state.reviewDueCount > 0
+            ? 'Strengthen concepts scheduled for today.'
+            : 'Warm up with an express review session.',
+        'action': 'start_revision',
+      },
+      {
+        'title': 'Upload and generate a new game',
+        'subtitle': 'Turn a worksheet photo into playable practice.',
+        'action': 'start_learning',
+      },
+    ];
+    final smartNextSteps = recommendations.isNotEmpty
+        ? recommendations
+        : fallbackRecommendations;
 
     return Container(
       decoration: BoxDecoration(gradient: tokens.gradientWelcome),
@@ -141,51 +160,45 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
 
-            if (recommendations.isNotEmpty) ...[
-              SizedBox(height: tokens.spaceMd),
-              FadeInSlide(
-                delay: const Duration(milliseconds: 360),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Smart Next Steps',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: LearnyColors.neutralDark,
-                      ),
+            SizedBox(height: tokens.spaceMd),
+            FadeInSlide(
+              delay: const Duration(milliseconds: 360),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Smart Next Steps',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: LearnyColors.neutralDark,
                     ),
-                    SizedBox(height: tokens.spaceSm),
-                    ...recommendations.map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _SmartRecommendationCard(
-                          title:
-                              item['title']?.toString() ?? 'Continue learning',
-                          subtitle:
-                              item['subtitle']?.toString() ??
-                              'Based on your recent activity',
-                          onTap: () {
-                            final action = item['action']?.toString();
-                            if (action == 'start_revision') {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.revisionSetup,
-                              );
-                              return;
-                            }
+                  ),
+                  SizedBox(height: tokens.spaceSm),
+                  ...smartNextSteps.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _SmartRecommendationCard(
+                        title: item['title']?.toString() ?? 'Continue learning',
+                        subtitle:
+                            item['subtitle']?.toString() ??
+                            'Based on your recent activity',
+                        onTap: () {
+                          final action = item['action']?.toString();
+                          if (action == 'start_revision') {
                             Navigator.pushNamed(
                               context,
-                              AppRoutes.cameraCapture,
+                              AppRoutes.revisionSetup,
                             );
-                          },
-                        ),
+                            return;
+                          }
+                          Navigator.pushNamed(context, AppRoutes.cameraCapture);
+                        },
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
 
             SizedBox(height: tokens.spaceLg),
 

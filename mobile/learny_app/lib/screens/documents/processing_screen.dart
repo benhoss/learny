@@ -302,6 +302,8 @@ class _ProcessingStateState extends State<_ProcessingState> {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final fact = _funFacts[_funFactIndex];
+    final progress = _parseProgress(widget.status);
+    final stageLabel = _stageLabel(widget.status);
 
     return Container(
       padding: EdgeInsets.all(tokens.spaceLg + 8),
@@ -319,6 +321,31 @@ class _ProcessingStateState extends State<_ProcessingState> {
           SizedBox(height: tokens.spaceLg),
 
           // Status text
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: LearnyColors.skyLight.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              stageLabel,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: LearnyColors.skyPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+
+          SizedBox(height: tokens.spaceSm),
+
+          LinearProgressIndicator(
+            value: progress,
+            minHeight: 8,
+            borderRadius: BorderRadius.circular(999),
+          ),
+
+          SizedBox(height: tokens.spaceSm),
+
           Text(
             widget.status,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -340,6 +367,31 @@ class _ProcessingStateState extends State<_ProcessingState> {
         ],
       ),
     );
+  }
+
+  double _parseProgress(String status) {
+    final match = RegExp(r'^(\d{1,3})%').firstMatch(status.trim());
+    if (match == null) {
+      return 0.15;
+    }
+    final raw = int.tryParse(match.group(1) ?? '');
+    if (raw == null) {
+      return 0.15;
+    }
+    return (raw.clamp(0, 100) as int) / 100.0;
+  }
+
+  String _stageLabel(String status) {
+    final lower = status.toLowerCase();
+    if (lower.contains('queue')) return 'Queued';
+    if (lower.contains('reading') || lower.contains('ocr')) return 'OCR';
+    if (lower.contains('concept')) return 'Concept Extraction';
+    if (lower.contains('pack')) return 'Pack Generation';
+    if (lower.contains('game') || lower.contains('quiz'))
+      return 'Game Generation';
+    if (lower.contains('ready')) return 'Ready';
+    if (lower.contains('failed')) return 'Failed';
+    return 'Processing';
   }
 }
 

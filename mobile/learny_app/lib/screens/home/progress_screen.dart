@@ -26,6 +26,29 @@ class ProgressScreen extends StatelessWidget {
     final masteryAverage = masteryValues.isEmpty
         ? 0.0
         : masteryValues.reduce((a, b) => a + b) / masteryValues.length;
+    final recentActivities = state.activities;
+    final recentCount = recentActivities.length;
+    final averageScore = recentCount == 0
+        ? 0
+        : (recentActivities
+                      .map((activity) => activity.scorePercent)
+                      .reduce((a, b) => a + b) /
+                  recentCount)
+              .round();
+    final recentXp = recentActivities.fold<int>(
+      0,
+      (sum, activity) => sum + activity.xpEarned,
+    );
+    final latestCheer = recentActivities.isEmpty
+        ? 'Upload a document and complete a game to start your momentum.'
+        : recentActivities.first.cheerMessage;
+    final momentumLabel = averageScore >= 85
+        ? 'Excellent momentum'
+        : averageScore >= 65
+        ? 'Steady momentum'
+        : recentCount == 0
+        ? 'Ready to start'
+        : 'Building momentum';
 
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -42,6 +65,43 @@ class ProgressScreen extends StatelessWidget {
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(color: LearnyColors.slateMedium),
+        ),
+        const SizedBox(height: 16),
+        SectionCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.auto_awesome_rounded, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    momentumLabel,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _MetricChip(label: 'Sessions', value: '$recentCount'),
+                  _MetricChip(label: 'Avg score', value: '$averageScore%'),
+                  _MetricChip(label: 'Recent XP', value: '+$recentXp'),
+                  _MetricChip(label: 'Streak', value: '${state.streakDays}d'),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                latestCheer,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: LearnyColors.slateMedium,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         SectionCard(
@@ -163,7 +223,7 @@ class _PastActivitySection extends StatelessWidget {
                     : () => _redoSubject(context, state, activity.packId!),
                 onRedoDocument: activity.documentId == null
                     ? null
-                    : () => state.regenerateDocument(activity.documentId!),
+                    : () => _redoDocument(context, state, activity.documentId!),
                 onGenerateNewType: activity.documentId == null
                     ? null
                     : () => _generateNewGameType(
@@ -176,6 +236,16 @@ class _PastActivitySection extends StatelessWidget {
                       ),
               ),
             ),
+          if (state.activities.isNotEmpty && state.hasMoreActivities)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: state.isSyncingActivities
+                    ? null
+                    : () => state.loadMoreActivitiesFromBackend(),
+                child: const Text('Load older activity'),
+              ),
+            ),
         ],
       ),
     );
@@ -186,21 +256,50 @@ class _PastActivitySection extends StatelessWidget {
     AppState state,
     String packId,
   ) async {
-    await state.startPackSession(packId: packId);
+    try {
+      await state.startPackSession(packId: packId);
+      if (!context.mounted) {
+        return;
+      }
+      final firstType = state.currentPackGameType;
+      if (firstType == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No ready games found for this subject yet.'),
+          ),
+        );
+        return;
+      }
+      state.startGameType(firstType);
+      Navigator.pushNamed(context, state.routeForGameType(firstType));
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not reopen this subject: $error')),
+      );
+    }
+  }
+
+  Future<void> _redoDocument(
+    BuildContext context,
+    AppState state,
+    String documentId,
+  ) async {
+    final ok = await state.regenerateDocument(documentId);
     if (!context.mounted) {
       return;
     }
-    final firstType = state.currentPackGameType;
-    if (firstType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No ready games found for this subject yet.'),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? 'Document regeneration started.'
+              : 'Could not regenerate document right now.',
         ),
-      );
-      return;
-    }
-    state.startGameType(firstType);
-    Navigator.pushNamed(context, state.routeForGameType(firstType));
+      ),
+    );
   }
 
   Future<void> _generateNewGameType(
@@ -239,14 +338,19 @@ class _PastActivitySection extends StatelessWidget {
       return;
     }
 
-    await state.regenerateDocument(documentId, requestedGameTypes: [selected]);
+    final ok = await state.regenerateDocument(
+      documentId,
+      requestedGameTypes: [selected],
+    );
     if (!context.mounted) {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Regeneration started for ${_labelForGameType(selected)}.',
+          ok
+              ? 'Regeneration started for ${_labelForGameType(selected)}.'
+              : 'Could not start regeneration for ${_labelForGameType(selected)}.',
         ),
       ),
     );
@@ -284,7 +388,7 @@ class _PastActivitySection extends StatelessWidget {
   }
 }
 
-class _ActivityCard extends StatelessWidget {
+class _ActivityCard extends StatefulWidget {
   const _ActivityCard({
     required this.title,
     required this.subtitle,
@@ -310,8 +414,29 @@ class _ActivityCard extends StatelessWidget {
   final Future<void> Function()? onGenerateNewType;
 
   @override
+  State<_ActivityCard> createState() => _ActivityCardState();
+}
+
+class _ActivityCardState extends State<_ActivityCard> {
+  bool _isBusy = false;
+
+  Future<void> _runAction(Future<void> Function()? action) async {
+    if (_isBusy || action == null) {
+      return;
+    }
+    setState(() => _isBusy = true);
+    try {
+      await action();
+    } finally {
+      if (mounted) {
+        setState(() => _isBusy = false);
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final delta = progressionDelta;
+    final delta = widget.progressionDelta;
     final deltaColor = (delta ?? 0) >= 0
         ? LearnyColors.teal
         : LearnyColors.coral;
@@ -320,6 +445,7 @@ class _ActivityCard extends StatelessWidget {
         : delta >= 0
         ? '+$delta%'
         : '$delta%';
+    final scoreBand = _scoreBand(widget.scorePercent);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -335,12 +461,12 @@ class _ActivityCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        title,
+                        widget.title,
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        subtitle,
+                        widget.subtitle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: LearnyColors.slateMedium,
                         ),
@@ -365,15 +491,37 @@ class _ActivityCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: scoreBand.color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    scoreBand.label,
+                    style: TextStyle(
+                      color: scoreBand.color,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
-            LinearProgressIndicator(value: (scorePercent.clamp(0, 100)) / 100),
-            const SizedBox(height: 6),
-            Text('$scorePercent% • $scoreLabel • +$xpEarned XP'),
+            LinearProgressIndicator(
+              value: (widget.scorePercent.clamp(0, 100)) / 100,
+            ),
             const SizedBox(height: 6),
             Text(
-              cheerMessage,
+              '${widget.scorePercent}% • ${widget.scoreLabel} • +${widget.xpEarned} XP',
+            ),
+            const SizedBox(height: 6),
+            Text(
+              widget.cheerMessage,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: LearnyColors.slateMedium,
                 fontStyle: FontStyle.italic,
@@ -385,21 +533,21 @@ class _ActivityCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 OutlinedButton(
-                  onPressed: onRedoSubject == null
+                  onPressed: _isBusy || widget.onRedoSubject == null
                       ? null
-                      : () async => onRedoSubject!.call(),
+                      : () => _runAction(widget.onRedoSubject),
                   child: const Text('Redo Subject'),
                 ),
                 OutlinedButton(
-                  onPressed: onRedoDocument == null
+                  onPressed: _isBusy || widget.onRedoDocument == null
                       ? null
-                      : () async => onRedoDocument!.call(),
+                      : () => _runAction(widget.onRedoDocument),
                   child: const Text('Redo Document'),
                 ),
                 OutlinedButton(
-                  onPressed: onGenerateNewType == null
+                  onPressed: _isBusy || widget.onGenerateNewType == null
                       ? null
-                      : () async => onGenerateNewType!.call(),
+                      : () => _runAction(widget.onGenerateNewType),
                   child: const Text('New Game Type'),
                 ),
               ],
@@ -408,6 +556,19 @@ class _ActivityCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  _ScoreBand _scoreBand(int scorePercent) {
+    if (scorePercent >= 85) {
+      return const _ScoreBand(label: 'Strong', color: LearnyColors.teal);
+    }
+    if (scorePercent >= 65) {
+      return const _ScoreBand(
+        label: 'Improving',
+        color: LearnyColors.skyPrimary,
+      );
+    }
+    return const _ScoreBand(label: 'Keep Going', color: LearnyColors.sunshine);
   }
 }
 
@@ -445,4 +606,42 @@ class _ActionCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _MetricChip extends StatelessWidget {
+  const _MetricChip({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: LearnyColors.neutralCream,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: LearnyColors.slateMedium),
+          ),
+          const SizedBox(height: 2),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScoreBand {
+  const _ScoreBand({required this.label, required this.color});
+
+  final String label;
+  final Color color;
 }

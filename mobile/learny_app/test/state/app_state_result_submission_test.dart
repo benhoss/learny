@@ -43,6 +43,93 @@ class _TestBackendClient extends BackendClient {
   }
 }
 
+class _ProgressFlowBackendClient extends BackendClient {
+  _ProgressFlowBackendClient() : super(baseUrl: 'http://localhost');
+
+  int listDocumentsCalls = 0;
+  int listActivitiesCalls = 0;
+  final List<List<String>?> regenerateCalls = [];
+
+  @override
+  Future<Map<String, dynamic>> regenerateDocument({
+    required String childId,
+    required String documentId,
+    List<String>? requestedGameTypes,
+  }) async {
+    regenerateCalls.add(requestedGameTypes);
+    return {'id': documentId, 'status': 'queued'};
+  }
+
+  @override
+  Future<List<dynamic>> listDocuments({required String childId}) async {
+    listDocumentsCalls += 1;
+    return [
+      {
+        '_id': 'doc-1',
+        'original_filename': 'fractions.pdf',
+        'subject': 'Math',
+        'status': 'queued',
+        'created_at': DateTime.now().toIso8601String(),
+      },
+    ];
+  }
+
+  @override
+  Future<Map<String, dynamic>> listActivities({
+    required String childId,
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    listActivitiesCalls += 1;
+    if (page == 1) {
+      return {
+        'data': [
+          {
+            'id': 'a-1',
+            'completed_at': DateTime.now().toIso8601String(),
+            'game_type': 'quiz',
+            'subject': 'Math',
+            'score_percent': 80,
+            'correct_answers': 4,
+            'total_questions': 5,
+            'xp_earned': 40,
+            'cheer_message': 'Great focus.',
+          },
+          {
+            'id': 'a-2',
+            'completed_at': DateTime.now().toIso8601String(),
+            'game_type': 'flashcards',
+            'subject': 'Math',
+            'score_percent': 60,
+            'correct_answers': 3,
+            'total_questions': 5,
+            'xp_earned': 30,
+            'cheer_message': 'Keep going.',
+          },
+        ],
+        'meta': {'has_more': true},
+      };
+    }
+
+    return {
+      'data': [
+        {
+          'id': 'a-3',
+          'completed_at': DateTime.now().toIso8601String(),
+          'game_type': 'matching',
+          'subject': 'Math',
+          'score_percent': 100,
+          'correct_answers': 5,
+          'total_questions': 5,
+          'xp_earned': 50,
+          'cheer_message': 'Excellent.',
+        },
+      ],
+      'meta': {'has_more': false},
+    };
+  }
+}
+
 void main() {
   group('AppState result submission flow', () {
     test('skips submission when identifiers are missing', () async {
@@ -104,5 +191,48 @@ void main() {
       expect(state.xpToday, 10);
       expect(state.lastGameOutcome?.xpEarned, 10);
     });
+  });
+
+  group('AppState progress and regeneration flow', () {
+    test(
+      'redo document without explicit game types clears filters path',
+      () async {
+        final backend = _ProgressFlowBackendClient()..token = 'token';
+        final state = AppState(
+          backendClient: backend,
+          initializeBackendSession: false,
+        );
+
+        state.backendChildId = 'child-1';
+
+        final ok = await state.regenerateDocument('doc-1');
+
+        expect(ok, isTrue);
+        expect(backend.regenerateCalls, [null]);
+        expect(backend.listDocumentsCalls, 1);
+      },
+    );
+
+    test(
+      'refresh and load-more activities append pages using pagination meta',
+      () async {
+        final backend = _ProgressFlowBackendClient()..token = 'token';
+        final state = AppState(
+          backendClient: backend,
+          initializeBackendSession: false,
+        );
+
+        state.backendChildId = 'child-1';
+
+        await state.refreshActivitiesFromBackend();
+        expect(state.activities.length, 2);
+        expect(state.hasMoreActivities, isTrue);
+
+        await state.loadMoreActivitiesFromBackend();
+        expect(state.activities.length, 3);
+        expect(state.hasMoreActivities, isFalse);
+        expect(backend.listActivitiesCalls, 2);
+      },
+    );
   });
 }

@@ -154,8 +154,12 @@ class DocumentController extends Controller
         $document->stage_completed_at = null;
         $document->progress_hint = 5;
         $document->ocr_error = null;
-        if (array_key_exists('requested_game_types', $data) && ! empty($data['requested_game_types'])) {
-            $document->requested_game_types = array_values(array_unique($data['requested_game_types']));
+        if (array_key_exists('requested_game_types', $data)) {
+            $requested = array_values(array_unique($data['requested_game_types'] ?? []));
+            $document->requested_game_types = $requested === [] ? null : $requested;
+        } else {
+            // Generic "redo document" should regenerate full/default game set.
+            $document->requested_game_types = null;
         }
         $document->save();
 

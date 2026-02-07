@@ -100,6 +100,7 @@ class AppState extends ChangeNotifier {
   String? documentSyncError;
   bool isSyncingActivities = false;
   String? activitySyncError;
+  bool hasMoreActivities = true;
   List<Map<String, dynamic>> _revisionSubmissionPayload = [];
 
   int _docCounter = 0;
@@ -112,6 +113,8 @@ class AppState extends ChangeNotifier {
   final String _demoPassword = BackendConfig.demoPassword;
   bool _backendSessionReady = false;
   bool _backendSessionInitializing = false;
+  int _activityPage = 1;
+  static const int _activityPerPage = 20;
 
   void _load() {
     profile = const UserProfile(
@@ -147,6 +150,8 @@ class AppState extends ChangeNotifier {
     selectedPackId = null;
     _docCounter = 0;
     activitySyncError = null;
+    hasMoreActivities = true;
+    _activityPage = 1;
   }
 
   void _initializeBackendSession() {
@@ -761,16 +766,23 @@ class AppState extends ChangeNotifier {
     }
 
     try {
-      final rawActivities = await backend.listActivities(
+      final payload = await backend.listActivities(
         childId: childId,
-        limit: 50,
+        page: 1,
+        perPage: _activityPerPage,
       );
+      final rawActivities = payload['data'] as List<dynamic>? ?? [];
       activities = rawActivities
           .whereType<Map<String, dynamic>>()
           .map(ActivityItem.fromJson)
           .toList();
+      final meta = payload['meta'] as Map<String, dynamic>? ?? const {};
+      hasMoreActivities = (meta['has_more'] as bool?) ?? false;
+      _activityPage = 1;
     } catch (_) {
       activities = const [];
+      hasMoreActivities = false;
+      _activityPage = 1;
     }
 
     try {
@@ -1719,6 +1731,8 @@ class AppState extends ChangeNotifier {
     final childId = backendChildId;
     if (childId == null) {
       activities = const [];
+      hasMoreActivities = false;
+      _activityPage = 1;
       return;
     }
 
@@ -1727,11 +1741,54 @@ class AppState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = await backend.listActivities(childId: childId, limit: 50);
+      final payload = await backend.listActivities(
+        childId: childId,
+        page: 1,
+        perPage: _activityPerPage,
+      );
+      final data = payload['data'] as List<dynamic>? ?? [];
       activities = data
           .whereType<Map<String, dynamic>>()
           .map(ActivityItem.fromJson)
           .toList();
+      final meta = payload['meta'] as Map<String, dynamic>? ?? const {};
+      hasMoreActivities = (meta['has_more'] as bool?) ?? false;
+      _activityPage = 1;
+    } catch (error) {
+      activitySyncError = error.toString();
+    } finally {
+      isSyncingActivities = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadMoreActivitiesFromBackend() async {
+    final childId = backendChildId;
+    if (childId == null || isSyncingActivities || !hasMoreActivities) {
+      return;
+    }
+
+    isSyncingActivities = true;
+    activitySyncError = null;
+    notifyListeners();
+
+    try {
+      final nextPage = _activityPage + 1;
+      final payload = await backend.listActivities(
+        childId: childId,
+        page: nextPage,
+        perPage: _activityPerPage,
+      );
+      final data = payload['data'] as List<dynamic>? ?? [];
+      final nextItems = data
+          .whereType<Map<String, dynamic>>()
+          .map(ActivityItem.fromJson)
+          .toList();
+
+      activities = [...activities, ...nextItems];
+      final meta = payload['meta'] as Map<String, dynamic>? ?? const {};
+      hasMoreActivities = (meta['has_more'] as bool?) ?? false;
+      _activityPage = nextPage;
     } catch (error) {
       activitySyncError = error.toString();
     } finally {
@@ -1789,24 +1846,32 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> regenerateDocument(
+  Future<bool> regenerateDocument(
     String documentId, {
     List<String>? requestedGameTypes,
   }) async {
-    final session = await _ensureBackendSession();
-    await backend.regenerateDocument(
-      childId: session.childId,
-      documentId: documentId,
-      requestedGameTypes: requestedGameTypes,
-    );
-    documents = documents
-        .map(
-          (doc) =>
-              doc.id == documentId ? doc.copyWith(statusLabel: 'Queued') : doc,
-        )
-        .toList();
-    notifyListeners();
-    await refreshDocumentsFromBackend();
+    try {
+      final session = await _ensureBackendSession();
+      await backend.regenerateDocument(
+        childId: session.childId,
+        documentId: documentId,
+        requestedGameTypes: requestedGameTypes,
+      );
+      documents = documents
+          .map(
+            (doc) => doc.id == documentId
+                ? doc.copyWith(statusLabel: 'Queued')
+                : doc,
+          )
+          .toList();
+      notifyListeners();
+      await refreshDocumentsFromBackend();
+      return true;
+    } catch (error) {
+      documentSyncError = error.toString();
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<void> retryIncorrectQuestions() async {

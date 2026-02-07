@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\ChildProfile;
 use App\Models\Document;
 use App\Models\User;
+use App\Jobs\GenerateLearningPackFromDocument;
 use App\Services\Concepts\ConceptExtractorInterface;
 use App\Services\Generation\GameGeneratorInterface;
 use App\Services\Generation\LearningPackGeneratorInterface;
@@ -13,6 +14,7 @@ use App\Services\Generation\StubLearningPackGenerator;
 use App\Services\Ocr\OcrClientInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -74,5 +76,38 @@ class DocumentUploadTest extends TestCase
         $this->assertSame('Extracted OCR content', $document->extracted_text);
 
         Storage::disk('s3')->assertExists($document->storage_path);
+    }
+
+    public function test_regenerate_without_requested_types_clears_previous_filter(): void
+    {
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $child = ChildProfile::factory()->create([
+            'user_id' => (string) $user->_id,
+        ]);
+
+        $document = Document::factory()->create([
+            'user_id' => (string) $user->_id,
+            'child_profile_id' => (string) $child->_id,
+            'status' => 'ready',
+            'requested_game_types' => ['quiz'],
+            'pipeline_stage' => 'ready',
+            'progress_hint' => 100,
+        ]);
+
+        $token = Auth::guard('api')->login($user);
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/children/'.$child->_id.'/documents/'.$document->_id.'/regenerate', []);
+
+        $response->assertStatus(202);
+
+        $document->refresh();
+        $this->assertNull($document->requested_game_types);
+        $this->assertSame('queued', $document->status);
+        $this->assertSame('queued', $document->pipeline_stage);
+
+        Queue::assertPushed(GenerateLearningPackFromDocument::class);
     }
 }

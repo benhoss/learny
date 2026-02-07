@@ -35,13 +35,43 @@ class GameResultController extends Controller
         $child = $this->findOwnedChild($childId);
         $validated = $request->validate([
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
+            'page' => ['nullable', 'integer', 'min:1', 'max:100000'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
+
+        $page = array_key_exists('page', $validated)
+            ? (int) $validated['page']
+            : null;
+        $perPage = array_key_exists('per_page', $validated)
+            ? (int) $validated['per_page']
+            : null;
         $limit = (int) ($validated['limit'] ?? 50);
 
-        $results = GameResult::where('child_profile_id', (string) $child->_id)
-            ->orderBy('completed_at', 'desc')
-            ->limit($limit)
-            ->get();
+        $baseQuery = GameResult::where('child_profile_id', (string) $child->_id)
+            ->orderBy('completed_at', 'desc');
+
+        if ($page !== null || $perPage !== null) {
+            $resolvedPage = max(1, $page ?? 1);
+            $resolvedPerPage = max(1, $perPage ?? 20);
+            $offset = ($resolvedPage - 1) * $resolvedPerPage;
+
+            $results = $baseQuery
+                ->skip($offset)
+                ->limit($resolvedPerPage + 1)
+                ->get();
+
+            $hasMore = $results->count() > $resolvedPerPage;
+            if ($hasMore) {
+                $results = $results->slice(0, $resolvedPerPage)->values();
+            }
+        } else {
+            $resolvedPage = 1;
+            $resolvedPerPage = $limit;
+            $hasMore = false;
+            $results = $baseQuery
+                ->limit($limit)
+                ->get();
+        }
 
         $packIds = $results->pluck('learning_pack_id')
             ->filter()
@@ -117,6 +147,12 @@ class GameResultController extends Controller
 
         return response()->json([
             'data' => array_reverse($itemsAsc),
+            'meta' => [
+                'page' => $resolvedPage,
+                'per_page' => $resolvedPerPage,
+                'has_more' => $hasMore,
+                'next_page' => $hasMore ? ($resolvedPage + 1) : null,
+            ],
         ]);
     }
 

@@ -357,12 +357,15 @@ class BackendClient {
     }
   }
 
-  Future<List<dynamic>> listActivities({
+  Future<Map<String, dynamic>> listActivities({
     required String childId,
-    int limit = 50,
+    int page = 1,
+    int perPage = 20,
   }) async {
     final response = await _client.get(
-      Uri.parse('$baseUrl/api/v1/children/$childId/activities?limit=$limit'),
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/activities?page=$page&per_page=$perPage',
+      ),
       headers: _authHeaders(),
     );
 
@@ -370,8 +373,7 @@ class BackendClient {
       throw BackendException('List activities failed: ${response.body}');
     }
 
-    final payload = jsonDecode(response.body) as Map<String, dynamic>;
-    return (payload['data'] as List<dynamic>?) ?? [];
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   Future<Map<String, dynamic>> createRetryGame({

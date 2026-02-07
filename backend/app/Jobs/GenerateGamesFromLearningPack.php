@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Game;
 use App\Models\LearningPack;
 use App\Models\Document;
+use App\Support\Documents\PipelineTelemetry;
 use App\Services\Generation\GameGeneratorInterface;
 use App\Services\Schemas\JsonSchemaValidator;
 use Illuminate\Bus\Queueable;
@@ -20,6 +21,7 @@ class GenerateGamesFromLearningPack implements ShouldQueue
 
     public function __construct(private readonly string $learningPackId)
     {
+        $this->onQueue('games');
     }
 
     public function handle(GameGeneratorInterface $generator, JsonSchemaValidator $validator): void
@@ -32,10 +34,7 @@ class GenerateGamesFromLearningPack implements ShouldQueue
 
         $document = Document::find((string) $pack->document_id);
         if ($document) {
-            $document->pipeline_stage = 'game_generation';
-            $document->stage_started_at = now();
-            $document->stage_completed_at = null;
-            $document->progress_hint = 85;
+            PipelineTelemetry::transition($document, 'game_generation', 85);
             $document->save();
         }
 
@@ -65,11 +64,25 @@ class GenerateGamesFromLearningPack implements ShouldQueue
                     'payload' => $payload,
                     'status' => 'ready',
                 ]);
+
+                if ($document) {
+                    $readyTypes = is_array($document->ready_game_types ?? null) ? $document->ready_game_types : [];
+                    if (! in_array($type, $readyTypes, true)) {
+                        $readyTypes[] = $type;
+                    }
+                    $document->ready_game_types = array_values($readyTypes);
+
+                    if ($document->first_playable_at === null) {
+                        $document->first_playable_at = now();
+                        $document->first_playable_game_type = $type;
+                        $document->progress_hint = max((int) ($document->progress_hint ?? 0), 90);
+                    }
+
+                    $document->save();
+                }
             } catch (Throwable $e) {
                 if ($document) {
-                    $document->status = 'failed';
-                    $document->pipeline_stage = 'game_generation_failed';
-                    $document->stage_completed_at = now();
+                    PipelineTelemetry::complete($document, 'failed', 'game_generation_failed');
                     $document->ocr_error = $e->getMessage();
                     $document->save();
                 }
@@ -78,11 +91,8 @@ class GenerateGamesFromLearningPack implements ShouldQueue
         }
 
         if ($document) {
-            $document->status = 'ready';
-            $document->pipeline_stage = 'ready';
+            PipelineTelemetry::complete($document, 'ready', 'ready', 100);
             $document->processed_at = now();
-            $document->stage_completed_at = now();
-            $document->progress_hint = 100;
             $document->save();
         }
     }

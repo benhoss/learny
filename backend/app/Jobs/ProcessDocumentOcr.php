@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Document;
 use App\Jobs\ExtractConceptsFromDocument;
+use App\Support\Documents\PipelineTelemetry;
 use App\Services\Ocr\OcrClientInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,6 +19,7 @@ class ProcessDocumentOcr implements ShouldQueue
 
     public function __construct(private readonly string $documentId)
     {
+        $this->onQueue('ocr');
     }
 
     public function handle(OcrClientInterface $ocrClient): void
@@ -28,20 +30,13 @@ class ProcessDocumentOcr implements ShouldQueue
             return;
         }
 
-        $document->status = 'processing';
-        $document->pipeline_stage = 'ocr';
-        $document->stage_started_at = now();
-        $document->stage_completed_at = null;
-        $document->progress_hint = 20;
+        PipelineTelemetry::transition($document, 'ocr', 20, 'processing');
         $document->ocr_error = null;
         $document->save();
 
         if ($this->shouldSkipOcr($document)) {
-            $document->status = 'processed';
-            $document->pipeline_stage = 'concept_extraction_queued';
+            PipelineTelemetry::transition($document, 'concept_extraction_queued', 40, 'processed');
             $document->processed_at = now();
-            $document->stage_completed_at = now();
-            $document->progress_hint = 40;
             $document->save();
 
             ExtractConceptsFromDocument::dispatch((string) $document->_id);
@@ -55,18 +50,13 @@ class ProcessDocumentOcr implements ShouldQueue
                 $document->storage_path,
                 $document->mime_type
             );
-            $document->status = 'processed';
-            $document->pipeline_stage = 'concept_extraction_queued';
+            PipelineTelemetry::transition($document, 'concept_extraction_queued', 40, 'processed');
             $document->processed_at = now();
-            $document->stage_completed_at = now();
-            $document->progress_hint = 40;
             $document->save();
 
             ExtractConceptsFromDocument::dispatch((string) $document->_id);
         } catch (Throwable $e) {
-            $document->status = 'failed';
-            $document->pipeline_stage = 'ocr_failed';
-            $document->stage_completed_at = now();
+            PipelineTelemetry::complete($document, 'failed', 'ocr_failed');
             $document->ocr_error = $e->getMessage();
             $document->save();
 

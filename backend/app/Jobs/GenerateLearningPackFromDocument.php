@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Concept;
 use App\Models\Document;
 use App\Models\LearningPack;
+use App\Support\Documents\PipelineTelemetry;
 use App\Services\Generation\LearningPackGeneratorInterface;
 use App\Services\Schemas\JsonSchemaValidator;
 use Illuminate\Bus\Queueable;
@@ -20,6 +21,7 @@ class GenerateLearningPackFromDocument implements ShouldQueue
 
     public function __construct(private readonly string $documentId)
     {
+        $this->onQueue('pack');
     }
 
     public function handle(
@@ -39,10 +41,7 @@ class GenerateLearningPackFromDocument implements ShouldQueue
             return;
         }
 
-        $document->pipeline_stage = 'learning_pack_generation';
-        $document->stage_started_at = now();
-        $document->stage_completed_at = null;
-        $document->progress_hint = 65;
+        PipelineTelemetry::transition($document, 'learning_pack_generation', 65);
         $document->save();
 
         $concepts = Concept::where('document_id', (string) $document->_id)->get()->toArray();
@@ -62,16 +61,12 @@ class GenerateLearningPackFromDocument implements ShouldQueue
                 'content' => $content,
             ]);
 
-            $document->pipeline_stage = 'game_generation_queued';
-            $document->stage_completed_at = now();
-            $document->progress_hint = 80;
+            PipelineTelemetry::transition($document, 'game_generation_queued', 80);
             $document->save();
 
             GenerateGamesFromLearningPack::dispatch((string) $pack->_id);
         } catch (Throwable $e) {
-            $document->status = 'failed';
-            $document->pipeline_stage = 'learning_pack_failed';
-            $document->stage_completed_at = now();
+            PipelineTelemetry::complete($document, 'failed', 'learning_pack_failed');
             $document->ocr_error = $e->getMessage();
             $document->save();
             throw $e;

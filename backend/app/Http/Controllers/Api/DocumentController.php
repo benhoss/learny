@@ -8,6 +8,7 @@ use App\Jobs\ProcessDocumentOcr;
 use App\Jobs\GenerateLearningPackFromDocument;
 use App\Models\ChildProfile;
 use App\Models\Document;
+use App\Support\Documents\PipelineTelemetry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -108,10 +109,17 @@ class DocumentController extends Controller
             'learning_goal' => $data['learning_goal'] ?? null,
             'context_text' => $data['context_text'] ?? null,
             'requested_game_types' => $data['requested_game_types'] ?? null,
-            'pipeline_stage' => 'queued',
-            'stage_started_at' => now(),
-            'progress_hint' => 5,
+            'pipeline_stage' => null,
+            'stage_started_at' => null,
+            'progress_hint' => 0,
+            'first_playable_at' => null,
+            'first_playable_game_type' => null,
+            'ready_game_types' => [],
+            'stage_timings' => [],
+            'stage_history' => [],
         ]);
+        PipelineTelemetry::transition($document, 'queued', 5, 'queued');
+        $document->save();
 
         ProcessDocumentOcr::dispatch((string) $document->_id);
 
@@ -148,12 +156,11 @@ class DocumentController extends Controller
             ->where('child_profile_id', (string) $child->_id)
             ->firstOrFail();
 
-        $document->status = 'queued';
-        $document->pipeline_stage = 'queued';
-        $document->stage_started_at = now();
-        $document->stage_completed_at = null;
-        $document->progress_hint = 5;
+        PipelineTelemetry::transition($document, 'queued', 5, 'queued');
         $document->ocr_error = null;
+        $document->first_playable_at = null;
+        $document->first_playable_game_type = null;
+        $document->ready_game_types = [];
         if (array_key_exists('requested_game_types', $data)) {
             $requested = array_values(array_unique($data['requested_game_types'] ?? []));
             $document->requested_game_types = $requested === [] ? null : $requested;

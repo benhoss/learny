@@ -20,6 +20,9 @@ class DocumentFactory extends Factory
             'storage_path' => 'children/demo/documents/'.$this->faker->uuid().'.pdf',
             'mime_type' => 'application/pdf',
             'size_bytes' => 1024,
+            'ready_game_types' => [],
+            'stage_timings' => [],
+            'stage_history' => [],
         ];
     }
 }

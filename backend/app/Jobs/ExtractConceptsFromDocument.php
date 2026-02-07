@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Concept;
 use App\Models\Document;
 use App\Jobs\GenerateLearningPackFromDocument;
+use App\Support\Documents\PipelineTelemetry;
 use App\Services\Concepts\ConceptExtractorInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,6 +20,7 @@ class ExtractConceptsFromDocument implements ShouldQueue
 
     public function __construct(private readonly string $documentId)
     {
+        $this->onQueue('concepts');
     }
 
     public function handle(ConceptExtractorInterface $extractor): void
@@ -36,10 +38,7 @@ class ExtractConceptsFromDocument implements ShouldQueue
             return;
         }
 
-        $document->pipeline_stage = 'concept_extraction';
-        $document->stage_started_at = now();
-        $document->stage_completed_at = null;
-        $document->progress_hint = 45;
+        PipelineTelemetry::transition($document, 'concept_extraction', 45);
         $document->save();
 
         try {
@@ -62,16 +61,12 @@ class ExtractConceptsFromDocument implements ShouldQueue
                 }
             }
 
-            $document->pipeline_stage = 'learning_pack_queued';
-            $document->stage_completed_at = now();
-            $document->progress_hint = 60;
+            PipelineTelemetry::transition($document, 'learning_pack_queued', 60);
             $document->save();
 
             GenerateLearningPackFromDocument::dispatch((string) $document->_id);
         } catch (Throwable $e) {
-            $document->status = 'failed';
-            $document->pipeline_stage = 'concept_extraction_failed';
-            $document->stage_completed_at = now();
+            PipelineTelemetry::complete($document, 'failed', 'concept_extraction_failed');
             $document->ocr_error = $e->getMessage();
             $document->save();
             throw $e;

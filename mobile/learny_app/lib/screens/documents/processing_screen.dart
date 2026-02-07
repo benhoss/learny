@@ -17,6 +17,17 @@ class ProcessingScreen extends StatelessWidget {
     final isReady = state.hasReadyGeneratedGame;
     final hasError = state.generationError != null;
     final status = state.generationStatus;
+    final transferProgress = state.uploadProgressPercent < 0
+        ? 0
+        : state.uploadProgressPercent > 100
+        ? 100
+        : state.uploadProgressPercent;
+    final processingProgress = state.processingProgressPercent < 0
+        ? 0
+        : state.processingProgressPercent > 100
+        ? 100
+        : state.processingProgressPercent;
+    final processingStageLabel = state.processingStageLabel;
     final ctaLabel = _startLabelForType(readyGameType);
 
     return Container(
@@ -78,7 +89,12 @@ class ProcessingScreen extends StatelessWidget {
               ] else ...[
                 FadeInSlide(
                   delay: const Duration(milliseconds: 100),
-                  child: _ProcessingState(status: status),
+                  child: _ProcessingState(
+                    status: status,
+                    transferProgressPercent: transferProgress,
+                    processingProgressPercent: processingProgress,
+                    processingStageLabel: processingStageLabel,
+                  ),
                 ),
               ],
 
@@ -192,9 +208,17 @@ class ProcessingScreen extends StatelessWidget {
 }
 
 class _ProcessingState extends StatefulWidget {
-  const _ProcessingState({required this.status});
+  const _ProcessingState({
+    required this.status,
+    required this.transferProgressPercent,
+    required this.processingProgressPercent,
+    required this.processingStageLabel,
+  });
 
   final String status;
+  final int transferProgressPercent;
+  final int processingProgressPercent;
+  final String processingStageLabel;
 
   @override
   State<_ProcessingState> createState() => _ProcessingStateState();
@@ -302,8 +326,8 @@ class _ProcessingStateState extends State<_ProcessingState> {
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final fact = _funFacts[_funFactIndex];
-    final progress = _parseProgress(widget.status);
-    final stageLabel = _stageLabel(widget.status);
+    final transferProgress = widget.transferProgressPercent / 100.0;
+    final processingProgress = widget.processingProgressPercent / 100.0;
 
     return Container(
       padding: EdgeInsets.all(tokens.spaceLg + 8),
@@ -328,7 +352,7 @@ class _ProcessingStateState extends State<_ProcessingState> {
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              stageLabel,
+              widget.processingStageLabel,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: LearnyColors.skyPrimary,
                 fontWeight: FontWeight.w700,
@@ -338,8 +362,24 @@ class _ProcessingStateState extends State<_ProcessingState> {
 
           SizedBox(height: tokens.spaceSm),
 
+          _ProgressRow(
+            label: 'Transfer',
+            percent: widget.transferProgressPercent,
+            value: transferProgress,
+          ),
+
+          SizedBox(height: tokens.spaceSm),
+
+          _ProgressRow(
+            label: 'AI Processing',
+            percent: widget.processingProgressPercent,
+            value: processingProgress,
+          ),
+
+          SizedBox(height: tokens.spaceSm),
+
           LinearProgressIndicator(
-            value: progress,
+            value: processingProgress,
             minHeight: 8,
             borderRadius: BorderRadius.circular(999),
           ),
@@ -368,30 +408,50 @@ class _ProcessingStateState extends State<_ProcessingState> {
       ),
     );
   }
+}
 
-  double _parseProgress(String status) {
-    final match = RegExp(r'^(\d{1,3})%').firstMatch(status.trim());
-    if (match == null) {
-      return 0.15;
-    }
-    final raw = int.tryParse(match.group(1) ?? '');
-    if (raw == null) {
-      return 0.15;
-    }
-    return (raw.clamp(0, 100) as int) / 100.0;
-  }
+class _ProgressRow extends StatelessWidget {
+  const _ProgressRow({
+    required this.label,
+    required this.percent,
+    required this.value,
+  });
 
-  String _stageLabel(String status) {
-    final lower = status.toLowerCase();
-    if (lower.contains('queue')) return 'Queued';
-    if (lower.contains('reading') || lower.contains('ocr')) return 'OCR';
-    if (lower.contains('concept')) return 'Concept Extraction';
-    if (lower.contains('pack')) return 'Pack Generation';
-    if (lower.contains('game') || lower.contains('quiz'))
-      return 'Game Generation';
-    if (lower.contains('ready')) return 'Ready';
-    if (lower.contains('failed')) return 'Failed';
-    return 'Processing';
+  final String label;
+  final int percent;
+  final double value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: LearnyColors.neutralMedium,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '$percent%',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: LearnyColors.neutralMedium,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        LinearProgressIndicator(
+          value: value,
+          minHeight: 6,
+          borderRadius: BorderRadius.circular(999),
+        ),
+      ],
+    );
   }
 }
 

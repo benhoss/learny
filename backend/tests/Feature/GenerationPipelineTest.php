@@ -48,5 +48,11 @@ class GenerationPipelineTest extends TestCase
 
         $this->assertSame(1, LearningPack::count());
         $this->assertSame(8, Game::count());
+
+        $document->refresh();
+        $this->assertNotNull($document->first_playable_at);
+        $this->assertNotNull($document->first_playable_game_type);
+        $this->assertNotEmpty($document->ready_game_types ?? []);
+        $this->assertArrayHasKey('game_generation', $document->stage_timings ?? []);
     }
 }

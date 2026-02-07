@@ -52,5 +52,7 @@ class OcrJobTest extends TestCase
         $this->assertSame('processed', $document->status);
         $this->assertSame('Extracted OCR content', $document->extracted_text);
         $this->assertSame(1, Concept::count());
+        $this->assertArrayHasKey('ocr', $document->stage_timings ?? []);
+        $this->assertNotEmpty($document->stage_history ?? []);
     }
 }

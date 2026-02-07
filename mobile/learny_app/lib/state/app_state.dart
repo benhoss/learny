@@ -86,6 +86,9 @@ class AppState extends ChangeNotifier {
 
   bool isGeneratingQuiz = false;
   String generationStatus = 'Idle';
+  int uploadProgressPercent = 0;
+  int processingProgressPercent = 0;
+  String processingStageLabel = 'Waiting';
   String? generationError;
   String? backendChildId;
   List<Uint8List> pendingImages = [];
@@ -152,6 +155,9 @@ class AppState extends ChangeNotifier {
     activitySyncError = null;
     hasMoreActivities = true;
     _activityPage = 1;
+    uploadProgressPercent = 0;
+    processingProgressPercent = 0;
+    processingStageLabel = 'Waiting';
   }
 
   void _initializeBackendSession() {
@@ -586,6 +592,9 @@ class AppState extends ChangeNotifier {
     generationError = null;
     isGeneratingQuiz = true;
     generationStatus = 'Uploading document...';
+    uploadProgressPercent = 5;
+    processingProgressPercent = 0;
+    processingStageLabel = 'Uploading';
     notifyListeners();
 
     try {
@@ -604,10 +613,15 @@ class AppState extends ChangeNotifier {
       lastDocumentId = _extractId(document);
 
       generationStatus = 'Processing and generating quiz...';
+      uploadProgressPercent = 100;
+      processingProgressPercent = 5;
+      processingStageLabel = 'Queued';
       notifyListeners();
 
       await _pollForPackAndQuiz(session.childId, lastDocumentId);
       generationStatus = 'Quiz ready!';
+      processingProgressPercent = 100;
+      processingStageLabel = 'Ready';
     } catch (error) {
       generationError = error.toString();
       generationStatus = 'Generation failed';
@@ -629,6 +643,9 @@ class AppState extends ChangeNotifier {
     generationError = null;
     isGeneratingQuiz = true;
     generationStatus = 'Uploading document...';
+    uploadProgressPercent = 5;
+    processingProgressPercent = 0;
+    processingStageLabel = 'Uploading';
     notifyListeners();
 
     try {
@@ -647,10 +664,15 @@ class AppState extends ChangeNotifier {
       lastDocumentId = _extractId(document);
 
       generationStatus = 'Processing and generating quiz...';
+      uploadProgressPercent = 100;
+      processingProgressPercent = 5;
+      processingStageLabel = 'Queued';
       notifyListeners();
 
       await _pollForPackAndQuiz(session.childId, lastDocumentId);
       generationStatus = 'Quiz ready!';
+      processingProgressPercent = 100;
+      processingStageLabel = 'Ready';
     } catch (error) {
       generationError = error.toString();
       generationStatus = 'Generation failed';
@@ -958,12 +980,26 @@ class AppState extends ChangeNotifier {
       final status = doc['status']?.toString();
       final pipelineStage = doc['pipeline_stage']?.toString();
       final progressHint = (doc['progress_hint'] as num?)?.toInt();
+      final firstPlayableGameType = doc['first_playable_game_type']?.toString();
+      final readyGameTypesRaw = doc['ready_game_types'] as List<dynamic>? ?? [];
+      final hasFirstPlayableSignal =
+          (firstPlayableGameType != null && firstPlayableGameType.isNotEmpty) ||
+          readyGameTypesRaw.isNotEmpty;
+      if (progressHint != null) {
+        processingProgressPercent = min(100, max(0, progressHint));
+      }
+      processingStageLabel = _shortStageLabel(
+        pipelineStage: pipelineStage,
+        status: status,
+        hasFirstPlayableSignal: hasFirstPlayableSignal,
+      );
 
       // Update status message based on document status
       final stageMessage = _generationStatusForStage(
         pipelineStage: pipelineStage,
         status: status,
         progressHint: progressHint,
+        hasFirstPlayableSignal: hasFirstPlayableSignal,
       );
       if (stageMessage != null) {
         generationStatus = stageMessage;
@@ -1026,8 +1062,15 @@ class AppState extends ChangeNotifier {
     required String? pipelineStage,
     required String? status,
     required int? progressHint,
+    required bool hasFirstPlayableSignal,
   }) {
     final prefix = progressHint == null ? '' : '$progressHint% • ';
+    if (hasFirstPlayableSignal &&
+        pipelineStage != 'ready' &&
+        pipelineStage != 'game_generation_failed') {
+      return '${prefix}First game is ready. Finishing remaining games...';
+    }
+
     return switch (pipelineStage) {
       'queued' => '${prefix}Waiting in queue...',
       'ocr' => '${prefix}Reading your document...',
@@ -1048,6 +1091,41 @@ class AppState extends ChangeNotifier {
         'processed' => '${prefix}Generating learning content...',
         'ready' => '100% • Quiz ready!',
         _ => null,
+      },
+    };
+  }
+
+  String _shortStageLabel({
+    required String? pipelineStage,
+    required String? status,
+    required bool hasFirstPlayableSignal,
+  }) {
+    if (hasFirstPlayableSignal &&
+        pipelineStage != 'ready' &&
+        pipelineStage != 'game_generation_failed') {
+      return 'First Game Ready';
+    }
+
+    return switch (pipelineStage) {
+      'queued' => 'Queued',
+      'ocr' => 'OCR',
+      'concept_extraction_queued' => 'Concept Queue',
+      'concept_extraction' => 'Concept Extraction',
+      'learning_pack_queued' => 'Pack Queue',
+      'learning_pack_generation' => 'Pack Generation',
+      'game_generation_queued' => 'Game Queue',
+      'game_generation' => 'Game Generation',
+      'ready' => 'Ready',
+      'ocr_failed' => 'OCR Failed',
+      'concept_extraction_failed' => 'Concept Failed',
+      'learning_pack_failed' => 'Pack Failed',
+      'game_generation_failed' => 'Game Failed',
+      _ => switch (status) {
+        'queued' => 'Queued',
+        'processing' => 'Processing',
+        'processed' => 'Processed',
+        'ready' => 'Ready',
+        _ => 'Processing',
       },
     };
   }

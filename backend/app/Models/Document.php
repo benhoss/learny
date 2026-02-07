@@ -34,6 +34,11 @@ class Document extends Model
         'stage_started_at',
         'stage_completed_at',
         'progress_hint',
+        'first_playable_at',
+        'first_playable_game_type',
+        'ready_game_types',
+        'stage_timings',
+        'stage_history',
     ];
 
     protected $casts = [
@@ -45,6 +50,10 @@ class Document extends Model
         'stage_started_at' => 'datetime',
         'stage_completed_at' => 'datetime',
         'progress_hint' => 'integer',
+        'first_playable_at' => 'datetime',
+        'ready_game_types' => 'array',
+        'stage_timings' => 'array',
+        'stage_history' => 'array',
     ];
 
     public function childProfile()

@@ -9,6 +9,7 @@ use App\Services\Memory\MemorySignalProjector;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class HomeRecommendationController extends Controller
 {
@@ -38,12 +39,10 @@ class HomeRecommendationController extends Controller
 
         $event = (string) ($payload['event'] ?? 'tap');
         $recommendationId = (string) $payload['recommendation_id'];
-        $eventKey = sha1('home-recommendation:'.(string) $child->_id.':'.$event.':'.$recommendationId);
+        $eventKey = sha1('home-recommendation:'.(string) $child->_id.':'.$event.':'.$recommendationId.':'.Str::uuid());
         $eventOrder = $this->nextEventOrder((string) $child->_id);
 
-        LearningMemoryEvent::updateOrCreate([
-            'event_key' => $eventKey,
-        ], [
+        LearningMemoryEvent::create([
             'user_id' => (string) Auth::guard('api')->id(),
             'child_profile_id' => (string) $child->_id,
             'concept_key' => (string) ($payload['recommendation_type'] ?? 'home_recommendation'),

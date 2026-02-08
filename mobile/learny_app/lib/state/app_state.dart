@@ -1906,8 +1906,13 @@ class AppState extends ChangeNotifier {
         lastMemoryResetScope = scope;
         lastMemoryResetAt = DateTime.now().toUtc();
       }
+      final childSummary = payload['child_summary'];
+      if (childSummary is Map<String, dynamic>) {
+        _syncGamificationFromBackendChild(childSummary);
+      }
       await _refreshReviewCount();
       await refreshActivitiesFromBackend();
+      await _refreshPacksFromBackend();
       await _refreshHomeRecommendations();
       return true;
     } catch (error) {

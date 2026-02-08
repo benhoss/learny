@@ -18,6 +18,10 @@ class MemoryPreferencesTest extends TestCase
         $user = User::factory()->create();
         $child = ChildProfile::factory()->create([
             'user_id' => (string) $user->_id,
+            'streak_days' => 9,
+            'longest_streak' => 12,
+            'total_xp' => 999,
+            'last_activity_date' => now()->subDays(3)->toDateString(),
         ]);
         $token = Auth::guard('api')->login($user);
 
@@ -119,7 +123,10 @@ class MemoryPreferencesTest extends TestCase
 
         $eventsOnly->assertOk()
             ->assertJsonPath('data.scope', 'events')
-            ->assertJsonPath('data.deleted.learning_memory_events', 1);
+            ->assertJsonPath('data.deleted.learning_memory_events', 1)
+            ->assertJsonPath('data.child_summary.total_xp', 10)
+            ->assertJsonPath('data.child_summary.streak_days', 1)
+            ->assertJsonPath('data.child_summary.longest_streak', 1);
 
         $this->assertSame(0, LearningMemoryEvent::where('child_profile_id', (string) $child->_id)->count());
         $this->assertSame(1, RevisionSession::where('child_profile_id', (string) $child->_id)->count());
@@ -132,7 +139,10 @@ class MemoryPreferencesTest extends TestCase
             ]);
 
         $all->assertOk()
-            ->assertJsonPath('data.scope', 'all');
+            ->assertJsonPath('data.scope', 'all')
+            ->assertJsonPath('data.child_summary.total_xp', 0)
+            ->assertJsonPath('data.child_summary.streak_days', 0)
+            ->assertJsonPath('data.child_summary.longest_streak', 0);
 
         $this->assertSame(0, RevisionSession::where('child_profile_id', (string) $child->_id)->count());
         $this->assertSame(0, GameResult::where('child_profile_id', (string) $child->_id)->count());
@@ -141,5 +151,9 @@ class MemoryPreferencesTest extends TestCase
         $child->refresh();
         $this->assertSame('all', (string) $child->last_memory_reset_scope);
         $this->assertNotNull($child->last_memory_reset_at);
+        $this->assertSame(0, (int) $child->total_xp);
+        $this->assertSame(0, (int) $child->streak_days);
+        $this->assertSame(0, (int) $child->longest_streak);
+        $this->assertNull($child->last_activity_date);
     }
 }

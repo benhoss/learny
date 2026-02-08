@@ -173,6 +173,12 @@ class _MemoryRecommendationBackendClient extends BackendClient {
         'last_memory_reset_at': DateTime.now().toUtc().toIso8601String(),
         'last_memory_reset_scope': scope,
       },
+      'child_summary': {
+        'streak_days': 3,
+        'longest_streak': 5,
+        'total_xp': 120,
+        'last_activity_date': DateTime.now().toUtc().toIso8601String(),
+      },
     };
   }
 
@@ -394,6 +400,8 @@ void main() {
         expect(backend.lastScope, 'events');
         expect(state.lastMemoryResetScope, 'events');
         expect(state.lastMemoryResetAt, isNotNull);
+        expect(state.streakDays, 3);
+        expect(state.totalXp, 120);
       },
     );
   });

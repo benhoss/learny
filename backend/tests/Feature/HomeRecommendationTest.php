@@ -148,8 +148,19 @@ class HomeRecommendationTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('data.recorded', true);
 
+        $responseTwo = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/children/'.$child->_id.'/home-recommendations/events', [
+                'recommendation_id' => 'due:fractions.addition',
+                'recommendation_type' => 'review_due',
+                'action' => 'start_revision',
+                'event' => 'tap',
+            ]);
+
+        $responseTwo->assertOk()
+            ->assertJsonPath('data.recorded', true);
+
         $this->assertSame(
-            1,
+            2,
             LearningMemoryEvent::where('child_profile_id', (string) $child->_id)
                 ->where('event_type', 'recommendation')
                 ->count()

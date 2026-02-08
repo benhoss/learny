@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state.dart';
@@ -51,8 +52,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
         _subjectController.text.trim().isNotEmpty ||
         _goalController.text.trim().isNotEmpty;
     return PlaceholderScreen(
-      title: 'Review Capture',
-      subtitle: 'Crop, rotate, or retake if needed.',
+      title: L10n.of(context).reviewScreenTitle,
+      subtitle: L10n.of(context).reviewScreenSubtitle,
       gradient: LearnyGradients.trust,
       body: Column(
         children: [
@@ -94,7 +95,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           OutlinedButton.icon(
             onPressed: () => _addAnotherPage(),
             icon: const Icon(Icons.add_photo_alternate_outlined),
-            label: const Text('Add Another Page'),
+            label: Text(L10n.of(context).reviewAddPage),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
@@ -110,8 +111,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 : const Icon(Icons.auto_awesome_rounded),
             label: Text(
               _isSuggestingMetadata
-                  ? 'Analyzing...'
-                  : 'Suggest Metadata with AI',
+                  ? L10n.of(context).uploadAnalyzing
+                  : L10n.of(context).uploadSuggestMetadata,
             ),
           ),
           if (_suggestionFeedback != null) ...[
@@ -159,11 +160,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 Navigator.pushNamed(context, AppRoutes.processing);
               }
             : null,
-        child: const Text('Looks Good'),
+        child: Text(L10n.of(context).reviewLooksGood),
       ),
       secondaryAction: OutlinedButton(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.cameraCapture),
-        child: const Text('Retake'),
+        child: Text(L10n.of(context).reviewRetake),
       ),
     );
   }
@@ -230,7 +231,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     setState(() {
       _isSuggestingMetadata = false;
       if (suggestion == null) {
-        _suggestionFeedback = 'Suggestion unavailable right now.';
+        _suggestionFeedback = L10n.of(context).uploadSuggestionUnavailable;
         return;
       }
 
@@ -279,35 +280,35 @@ class _ReviewContextFields extends StatelessWidget {
         TextField(
           controller: subjectController,
           onChanged: (_) => onContextChanged(),
-          decoration: const InputDecoration(
-            labelText: 'Subject (optional)',
-            hintText: 'e.g. French verbs',
+          decoration: InputDecoration(
+            labelText: L10n.of(context).uploadSubjectLabel,
+            hintText: L10n.of(context).uploadSubjectHint,
           ),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: languageController,
-          decoration: const InputDecoration(
-            labelText: 'Language (optional)',
-            hintText: 'e.g. French',
+          decoration: InputDecoration(
+            labelText: L10n.of(context).uploadLanguageLabel,
+            hintText: L10n.of(context).uploadLanguageHint,
           ),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: goalController,
           onChanged: (_) => onContextChanged(),
-          decoration: const InputDecoration(
-            labelText: 'Learning goal (optional)',
-            hintText: 'e.g. Present tense conjugation',
+          decoration: InputDecoration(
+            labelText: L10n.of(context).uploadGoalLabel,
+            hintText: L10n.of(context).uploadGoalHint,
           ),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: contextController,
           maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: 'Extra context (optional)',
-            hintText: 'Short notes to guide quiz generation',
+          decoration: InputDecoration(
+            labelText: L10n.of(context).uploadContextLabel,
+            hintText: L10n.of(context).uploadContextHint,
           ),
         ),
       ],

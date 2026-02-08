@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../models/learning_pack.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
@@ -15,6 +16,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     final profile = state.profile;
     final tokens = context.tokens;
     final featuredPacks = state.packs.take(2).toList();
@@ -35,7 +37,7 @@ class HomeScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Good morning,',
+                        l.homeGreeting,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: LearnyColors.neutralLight,
                         ),
@@ -84,7 +86,7 @@ class HomeScreen extends StatelessWidget {
                       borderRadius: tokens.radiusXl,
                     ),
                     child: Text(
-                      'Ready to learn something new today? Let\'s turn your school lessons into fun games!',
+                      l.homeWelcomeMessage,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: LearnyColors.neutralMedium,
                         height: 1.5,
@@ -104,8 +106,8 @@ class HomeScreen extends StatelessWidget {
                 onTap: () =>
                     Navigator.pushNamed(context, AppRoutes.cameraCapture),
                 icon: LucideIcons.bookOpen,
-                title: 'Start Learning',
-                subtitle: 'Upload your lesson and play',
+                title: l.homeStartLearningTitle,
+                subtitle: l.homeStartLearningSubtitle,
               ),
             ),
 
@@ -118,8 +120,8 @@ class HomeScreen extends StatelessWidget {
                 onTap: () =>
                     Navigator.pushNamed(context, AppRoutes.revisionSetup),
                 icon: LucideIcons.zap,
-                title: 'Revision Express',
-                subtitle: 'Quick 5-minute review',
+                title: l.homeRevisionExpressTitle,
+                subtitle: l.homeRevisionExpressSubtitle,
               ),
             ),
 
@@ -154,7 +156,7 @@ class HomeScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Smart Next Steps',
+                    l.homeSmartNextSteps,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: LearnyColors.neutralDark,
@@ -170,7 +172,7 @@ class HomeScreen extends StatelessWidget {
                         borderRadius: tokens.radiusLg,
                       ),
                       child: Text(
-                        'Upload a document to get AI recommendations based on real study data.',
+                        l.homeNoRecommendations,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: LearnyColors.neutralMedium,
                         ),
@@ -182,10 +184,10 @@ class HomeScreen extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: _SmartRecommendationCard(
                           title:
-                              item['title']?.toString() ?? 'Continue learning',
+                              item['title']?.toString() ?? l.homeContinueLearning,
                           subtitle:
                               item['subtitle']?.toString() ??
-                              'Based on your recent activity',
+                              l.homeBasedOnActivity,
                           onTap: () async {
                             final route = await state.runRecommendationAction(
                               item,
@@ -238,7 +240,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: _QuickAccessTile(
                       icon: LucideIcons.trophy,
-                      label: 'Achievements',
+                      label: l.homeAchievements,
                       color: LearnyColors.sunshine,
                       onTap: () =>
                           Navigator.pushNamed(context, AppRoutes.achievements),
@@ -248,7 +250,7 @@ class HomeScreen extends StatelessWidget {
                   Expanded(
                     child: _QuickAccessTile(
                       icon: LucideIcons.barChart2,
-                      label: 'Progress',
+                      label: l.homeProgress,
                       color: LearnyColors.lavender,
                       onTap: () => Navigator.pushNamed(
                         context,
@@ -277,18 +279,18 @@ class HomeScreen extends StatelessWidget {
       }
     }
     if (details.isEmpty) {
-      details.add('No additional rationale available for this suggestion.');
+      details.add(L10n.of(context).homeNoExplainability);
     }
 
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Why this recommendation?'),
+        title: Text(L10n.of(context).homeWhyRecommendation),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(recommendation['title']?.toString() ?? 'Recommendation'),
+            Text(recommendation['title']?.toString() ?? L10n.of(context).homeRecommendation),
             const SizedBox(height: 8),
             ...details.map(
               (line) => Padding(
@@ -301,7 +303,7 @@ class HomeScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text(L10n.of(context).homeClose),
           ),
         ],
       ),
@@ -453,7 +455,7 @@ class _SmartRecommendationCard extends StatelessWidget {
             ),
             if (onWhy != null)
               IconButton(
-                tooltip: 'Why this?',
+                tooltip: L10n.of(context).homeWhyThis,
                 onPressed: onWhy,
                 icon: const Icon(
                   LucideIcons.info,
@@ -553,6 +555,7 @@ class _ProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final l = L10n.of(context);
     final progress = (sessionsCompleted / 7).clamp(0.0, 1.0);
 
     return Container(
@@ -566,7 +569,7 @@ class _ProgressCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'This Week',
+            l.homeThisWeek,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w600,
               color: LearnyColors.neutralMedium,
@@ -593,7 +596,7 @@ class _ProgressCard extends StatelessWidget {
           ),
           SizedBox(height: tokens.spaceSm + 4),
           Text(
-            'You\'ve completed $sessionsCompleted learning sessions. Great work!',
+            l.homeProgressMessage(sessionsCompleted),
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: LearnyColors.neutralLight),
@@ -613,6 +616,7 @@ class _ReviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    final l = L10n.of(context);
 
     return PressableScale(
       onTap: onTap,
@@ -646,7 +650,7 @@ class _ReviewCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$dueCount concept${dueCount == 1 ? '' : 's'} to review',
+                    l.homeReviewCount(dueCount),
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: LearnyColors.neutralDark,
@@ -654,7 +658,7 @@ class _ReviewCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Review now to keep learning!',
+                    l.homeReviewSubtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: LearnyColors.neutralMedium,
                     ),
@@ -748,7 +752,7 @@ class _PackMasterySection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Pack Mastery',
+            L10n.of(context).homePackMastery,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
               color: LearnyColors.neutralDark,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:learny_app/l10n/generated/app_localizations.dart';
 import 'package:learny_app/theme/app_theme.dart';
 import 'package:learny_app/widgets/games/answer_chip.dart';
 import 'package:learny_app/widgets/games/feedback_banner.dart';
@@ -12,6 +13,8 @@ import 'package:learny_app/widgets/games/timer_badge.dart';
 Widget _wrap(Widget child) {
   return MaterialApp(
     theme: LearnyTheme.light(),
+    localizationsDelegates: L10n.localizationsDelegates,
+    supportedLocales: L10n.supportedLocales,
     home: Scaffold(
       body: Center(
         child: SizedBox(width: 240, child: child),

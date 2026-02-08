@@ -18,6 +18,7 @@ import '../models/quiz_question.dart';
 import '../models/quiz_session.dart';
 import '../models/revision_prompt.dart';
 import '../models/revision_session.dart';
+import '../models/school_assessment.dart';
 import '../models/user_profile.dart';
 import '../models/weak_area.dart';
 import '../models/weekly_summary.dart';
@@ -47,6 +48,7 @@ class AppState extends ChangeNotifier {
   late List<ActivityItem> activities;
   late List<ChildProfile> children;
   late List<DocumentItem> documents;
+  late List<SchoolAssessment> schoolAssessments;
   late List<NotificationItem> notifications;
   late Map<String, double> mastery;
   late WeeklySummary weeklySummary;
@@ -65,6 +67,8 @@ class AppState extends ChangeNotifier {
   List<Map<String, dynamic>> homeRecommendations = [];
   GameOutcome? lastGameOutcome;
   String? lastResultSyncError;
+
+  Locale? locale;
 
   bool onboardingComplete = false;
 
@@ -99,6 +103,8 @@ class AppState extends ChangeNotifier {
   String? pendingContextText;
   List<String> pendingGameTypes = [];
   String? currentGameId;
+  String? pipelineStage;
+  bool hasFirstPlayableSignal = false;
   bool isSyncingDocuments = false;
   String? documentSyncError;
   bool isSyncingActivities = false;
@@ -140,6 +146,7 @@ class AppState extends ChangeNotifier {
     activities = const [];
     mastery = const {};
     documents = const [];
+    schoolAssessments = const [];
     notifications = const [];
     weeklySummary = const WeeklySummary(
       minutesSpent: 0,
@@ -172,6 +179,20 @@ class AppState extends ChangeNotifier {
     lastMemoryResetScope = null;
     memorySettingsBusy = false;
     memorySettingsError = null;
+  }
+
+  static const Set<String> supportedLanguages = {'en', 'fr', 'nl'};
+
+  void setLocale(Locale? newLocale) {
+    if (newLocale == locale) return;
+    locale = newLocale;
+    notifyListeners();
+  }
+
+  void _syncLocaleFromLanguage(String? languageCode) {
+    if (languageCode != null && supportedLanguages.contains(languageCode)) {
+      setLocale(Locale(languageCode));
+    }
   }
 
   void _initializeBackendSession() {
@@ -612,6 +633,8 @@ class AppState extends ChangeNotifier {
     uploadProgressPercent = 5;
     processingProgressPercent = 0;
     processingStageLabel = 'Uploading';
+    pipelineStage = 'uploading';
+    hasFirstPlayableSignal = false;
     notifyListeners();
 
     try {
@@ -633,12 +656,14 @@ class AppState extends ChangeNotifier {
       uploadProgressPercent = 100;
       processingProgressPercent = 5;
       processingStageLabel = 'Queued';
+      pipelineStage = 'queued';
       notifyListeners();
 
       await _pollForPackAndQuiz(session.childId, lastDocumentId);
       generationStatus = 'Quiz ready!';
       processingProgressPercent = 100;
       processingStageLabel = 'Ready';
+      pipelineStage = 'ready';
     } catch (error) {
       generationError = error.toString();
       generationStatus = 'Generation failed';
@@ -663,6 +688,8 @@ class AppState extends ChangeNotifier {
     uploadProgressPercent = 5;
     processingProgressPercent = 0;
     processingStageLabel = 'Uploading';
+    pipelineStage = 'uploading';
+    hasFirstPlayableSignal = false;
     notifyListeners();
 
     try {
@@ -684,12 +711,14 @@ class AppState extends ChangeNotifier {
       uploadProgressPercent = 100;
       processingProgressPercent = 5;
       processingStageLabel = 'Queued';
+      pipelineStage = 'queued';
       notifyListeners();
 
       await _pollForPackAndQuiz(session.childId, lastDocumentId);
       generationStatus = 'Quiz ready!';
       processingProgressPercent = 100;
       processingStageLabel = 'Ready';
+      pipelineStage = 'ready';
     } catch (error) {
       generationError = error.toString();
       generationStatus = 'Generation failed';
@@ -752,6 +781,7 @@ class AppState extends ChangeNotifier {
           );
       backendChildId = _extractId(selectedChild);
       _syncGamificationFromBackendChild(selectedChild);
+      _syncLocaleFromLanguage(selectedChild['preferred_language']?.toString());
 
       if (backendChildId == null) {
         final created = await backend.createChild(
@@ -825,6 +855,15 @@ class AppState extends ChangeNotifier {
     }
 
     try {
+      final rawAssessments = await backend.listSchoolAssessments(childId: childId);
+      schoolAssessments = (rawAssessments.whereType<Map<String, dynamic>>())
+          .map(SchoolAssessment.fromJson)
+          .toList();
+    } catch (_) {
+      schoolAssessments = const [];
+    }
+
+    try {
       final rawPacks = await backend.listLearningPacks(childId: childId);
       packs = rawPacks
           .whereType<Map<String, dynamic>>()
@@ -852,6 +891,60 @@ class AppState extends ChangeNotifier {
       sessionsCompleted: streakDays,
       topSubject: packs.isNotEmpty ? packs.first.subject : 'N/A',
     );
+    notifyListeners();
+  }
+
+  Future<void> refreshSchoolAssessments() async {
+    final childId = backendChildId;
+    if (childId == null) return;
+    try {
+      final raw = await backend.listSchoolAssessments(childId: childId);
+      schoolAssessments = (raw.whereType<Map<String, dynamic>>())
+          .map(SchoolAssessment.fromJson)
+          .toList();
+    } catch (_) {
+      schoolAssessments = const [];
+    }
+    notifyListeners();
+  }
+
+  Future<SchoolAssessment?> addSchoolAssessment({
+    required String subject,
+    required String assessmentType,
+    required double score,
+    required double maxScore,
+    required String assessedAt,
+    String? grade,
+    String? teacherNote,
+  }) async {
+    final childId = backendChildId;
+    if (childId == null) return null;
+    final data = await backend.createSchoolAssessment(
+      childId: childId,
+      subject: subject,
+      assessmentType: assessmentType,
+      score: score,
+      maxScore: maxScore,
+      assessedAt: assessedAt,
+      grade: grade,
+      teacherNote: teacherNote,
+    );
+    final assessment = SchoolAssessment.fromJson(data);
+    schoolAssessments = [assessment, ...schoolAssessments];
+    notifyListeners();
+    return assessment;
+  }
+
+  Future<void> removeSchoolAssessment(String assessmentId) async {
+    final childId = backendChildId;
+    if (childId == null) return;
+    await backend.deleteSchoolAssessment(
+      childId: childId,
+      assessmentId: assessmentId,
+    );
+    schoolAssessments = schoolAssessments
+        .where((a) => a.id != assessmentId)
+        .toList();
     notifyListeners();
   }
 
@@ -916,36 +1009,7 @@ class AppState extends ChangeNotifier {
   }
 
   ChildProfile? _mapChildProfile(Map<String, dynamic> child) {
-    final id = _extractId(child);
-    if (id == null || id.isEmpty) {
-      return null;
-    }
-    final learningStylePreferences =
-        (child['learning_style_preferences'] as List<dynamic>? ?? const [])
-            .map((item) => item.toString())
-            .toList();
-    final supportNeedsRaw = child['support_needs'];
-    final supportNeeds = supportNeedsRaw is Map
-        ? Map<String, dynamic>.from(supportNeedsRaw)
-        : const <String, dynamic>{};
-    final confidenceBySubject =
-        (child['confidence_by_subject'] as List<dynamic>? ?? const [])
-            .whereType<Map>()
-            .map((entry) => Map<String, dynamic>.from(entry))
-            .toList();
-
-    return ChildProfile(
-      id: id,
-      name: child['name']?.toString() ?? BackendConfig.childName,
-      gradeLabel: child['grade_level']?.toString() ?? BackendConfig.childGrade,
-      age: (child['age'] as num?)?.toInt(),
-      schoolClass: child['school_class']?.toString(),
-      preferredLanguage: child['preferred_language']?.toString(),
-      gender: child['gender']?.toString(),
-      learningStylePreferences: learningStylePreferences,
-      supportNeeds: supportNeeds,
-      confidenceBySubject: confidenceBySubject,
-    );
+    return ChildProfile.fromJson(child);
   }
 
   DocumentItem _mapDocumentItem(Map<String, dynamic> doc) {
@@ -1016,28 +1080,30 @@ class AppState extends ChangeNotifier {
         documentId: documentId,
       );
       final status = doc['status']?.toString();
-      final pipelineStage = doc['pipeline_stage']?.toString();
+      final docStage = doc['pipeline_stage']?.toString();
       final progressHint = (doc['progress_hint'] as num?)?.toInt();
       final firstPlayableGameType = doc['first_playable_game_type']?.toString();
       final readyGameTypesRaw = doc['ready_game_types'] as List<dynamic>? ?? [];
-      final hasFirstPlayableSignal =
+      final hasFirstPlayable =
           (firstPlayableGameType != null && firstPlayableGameType.isNotEmpty) ||
           readyGameTypesRaw.isNotEmpty;
+      hasFirstPlayableSignal = hasFirstPlayable;
+      pipelineStage = docStage ?? status;
       if (progressHint != null) {
         processingProgressPercent = min(100, max(0, progressHint));
       }
       processingStageLabel = _shortStageLabel(
-        pipelineStage: pipelineStage,
+        pipelineStage: docStage,
         status: status,
-        hasFirstPlayableSignal: hasFirstPlayableSignal,
+        hasFirstPlayableSignal: hasFirstPlayable,
       );
 
       // Update status message based on document status
       final stageMessage = _generationStatusForStage(
-        pipelineStage: pipelineStage,
+        pipelineStage: docStage,
         status: status,
         progressHint: progressHint,
-        hasFirstPlayableSignal: hasFirstPlayableSignal,
+        hasFirstPlayableSignal: hasFirstPlayable,
       );
       if (stageMessage != null) {
         generationStatus = stageMessage;
@@ -2127,20 +2193,7 @@ class AppState extends ChangeNotifier {
   }
 
   String _statusLabelForDocument(String status) {
-    switch (status) {
-      case 'queued':
-        return 'Queued';
-      case 'processing':
-        return 'Processing';
-      case 'processed':
-        return 'Processed';
-      case 'ready':
-        return 'Ready';
-      case 'failed':
-        return 'Failed';
-      default:
-        return 'Unknown';
-    }
+    return status;
   }
 
   Future<bool> regenerateDocument(

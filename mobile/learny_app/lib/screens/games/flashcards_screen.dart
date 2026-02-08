@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../services/haptic_service.dart';
 import '../../theme/app_theme.dart';
@@ -27,7 +28,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final payload = state.flashcardsPayload ?? {};
-    final title = payload['title']?.toString() ?? 'Flashcards';
+    final title = payload['title']?.toString() ?? L10n.of(context).flashcardsDefaultTitle;
     final intro = payload['intro']?.toString();
     final cards = (payload['cards'] as List<dynamic>? ?? [])
         .map((item) => item as Map<String, dynamic>)
@@ -37,8 +38,8 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
     final card = cards.isNotEmpty && _currentIndex < cards.length
         ? cards[_currentIndex]
         : <String, dynamic>{};
-    final front = card['front']?.toString() ?? 'Front';
-    final back = card['back']?.toString() ?? 'Back';
+    final front = card['front']?.toString() ?? L10n.of(context).flashcardsFront;
+    final back = card['back']?.toString() ?? L10n.of(context).flashcardsBack;
     final hint = card['hint']?.toString();
 
     final tokens = context.tokens;
@@ -58,8 +59,8 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
           GameHeader(
             title: title,
             subtitle: totalCards == 0
-                ? 'Card 0 / 0'
-                : 'Card ${_currentIndex + 1} of $totalCards',
+                ? L10n.of(context).flashcardsEmptyProgress
+                : L10n.of(context).flashcardsProgress(_currentIndex + 1, totalCards),
             progress: progress,
             timerSeconds: 45,
             timerSeed: _currentIndex,
@@ -140,7 +141,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Flip Card',
+                            L10n.of(context).flashcardsFlipCard,
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
                                   color: LearnyColors.skyPrimary,
@@ -167,7 +168,7 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> {
                       ),
                       child: Center(
                         child: Text(
-                          isLastCard ? 'Finish' : 'Got it! Next',
+                          isLastCard ? L10n.of(context).flashcardsFinish : L10n.of(context).flashcardsGotItNext,
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 color: Colors.white,
@@ -261,7 +262,7 @@ class _FlashcardFace extends StatelessWidget {
         children: [
           // Label
           Text(
-            isFront ? 'Question' : 'Answer',
+            isFront ? L10n.of(context).flashcardsQuestion : L10n.of(context).flashcardsAnswer,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: LearnyColors.neutralLight,
               fontWeight: FontWeight.w500,
@@ -308,7 +309,7 @@ class _FlashcardFace extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'Tap to flip',
+                L10n.of(context).flashcardsTapToFlip,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: isFront
                       ? LearnyColors.neutralLight

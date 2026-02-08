@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
@@ -14,34 +15,34 @@ class RevisionSetupScreen extends StatelessWidget {
         state.selectedPack ??
         (state.packs.isNotEmpty ? state.packs.first : null);
     return PlaceholderScreen(
-      title: 'Revision Express',
-      subtitle: 'Quick 5-minute boost before a test.',
+      title: L10n.of(context).revisionSetupTitle,
+      subtitle: L10n.of(context).revisionSetupSubtitle,
       gradient: LearnyGradients.trust,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const ListTile(
-            leading: Icon(Icons.timer_rounded, color: LearnyColors.coral),
-            title: Text('Duration'),
-            subtitle: Text('5 minutes'),
+          ListTile(
+            leading: const Icon(Icons.timer_rounded, color: LearnyColors.coral),
+            title: Text(L10n.of(context).revisionSetupDuration),
+            subtitle: Text(L10n.of(context).revisionSetupDurationValue),
           ),
           ListTile(
             leading: const Icon(Icons.book_rounded, color: LearnyColors.teal),
-            title: const Text('Subject focus'),
+            title: Text(L10n.of(context).revisionSetupSubjectFocus),
             subtitle: Text(
-              pack == null ? 'Pick a pack' : '${pack.subject} • ${pack.title}',
+              pack == null ? L10n.of(context).revisionSetupPickPack : '${pack.subject} • ${pack.title}',
             ),
           ),
           ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.psychology_alt_rounded,
               color: LearnyColors.skyPrimary,
             ),
-            title: const Text('Adaptive mix'),
+            title: Text(L10n.of(context).revisionSetupAdaptiveMix),
             subtitle: Text(
               state.reviewDueCount > 0
-                  ? 'Due concepts + recent mistakes + latest uploads'
-                  : 'Recent mistakes + latest uploads',
+                  ? L10n.of(context).revisionSetupAdaptiveFull
+                  : L10n.of(context).revisionSetupAdaptivePartial,
             ),
           ),
         ],
@@ -54,9 +55,9 @@ class RevisionSetupScreen extends StatelessWidget {
           }
           if (!started) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text(
-                  'No revision items are ready yet. Complete a game first.',
+                  L10n.of(context).revisionSetupNoItems,
                 ),
               ),
             );
@@ -64,7 +65,7 @@ class RevisionSetupScreen extends StatelessWidget {
           }
           Navigator.pushNamed(context, AppRoutes.revisionSession);
         },
-        child: const Text('Start Express Session'),
+        child: Text(L10n.of(context).revisionSetupStartButton),
       ),
     );
   }

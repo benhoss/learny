@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state.dart';
 import '../../state/app_state_scope.dart';
@@ -13,22 +14,22 @@ class PackSessionScreen extends StatelessWidget {
     final pack =
         state.selectedPack ??
         (state.packs.isNotEmpty ? state.packs.first : null);
-    final games = _sessionGames(state);
+    final games = _sessionGames(state, context);
     return PlaceholderScreen(
-      title: pack == null ? 'Session Roadmap' : '${pack.title} Session',
-      subtitle: pack == null
-          ? '15-minute guided flow.'
-          : '${pack.minutes} minute guided flow.',
+      title: pack == null
+          ? L10n.of(context).packSessionDefaultTitle
+          : '${pack.title} Session',
+      subtitle: L10n.of(context).packSessionSubtitle(pack?.minutes ?? 15),
       gradient: LearnyGradients.trust,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: games.isEmpty
-            ? const [
+            ? [
                 ListTile(
-                  leading: Icon(Icons.hourglass_empty_rounded),
-                  title: Text('No ready games'),
+                  leading: const Icon(Icons.hourglass_empty_rounded),
+                  title: Text(L10n.of(context).packSessionNoGamesTitle),
                   subtitle: Text(
-                    'Finish document processing, then start the session.',
+                    L10n.of(context).packSessionNoGamesMessage,
                   ),
                 ),
               ]
@@ -50,9 +51,9 @@ class PackSessionScreen extends StatelessWidget {
           final firstType = state.currentPackGameType;
           if (firstType == null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text(
-                  'No generated games are ready for this pack yet.',
+                  L10n.of(context).packSessionNoGamesSnackBar,
                 ),
               ),
             );
@@ -61,67 +62,67 @@ class PackSessionScreen extends StatelessWidget {
           state.startGameType(firstType);
           Navigator.pushNamed(context, state.routeForGameType(firstType));
         },
-        child: const Text('Start Now'),
+        child: Text(L10n.of(context).packSessionStartNow),
       ),
     );
   }
 
-  List<_SessionGameItem> _sessionGames(AppState state) {
+  List<_SessionGameItem> _sessionGames(AppState state, BuildContext context) {
     final queue = state.packGameQueue.isNotEmpty
         ? state.packGameQueue
         : state.gamePayloads.keys.toList();
     return queue
         .map(
           (type) => _SessionGameItem(
-            label: _labelForType(type),
-            subtitle: _subtitleForType(type),
+            label: _labelForType(type, context),
+            subtitle: _subtitleForType(type, context),
             color: _colorForType(type),
           ),
         )
         .toList();
   }
 
-  String _labelForType(String type) {
+  String _labelForType(String type, BuildContext context) {
     switch (type) {
       case 'true_false':
-        return 'True or False';
+        return L10n.of(context).gameTypeTrueFalse;
       case 'multiple_select':
-        return 'Choose All That Apply';
+        return L10n.of(context).gameTypeMultiSelect;
       case 'fill_blank':
-        return 'Fill in the Blank';
+        return L10n.of(context).gameTypeFillBlank;
       case 'short_answer':
-        return 'Short Answer';
+        return L10n.of(context).gameTypeShortAnswer;
       case 'ordering':
-        return 'Ordering Challenge';
+        return L10n.of(context).gameTypeOrdering;
       case 'matching':
-        return 'Matching';
+        return L10n.of(context).gameTypeMatching;
       case 'flashcards':
-        return 'Flashcards';
+        return L10n.of(context).gameTypeFlashcards;
       case 'quiz':
       default:
-        return 'Quiz';
+        return L10n.of(context).gameTypeQuiz;
     }
   }
 
-  String _subtitleForType(String type) {
+  String _subtitleForType(String type, BuildContext context) {
     switch (type) {
       case 'true_false':
-        return 'Quick judgments';
+        return L10n.of(context).gameSubtitleTrueFalse;
       case 'multiple_select':
-        return 'Pick every correct answer';
+        return L10n.of(context).gameSubtitleMultiSelect;
       case 'fill_blank':
-        return 'Complete the sentence';
+        return L10n.of(context).gameSubtitleFillBlank;
       case 'short_answer':
-        return 'Type a short response';
+        return L10n.of(context).gameSubtitleShortAnswer;
       case 'ordering':
-        return 'Arrange in order';
+        return L10n.of(context).gameSubtitleOrdering;
       case 'matching':
-        return 'Match pairs';
+        return L10n.of(context).gameSubtitleMatching;
       case 'flashcards':
-        return 'Warm-up cards';
+        return L10n.of(context).gameSubtitleFlashcards;
       case 'quiz':
       default:
-        return 'Multiple choice';
+        return L10n.of(context).gameSubtitleQuiz;
     }
   }
 

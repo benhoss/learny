@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../state/app_state.dart';
 import '../../state/app_state_scope.dart';
@@ -47,12 +48,12 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
     if (session == null) {
       return GradientScaffold(
         gradient: LearnyGradients.hero,
-        appBar: AppBar(title: const Text('Express Session')),
-        child: const Padding(
-          padding: EdgeInsets.all(20),
+        appBar: AppBar(title: Text(L10n.of(context).revisionSessionTitle)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Center(
             child: Text(
-              'No revision session is ready yet.\nUpload and complete a game to unlock revision.',
+              L10n.of(context).revisionSessionNoSession,
               textAlign: TextAlign.center,
             ),
           ),
@@ -65,7 +66,7 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
 
     return GradientScaffold(
       gradient: LearnyGradients.hero,
-      appBar: AppBar(title: const Text('Express Session')),
+      appBar: AppBar(title: Text(L10n.of(context).revisionSessionTitle)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -121,7 +122,7 @@ class _RevisionSessionScreenState extends State<RevisionSessionScreen> {
                     ? null
                     : () async => _submitAnswer(state),
                 child: Text(
-                  session.currentIndex + 1 >= total ? 'Finish' : 'Next',
+                  session.currentIndex + 1 >= total ? L10n.of(context).revisionSessionFinish : L10n.of(context).revisionSessionNext,
                 ),
               ),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_assets.dart';
 import '../../theme/app_theme.dart';
@@ -16,7 +17,7 @@ class CreateProfileScreen extends StatelessWidget {
         child: ListView(
           children: [
             Text(
-              'You\'re Ready!',
+              L10n.of(context).createProfileTitle,
               style: Theme.of(context)
                   .textTheme
                   .headlineLarge
@@ -24,7 +25,7 @@ class CreateProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Let\'s learn together.',
+              L10n.of(context).createProfileSubtitle,
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
@@ -32,14 +33,14 @@ class CreateProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             TextField(
-              decoration: const InputDecoration(
-                labelText: 'Profile name',
-                hintText: 'Your name',
+              decoration: InputDecoration(
+                labelText: L10n.of(context).createProfileNameLabel,
+                hintText: L10n.of(context).createProfileNameHint,
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              'Choose your avatar',
+              L10n.of(context).createProfileAvatarLabel,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
@@ -58,7 +59,7 @@ class CreateProfileScreen extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, AppRoutes.consent),
-              child: const Text('Continue'),
+              child: Text(L10n.of(context).createProfileContinue),
             ),
           ],
         ),

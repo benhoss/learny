@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/generated/app_localizations.dart';
 import '../routes/app_routes.dart';
 import '../theme/app_theme.dart';
 import '../screens/auth/forgot_password_screen.dart';
@@ -71,9 +72,15 @@ class LearnyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppStateScope(
       notifier: AppState(),
-      child: MaterialApp(
+      child: Builder(
+        builder: (context) {
+          final state = AppStateScope.of(context);
+          return MaterialApp(
         title: 'Learny',
         theme: LearnyTheme.light(),
+        locale: state.locale,
+        localizationsDelegates: L10n.localizationsDelegates,
+        supportedLocales: L10n.supportedLocales,
         initialRoute: BackendConfig.disableOnboarding ? AppRoutes.home : AppRoutes.welcome,
         onGenerateRoute: (settings) {
           if (BackendConfig.disableOnboarding &&
@@ -133,6 +140,8 @@ class LearnyApp extends StatelessWidget {
           AppRoutes.emptyState: (_) => const EmptyStateScreen(),
           AppRoutes.errorState: (_) => const ErrorStateScreen(),
           AppRoutes.offline: (_) => const OfflineScreen(),
+        },
+          );
         },
       ),
     );

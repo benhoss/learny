@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 
 class GameTypeSelector extends StatelessWidget {
@@ -11,20 +12,21 @@ class GameTypeSelector extends StatelessWidget {
   final List<String> selectedTypes;
   final ValueChanged<List<String>> onSelectionChanged;
 
-  static const Map<String, String> _labels = {
-    'flashcards': 'Flashcards',
-    'quiz': 'Quiz',
-    'matching': 'Matching',
-    'true_false': 'True/False',
-    'fill_blank': 'Fill Blank',
-    'ordering': 'Ordering',
-    'multiple_select': 'Multi Select',
-    'short_answer': 'Short Answer',
+  static Map<String, String> _labels(L10n l) => {
+    'flashcards': l.gameTypeFlashcards,
+    'quiz': l.gameTypeQuiz,
+    'matching': l.gameTypeMatching,
+    'true_false': l.gameTypeTrueFalse,
+    'fill_blank': l.gameTypeFillBlank,
+    'ordering': l.gameTypeOrdering,
+    'multiple_select': l.gameTypeMultiSelect,
+    'short_answer': l.gameTypeShortAnswer,
   };
 
   @override
   Widget build(BuildContext context) {
     final selected = selectedTypes.toSet();
+    final labels = _labels(L10n.of(context));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -39,7 +41,7 @@ class GameTypeSelector extends StatelessWidget {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: _labels.entries.map((entry) {
+          children: labels.entries.map((entry) {
             final isSelected = selected.contains(entry.key);
             return FilterChip(
               label: Text(entry.value),

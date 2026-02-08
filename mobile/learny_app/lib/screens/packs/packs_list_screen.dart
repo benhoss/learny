@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../home/packs_screen.dart';
 
 class PacksListScreen extends StatelessWidget {
@@ -7,7 +8,7 @@ class PacksListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Learning Packs')),
+      appBar: AppBar(title: Text(L10n.of(context).packsListTitle)),
       body: const SafeArea(child: PacksScreen()),
     );
   }

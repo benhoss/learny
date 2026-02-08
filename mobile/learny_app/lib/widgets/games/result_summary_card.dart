@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import 'game_card.dart';
@@ -35,7 +36,7 @@ class ResultSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '$correct of $total correct',
+            L10n.of(context).resultSummaryAccuracy(correct, total),
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -49,13 +50,13 @@ class ResultSummaryCard extends StatelessWidget {
             children: [
               _Metric(
                 icon: LucideIcons.flame,
-                label: 'Streak',
-                value: '$streak days',
+                label: L10n.of(context).resultSummaryStreak,
+                value: L10n.of(context).resultSummaryStreakDays(streak),
                 color: LearnyColors.coral,
               ),
               _Metric(
                 icon: LucideIcons.barChart3,
-                label: 'Mastery',
+                label: L10n.of(context).resultSummaryMastery,
                 value: masteryDelta >= 0 ? '+$masteryDelta%' : '$masteryDelta%',
                 color: LearnyColors.lavender,
               ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import 'pressable_scale.dart';
@@ -117,7 +118,7 @@ class _FeedbackBannerState extends State<FeedbackBanner>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isCorrect ? 'Correct!' : 'Not quite',
+                              isCorrect ? L10n.of(context).feedbackCorrect : L10n.of(context).feedbackIncorrect,
                               style: Theme.of(context)
                                   .textTheme
                                   .titleMedium
@@ -165,7 +166,7 @@ class _FeedbackBannerState extends State<FeedbackBanner>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Continue',
+                            L10n.of(context).feedbackContinue,
                             style:
                                 Theme.of(context).textTheme.titleSmall?.copyWith(
                                       color: Colors.white,

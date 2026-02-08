@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../services/haptic_service.dart';
 import '../../theme/app_theme.dart';
@@ -28,7 +29,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final payload = state.matchingPayload ?? {};
-    final title = payload['title']?.toString() ?? 'Matching Game';
+    final title = payload['title']?.toString() ?? L10n.of(context).matchingDefaultTitle;
     final intro = payload['intro']?.toString();
     final pairs = (payload['pairs'] as List<dynamic>? ?? [])
         .map((item) => item as Map<String, dynamic>)
@@ -85,7 +86,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
             title: title,
             subtitle: intro?.isNotEmpty == true
                 ? intro
-                : 'Tap two matching items',
+                : L10n.of(context).matchingSubtitle,
             progress: progress,
             timerSeconds: 75,
             timerSeed: _matchedPairIds.length,
@@ -101,7 +102,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
           FadeInSlide(
             delay: const Duration(milliseconds: 100),
             child: Text(
-              'Tap two matching items',
+              L10n.of(context).matchingSubtitle,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: LearnyColors.neutralMedium,
@@ -123,7 +124,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
           // Grid of matching items
           Expanded(
             child: items.isEmpty
-                ? const Center(child: Text('No matching pairs available.'))
+                ? Center(child: Text(L10n.of(context).matchingNoItems))
                 : FadeInSlide(
                     delay: const Duration(milliseconds: 200),
                     child: GridView.builder(
@@ -158,7 +159,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
               padding: EdgeInsets.symmetric(vertical: tokens.spaceMd),
               child: Center(
                 child: Text(
-                  '${_matchedPairIds.length} of $totalPairs pairs matched',
+                  L10n.of(context).matchingProgress(_matchedPairIds.length, totalPairs),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: LearnyColors.neutralLight,
                   ),
@@ -183,7 +184,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      'Continue',
+                      L10n.of(context).matchingContinue,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -241,7 +242,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
         setState(() => _selectedId = null);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Not quite - try again!'),
+            content: Text(L10n.of(context).matchingMismatch),
             backgroundColor: LearnyColors.coral.withValues(alpha: 0.9),
             duration: const Duration(milliseconds: 800),
             behavior: SnackBarBehavior.floating,

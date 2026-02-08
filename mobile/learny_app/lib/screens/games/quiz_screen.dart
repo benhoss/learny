@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../models/quiz_question.dart';
 import '../../services/haptic_service.dart';
@@ -175,8 +176,8 @@ class _QuizScreenState extends State<QuizScreen> {
     }
     final explanation = question.explanation;
     final subtitle = isCorrect
-        ? "You're on a roll!"
-        : 'Review the explanation and keep going.';
+        ? L10n.of(context).quizCorrectFeedback
+        : L10n.of(context).quizIncorrectFeedback;
     _feedbackCompleter = Completer<void>();
     setState(() {
       _feedback = _FeedbackData(
@@ -221,15 +222,15 @@ class _QuizScreenState extends State<QuizScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'No generated quiz is ready for this pack yet.',
+              Text(
+                L10n.of(context).quizNoQuizMessage,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () =>
                     Navigator.pushNamed(context, AppRoutes.cameraCapture),
-                child: const Text('Upload Document'),
+                child: Text(L10n.of(context).quizUploadDocument),
               ),
             ],
           ),
@@ -266,10 +267,10 @@ class _QuizScreenState extends State<QuizScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GameHeader(
-                title: _gameTitle(state),
+                title: _gameTitle(context, state),
                 subtitle: total == 0
-                    ? 'Question 0 / 0'
-                    : 'Question ${currentIndex + 1} of $total',
+                    ? L10n.of(context).quizEmptyProgress
+                    : L10n.of(context).quizProgress(currentIndex + 1, total),
                 progress: progress,
                 timerSeconds: 60,
                 timerSeed: currentIndex,
@@ -288,7 +289,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        question?.prompt ?? 'Loading question...',
+                        question?.prompt ?? L10n.of(context).quizLoadingQuestion,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                           height: 1.3,
@@ -305,7 +306,7 @@ class _QuizScreenState extends State<QuizScreen> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              'Select all that apply',
+                              L10n.of(context).quizSelectAllThatApply,
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(color: LearnyColors.neutralMedium),
                             ),
@@ -323,7 +324,7 @@ class _QuizScreenState extends State<QuizScreen> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              'Drag items into the correct order',
+                              L10n.of(context).quizDragIntoOrder,
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(color: LearnyColors.neutralMedium),
                             ),
@@ -378,8 +379,8 @@ class _QuizScreenState extends State<QuizScreen> {
                             child: TextField(
                               controller: _textController,
                               decoration: InputDecoration(
-                                labelText: 'Your answer',
-                                hintText: 'Type your answer here...',
+                                labelText: L10n.of(context).quizYourAnswer,
+                                hintText: L10n.of(context).quizTypeAnswerHint,
                                 border: OutlineInputBorder(
                                   borderRadius: tokens.radiusMd,
                                 ),
@@ -435,7 +436,7 @@ class _QuizScreenState extends State<QuizScreen> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 12),
                               child: AnswerChip(
-                                text: question.options[index],
+                                text: _localizedOption(context, question.options[index]),
                                 isSelected: isSelected,
                                 isCorrect: _showingResult
                                     ? isCorrectOption
@@ -492,7 +493,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        (currentIndex + 1 >= total) ? 'Finish' : 'Check Answer',
+                        (currentIndex + 1 >= total) ? L10n.of(context).quizFinish : L10n.of(context).quizCheckAnswer,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
                               color: hasSelection && !_showingResult
@@ -526,25 +527,31 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  String _gameTitle(AppState state) {
+  String _localizedOption(BuildContext context, String text) {
+    if (text == 'True') return L10n.of(context).trueFalseTrue;
+    if (text == 'False') return L10n.of(context).trueFalseFalse;
+    return text;
+  }
+
+  String _gameTitle(BuildContext context, AppState state) {
     final provided = state.currentGameTitle;
     if (provided != null && provided.trim().isNotEmpty) {
       return provided;
     }
     switch (state.currentGameType) {
       case 'true_false':
-        return 'True or False';
+        return L10n.of(context).gameTypeTrueFalse;
       case 'multiple_select':
-        return 'Choose All That Apply';
+        return L10n.of(context).gameTypeMultiSelect;
       case 'fill_blank':
-        return 'Fill in the Blank';
+        return L10n.of(context).gameTypeFillBlank;
       case 'short_answer':
-        return 'Short Answer';
+        return L10n.of(context).gameTypeShortAnswer;
       case 'ordering':
-        return 'Put in Order';
+        return L10n.of(context).gameTypeOrdering;
       case 'quiz':
       default:
-        return 'Quick Quiz';
+        return L10n.of(context).gameTypeQuiz;
     }
   }
 }

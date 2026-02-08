@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../state/app_state.dart';
 import '../../theme/app_theme.dart';
@@ -48,8 +49,8 @@ class _UploadScreenState extends State<UploadScreen> {
         _subjectController.text.trim().isNotEmpty ||
         _goalController.text.trim().isNotEmpty;
     return PlaceholderScreen(
-      title: 'Upload a File',
-      subtitle: 'PDFs and images supported.',
+      title: L10n.of(context).uploadTitle,
+      subtitle: L10n.of(context).uploadSubtitle,
       gradient: LearnyGradients.trust,
       body: Column(
         children: [
@@ -62,15 +63,15 @@ class _UploadScreenState extends State<UploadScreen> {
                 color: LearnyColors.slateLight.withValues(alpha: 0.3),
               ),
             ),
-            child: const Column(
+            child: Column(
               children: [
-                Icon(
+                const Icon(
                   Icons.cloud_upload_rounded,
                   size: 60,
                   color: LearnyColors.coral,
                 ),
-                SizedBox(height: 8),
-                Text('Drag & drop or browse'),
+                const SizedBox(height: 8),
+                Text(L10n.of(context).uploadDragOrBrowse),
               ],
             ),
           ),
@@ -78,35 +79,35 @@ class _UploadScreenState extends State<UploadScreen> {
           TextField(
             controller: _subjectController,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(
-              labelText: 'Subject (optional)',
-              hintText: 'e.g. French verbs',
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadSubjectLabel,
+              hintText: L10n.of(context).uploadSubjectHint,
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _languageController,
-            decoration: const InputDecoration(
-              labelText: 'Language (optional)',
-              hintText: 'e.g. French',
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadLanguageLabel,
+              hintText: L10n.of(context).uploadLanguageHint,
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _goalController,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(
-              labelText: 'Learning goal (optional)',
-              hintText: 'e.g. Present tense conjugation',
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadGoalLabel,
+              hintText: L10n.of(context).uploadGoalHint,
             ),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _contextController,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Extra context (optional)',
-              hintText: 'Short notes to guide quiz generation',
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadContextLabel,
+              hintText: L10n.of(context).uploadContextHint,
             ),
           ),
           const SizedBox(height: 8),
@@ -123,8 +124,8 @@ class _UploadScreenState extends State<UploadScreen> {
                 : const Icon(Icons.auto_awesome_rounded),
             label: Text(
               _isSuggestingMetadata
-                  ? 'Analyzing...'
-                  : 'Suggest Metadata with AI',
+                  ? L10n.of(context).uploadAnalyzing
+                  : L10n.of(context).uploadSuggestMetadata,
             ),
           ),
           if (_suggestionFeedback != null) ...[
@@ -181,7 +182,7 @@ class _UploadScreenState extends State<UploadScreen> {
                 Navigator.pushNamed(context, AppRoutes.processing);
               }
             : null,
-        child: const Text('Choose File'),
+        child: Text(L10n.of(context).uploadChooseFile),
       ),
     );
   }
@@ -205,7 +206,7 @@ class _UploadScreenState extends State<UploadScreen> {
     setState(() {
       _isSuggestingMetadata = false;
       if (suggestion == null) {
-        _suggestionFeedback = 'Suggestion unavailable right now.';
+        _suggestionFeedback = L10n.of(context).uploadSuggestionUnavailable;
         return;
       }
 

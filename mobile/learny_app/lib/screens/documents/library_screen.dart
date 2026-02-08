@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
@@ -24,12 +25,24 @@ class _LibraryScreenState extends State<LibraryScreen> {
     AppStateScope.of(context).refreshDocumentsFromBackend();
   }
 
+  String _localizedDocStatus(BuildContext context, String status) {
+    final l = L10n.of(context);
+    return switch (status) {
+      'queued' => l.docStatusQueued,
+      'processing' => l.docStatusProcessing,
+      'processed' => l.docStatusProcessed,
+      'ready' => l.docStatusReady,
+      'failed' => l.docStatusFailed,
+      _ => l.docStatusUnknown,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     return PlaceholderScreen(
-      title: 'Document Library',
-      subtitle: 'Your uploaded worksheets and PDFs.',
+      title: L10n.of(context).libraryTitle,
+      subtitle: L10n.of(context).librarySubtitle,
       gradient: LearnyGradients.trust,
       body: Column(
         children: [
@@ -52,7 +65,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           ...state.documents.map(
             (doc) => _LibraryItem(
               title: doc.title,
-              subtitle: '${doc.subject} • ${doc.statusLabel}',
+              subtitle: '${doc.subject} • ${_localizedDocStatus(context, doc.statusLabel)}',
               onRegenerate: () => state.regenerateDocument(doc.id),
             ),
           ),
@@ -60,11 +73,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
       ),
       primaryAction: ElevatedButton(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.cameraCapture),
-        child: const Text('Add New Document'),
+        child: Text(L10n.of(context).libraryAddNew),
       ),
       secondaryAction: OutlinedButton(
         onPressed: () => state.refreshDocumentsFromBackend(),
-        child: const Text('Sync Library'),
+        child: Text(L10n.of(context).librarySyncButton),
       ),
     );
   }
@@ -95,7 +108,7 @@ class _LibraryItem extends StatelessWidget {
         trailing: IconButton(
           icon: const Icon(Icons.refresh_rounded, color: LearnyColors.teal),
           onPressed: onRegenerate,
-          tooltip: 'Re-generate quiz',
+          tooltip: L10n.of(context).libraryRegenerateTooltip,
         ),
       ),
     );

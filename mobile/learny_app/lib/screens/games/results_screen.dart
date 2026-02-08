@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../routes/app_routes.dart';
 import '../../services/haptic_service.dart';
@@ -43,7 +44,7 @@ class ResultsScreen extends StatelessWidget {
           FadeInSlide(
             delay: const Duration(milliseconds: 400),
             child: Text(
-              'Great Job!',
+              L10n.of(context).resultsGreatJob,
               style: Theme.of(
                 context,
               ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
@@ -55,7 +56,7 @@ class ResultsScreen extends StatelessWidget {
           FadeInSlide(
             delay: const Duration(milliseconds: 500),
             child: Text(
-              'You earned $roundXp XP in this round and kept your streak.',
+              L10n.of(context).resultsSubtitle(roundXp),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: LearnyColors.neutralMedium,
@@ -81,7 +82,7 @@ class ResultsScreen extends StatelessWidget {
             FadeInSlide(
               delay: const Duration(milliseconds: 650),
               child: Text(
-                'Progress sync is delayed. We will retry automatically.',
+                L10n.of(context).resultsSyncError,
                 textAlign: TextAlign.center,
                 style: Theme.of(
                   context,
@@ -123,7 +124,7 @@ class ResultsScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      isPackSession ? 'Finish Session' : 'Continue',
+                      isPackSession ? L10n.of(context).resultsFinishSession : L10n.of(context).resultsContinue,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -183,8 +184,8 @@ class ResultsScreen extends StatelessWidget {
                 child: Center(
                   child: Text(
                     hasRetry
-                        ? 'Review Mistakes'
-                        : (isPackSession ? 'See Progress' : 'Back to Home'),
+                        ? L10n.of(context).resultsReviewMistakes
+                        : (isPackSession ? L10n.of(context).resultsSeeProgress : L10n.of(context).resultsBackToHome),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: LearnyColors.skyPrimary,
                       fontWeight: FontWeight.w600,
@@ -225,7 +226,7 @@ class ResultsScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Back to Home',
+                        L10n.of(context).resultsBackToHome,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: LearnyColors.neutralMedium,
                           fontWeight: FontWeight.w500,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import '../../state/app_state_scope.dart';
@@ -9,14 +10,71 @@ import '../../widgets/games/pressable_scale.dart';
 class ProcessingScreen extends StatelessWidget {
   const ProcessingScreen({super.key});
 
+  static String _localizedStageLabel(L10n l, String? pipelineStage, bool hasFirstPlayableSignal) {
+    if (hasFirstPlayableSignal && pipelineStage != 'ready' && pipelineStage != 'game_generation_failed') {
+      return l.stageFirstGameReady;
+    }
+    return switch (pipelineStage) {
+      'uploading' => l.processingStepUploading,
+      'queued' => l.stageQueued,
+      'ocr' => l.stageOcr,
+      'concept_extraction_queued' => l.stageConceptQueue,
+      'concept_extraction' => l.stageConceptExtraction,
+      'learning_pack_queued' => l.stagePackQueue,
+      'learning_pack_generation' => l.stagePackGeneration,
+      'game_generation_queued' => l.stageGameQueue,
+      'game_generation' => l.stageGameGeneration,
+      'ready' => l.stageReady,
+      'ocr_failed' => l.stageOcrFailed,
+      'concept_extraction_failed' => l.stageConceptFailed,
+      'learning_pack_failed' => l.stagePackFailed,
+      'game_generation_failed' => l.stageGameFailed,
+      'processing' => l.stageProcessing,
+      'processed' => l.stageProcessed,
+      _ => l.stageProcessing,
+    };
+  }
+
+  static String _localizedStatus(L10n l, String? pipelineStage, bool hasFirstPlayableSignal, int progressPercent) {
+    String message;
+    if (hasFirstPlayableSignal && pipelineStage != 'ready' && pipelineStage != 'game_generation_failed') {
+      message = l.statusFirstGameReady;
+    } else {
+      message = switch (pipelineStage) {
+        'uploading' => l.statusUploadingDocument,
+        'queued' => l.statusQueued,
+        'ocr' => l.statusOcr,
+        'concept_extraction_queued' => l.statusConceptQueueing,
+        'concept_extraction' => l.statusConceptExtraction,
+        'learning_pack_queued' => l.statusPackQueueing,
+        'learning_pack_generation' => l.statusPackGeneration,
+        'game_generation_queued' => l.statusGameQueueing,
+        'game_generation' => l.statusGameGeneration,
+        'ready' => l.statusReady,
+        'ocr_failed' => l.statusOcrFailed,
+        'concept_extraction_failed' => l.statusConceptExtractionFailed,
+        'learning_pack_failed' => l.statusPackGenerationFailed,
+        'game_generation_failed' => l.statusGameGenerationFailed,
+        'processing' => l.statusProcessing,
+        'processed' => l.statusGenerating,
+        _ => l.statusProcessing,
+      };
+    }
+    if (progressPercent > 0 && pipelineStage != 'uploading') {
+      return l.statusWithProgress(progressPercent, message);
+    }
+    return message;
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final tokens = context.tokens;
+    final l = L10n.of(context);
     final readyGameType = state.currentPackGameType;
     final isReady = state.hasReadyGeneratedGame;
     final hasError = state.generationError != null;
-    final status = state.generationStatus;
+    final status = _localizedStatus(l, state.pipelineStage, state.hasFirstPlayableSignal, state.processingProgressPercent);
     final transferProgress = state.uploadProgressPercent < 0
         ? 0
         : state.uploadProgressPercent > 100
@@ -27,8 +85,8 @@ class ProcessingScreen extends StatelessWidget {
         : state.processingProgressPercent > 100
         ? 100
         : state.processingProgressPercent;
-    final processingStageLabel = state.processingStageLabel;
-    final ctaLabel = _startLabelForType(readyGameType);
+    final processingStageLabel = _localizedStageLabel(l, state.pipelineStage, state.hasFirstPlayableSignal);
+    final ctaLabel = _startLabelForType(context, readyGameType);
 
     return Container(
       decoration: BoxDecoration(gradient: tokens.gradientWelcome),
@@ -61,7 +119,7 @@ class ProcessingScreen extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        isReady ? 'Ready to Learn!' : 'Creating Your Quiz',
+                        isReady ? L10n.of(context).processingReadyTitle : L10n.of(context).processingTitle,
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(
                               fontWeight: FontWeight.w700,
@@ -162,7 +220,7 @@ class ProcessingScreen extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          'Go Back',
+                          L10n.of(context).processingGoBack,
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 color: LearnyColors.skyPrimary,
@@ -183,26 +241,27 @@ class ProcessingScreen extends StatelessWidget {
     );
   }
 
-  String _startLabelForType(String? type) {
+  String _startLabelForType(BuildContext context, String? type) {
+    final l = L10n.of(context);
     switch (type) {
       case 'flashcards':
-        return 'Start Flashcards';
+        return l.processingStartFlashcards;
       case 'matching':
-        return 'Start Matching';
+        return l.processingStartMatching;
       case 'true_false':
-        return 'Start True/False';
+        return l.processingStartTrueFalse;
       case 'multiple_select':
-        return 'Start Multi-Select';
+        return l.processingStartMultiSelect;
       case 'fill_blank':
-        return 'Start Fill-in-the-Blank';
+        return l.processingStartFillBlank;
       case 'short_answer':
-        return 'Start Short Answer';
+        return l.processingStartShortAnswer;
       case 'ordering':
-        return 'Start Ordering Game';
+        return l.processingStartOrdering;
       case 'quiz':
-        return 'Start the Quiz';
+        return l.processingStartQuiz;
       default:
-        return 'Start Learning';
+        return l.processingStartLearning;
     }
   }
 }
@@ -227,82 +286,22 @@ class _ProcessingState extends StatefulWidget {
 class _ProcessingStateState extends State<_ProcessingState> {
   int _funFactIndex = 0;
 
-  static const _funFacts = [
-    (
-      '🧠',
-      'Brain Power',
-      'Your brain uses about 20% of your body\'s energy, even though it\'s only 2% of your weight!',
-    ),
-    (
-      '🐙',
-      'Octopus Smarts',
-      'Octopuses have 9 brains! One central brain and a mini-brain in each of their 8 arms.',
-    ),
-    (
-      '🎒',
-      'School History',
-      'The world\'s oldest school is in Morocco - it\'s been teaching students since 859 AD!',
-    ),
-    (
-      '🦋',
-      'Memory Trick',
-      'You remember things better when you learn them right before sleep. Sweet dreams = smart dreams!',
-    ),
-    (
-      '🎮',
-      'Game Learning',
-      'Playing educational games can improve memory by up to 30%. You\'re doing great!',
-    ),
-    (
-      '🌍',
-      'Language Fun',
-      'Kids who learn multiple subjects together remember 40% more than studying one at a time.',
-    ),
-    (
-      '🚀',
-      'Space Fact',
-      'Astronauts study for years! NASA training takes about 2 years of intense learning.',
-    ),
-    (
-      '🎵',
-      'Music & Math',
-      'Learning music helps with math! Both use patterns and counting in similar ways.',
-    ),
-    (
-      '🦁',
-      'Animal Teachers',
-      'Meerkats teach their babies how to eat scorpions by bringing them dead ones first!',
-    ),
-    (
-      '✏️',
-      'Pencil Power',
-      'The average pencil can write about 45,000 words. That\'s a lot of homework!',
-    ),
-    (
-      '🌈',
-      'Color Memory',
-      'You remember colorful things better! That\'s why highlighters help you study.',
-    ),
-    (
-      '🐘',
-      'Elephant Memory',
-      'Elephants really do have great memories - they can remember friends for decades!',
-    ),
-    (
-      '⚡',
-      'Quick Learner',
-      'Your brain can process an image in just 13 milliseconds. Faster than a blink!',
-    ),
-    (
-      '🌙',
-      'Dream Learning',
-      'Your brain replays what you learned during the day while you dream!',
-    ),
-    (
-      '🎯',
-      'Practice Perfect',
-      'It takes about 10,000 hours of practice to become an expert at something.',
-    ),
+  static List<(String, String, String)> _localizedFunFacts(L10n l) => [
+    ('🧠', l.funFactBrainPowerTitle, l.funFactBrainPower),
+    ('🐙', l.funFactOctopusTitle, l.funFactOctopus),
+    ('🎒', l.funFactSchoolTitle, l.funFactSchool),
+    ('🦋', l.funFactMemoryTitle, l.funFactMemory),
+    ('🎮', l.funFactGameTitle, l.funFactGame),
+    ('🌍', l.funFactLanguageTitle, l.funFactLanguage),
+    ('🚀', l.funFactSpaceTitle, l.funFactSpace),
+    ('🎵', l.funFactMusicTitle, l.funFactMusic),
+    ('🦁', l.funFactAnimalTitle, l.funFactAnimal),
+    ('✏️', l.funFactPencilTitle, l.funFactPencil),
+    ('🌈', l.funFactColorTitle, l.funFactColor),
+    ('🐘', l.funFactElephantTitle, l.funFactElephant),
+    ('⚡', l.funFactQuickTitle, l.funFactQuick),
+    ('🌙', l.funFactDreamTitle, l.funFactDream),
+    ('🎯', l.funFactPracticeTitle, l.funFactPractice),
   ];
 
   @override
@@ -315,7 +314,7 @@ class _ProcessingStateState extends State<_ProcessingState> {
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {
         setState(() {
-          _funFactIndex = (_funFactIndex + 1) % _funFacts.length;
+          _funFactIndex = _funFactIndex + 1;
         });
         _startFactRotation();
       }
@@ -325,7 +324,9 @@ class _ProcessingStateState extends State<_ProcessingState> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    final fact = _funFacts[_funFactIndex];
+    final l = L10n.of(context);
+    final facts = _localizedFunFacts(l);
+    final fact = facts[_funFactIndex % facts.length];
     final transferProgress = widget.transferProgressPercent / 100.0;
     final processingProgress = widget.processingProgressPercent / 100.0;
 
@@ -363,7 +364,7 @@ class _ProcessingStateState extends State<_ProcessingState> {
           SizedBox(height: tokens.spaceSm),
 
           _ProgressRow(
-            label: 'Transfer',
+            label: l.processingTransfer,
             percent: widget.transferProgressPercent,
             value: transferProgress,
           ),
@@ -371,7 +372,7 @@ class _ProcessingStateState extends State<_ProcessingState> {
           SizedBox(height: tokens.spaceSm),
 
           _ProgressRow(
-            label: 'AI Processing',
+            label: l.processingAI,
             percent: widget.processingProgressPercent,
             value: processingProgress,
           ),
@@ -398,7 +399,7 @@ class _ProcessingStateState extends State<_ProcessingState> {
           SizedBox(height: tokens.spaceMd),
 
           // Pipeline steps
-          _ProcessingSteps(currentStatus: widget.status),
+          _ProcessingSteps(pipelineStage: AppStateScope.of(context).pipelineStage),
 
           SizedBox(height: tokens.spaceLg),
 
@@ -668,29 +669,39 @@ class _AnimatedProcessingIconState extends State<_AnimatedProcessingIcon>
 }
 
 class _ProcessingSteps extends StatelessWidget {
-  const _ProcessingSteps({required this.currentStatus});
+  const _ProcessingSteps({required this.pipelineStage});
 
-  final String currentStatus;
+  final String? pipelineStage;
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     final steps = [
-      ('Uploading', LucideIcons.upload, 'Uploading'),
-      ('Processing', LucideIcons.fileSearch, 'Processing'),
-      ('Generating', LucideIcons.sparkles, 'Generating'),
-      ('Creating games', LucideIcons.gamepad2, 'Creating'),
+      (l.processingStepUploading, LucideIcons.upload),
+      (l.processingStepProcessing, LucideIcons.fileSearch),
+      (l.processingStepGenerating, LucideIcons.sparkles),
+      (l.processingStepCreatingGames, LucideIcons.gamepad2),
     ];
 
     int currentStep = 0;
-    if (currentStatus.contains('Processing') ||
-        currentStatus.contains('queue')) {
-      currentStep = 1;
-    } else if (currentStatus.contains('Generating') ||
-        currentStatus.contains('learning')) {
-      currentStep = 2;
-    } else if (currentStatus.contains('Creating') ||
-        currentStatus.contains('games')) {
-      currentStep = 3;
+    switch (pipelineStage) {
+      case 'ocr':
+      case 'concept_extraction_queued':
+      case 'concept_extraction':
+      case 'processing':
+      case 'queued':
+        currentStep = 1;
+        break;
+      case 'learning_pack_queued':
+      case 'learning_pack_generation':
+      case 'processed':
+        currentStep = 2;
+        break;
+      case 'game_generation_queued':
+      case 'game_generation':
+      case 'ready':
+        currentStep = 3;
+        break;
     }
 
     return Row(
@@ -782,7 +793,7 @@ class _SuccessState extends StatelessWidget {
           SizedBox(height: tokens.spaceLg),
 
           Text(
-            'Your Quiz is Ready!',
+            L10n.of(context).processingSuccessTitle,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: LearnyColors.neutralDark,
@@ -792,7 +803,7 @@ class _SuccessState extends StatelessWidget {
           SizedBox(height: tokens.spaceSm),
 
           Text(
-            'Jump in while the material is fresh.',
+            L10n.of(context).processingSuccessMessage,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: LearnyColors.neutralMedium),
@@ -817,7 +828,7 @@ class _SuccessState extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Personalized games created from your document',
+                  L10n.of(context).processingSuccessDetail,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: LearnyColors.neutralMedium,
                   ),
@@ -868,7 +879,7 @@ class _ErrorState extends StatelessWidget {
           SizedBox(height: tokens.spaceLg),
 
           Text(
-            'Something went wrong',
+            L10n.of(context).processingErrorTitle,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: LearnyColors.neutralDark,
@@ -905,7 +916,7 @@ class _ErrorState extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Try uploading a clearer image or a different document.',
+                    L10n.of(context).processingErrorHint,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: LearnyColors.neutralMedium,
                     ),

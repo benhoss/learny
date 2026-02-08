@@ -1,9 +1,9 @@
 class BackendConfig {
-  static const baseUrl = 'http://localhost:8081';
-  static const demoName = 'Learny Parent';
+  static const baseUrl = 'https://learny-19v5hrda.on-forge.com';
+  static const demoName = 'Parent Tester';
   static const demoEmail = 'parent@example.com';
-  static const demoPassword = 'password1234';
-  static const childName = 'Sarah';
-  static const childGrade = 'Grade 6';
+  static const demoPassword = 'secret123';
+  static const childName = 'Alex';
+  static const childGrade = '6th';
   static const disableOnboarding = true;
 }

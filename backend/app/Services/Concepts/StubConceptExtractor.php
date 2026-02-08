@@ -6,7 +6,7 @@ use Illuminate\Support\Str;
 
 class StubConceptExtractor implements ConceptExtractorInterface
 {
-    public function extract(string $text): array
+    public function extract(string $text, ?string $language = null): array
     {
         $tokens = preg_split('/\s+/', strtolower(strip_tags($text)));
         $tokens = array_filter($tokens, fn ($token) => $token !== '');

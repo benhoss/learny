@@ -43,7 +43,7 @@ class ExtractConceptsFromDocument implements ShouldQueue
 
         try {
             if ($hasText) {
-                $concepts = $extractor->extract($document->extracted_text);
+                $concepts = $extractor->extract($document->extracted_text, $document->language);
                 $childId = (string) $document->child_profile_id;
 
                 foreach ($concepts as $concept) {

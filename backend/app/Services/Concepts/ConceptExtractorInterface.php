@@ -7,5 +7,5 @@ interface ConceptExtractorInterface
     /**
      * @return array<int, array{key: string, label: string, difficulty: float}>
      */
-    public function extract(string $text): array;
+    public function extract(string $text, ?string $language = null): array;
 }

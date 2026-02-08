@@ -14,7 +14,7 @@ class PrismConceptExtractor implements ConceptExtractorInterface
 
     private const MAX_CONCEPTS = 10;
 
-    public function extract(string $text): array
+    public function extract(string $text, ?string $language = null): array
     {
         $source = trim($text);
         if ($source === '') {
@@ -27,7 +27,7 @@ class PrismConceptExtractor implements ConceptExtractorInterface
 
         $model = config('prism.openrouter.text_model', 'google/gemini-3-flash-preview');
         $schema = '{"concepts":[{"key":"string","label":"string","difficulty":0.5}]}';
-        $prompt = $this->buildPrompt($source, $schema);
+        $prompt = $this->buildPrompt($source, $schema, $language);
 
         $response = $this->callWithRetry(function () use ($model, $prompt) {
             return Prism::text()
@@ -55,15 +55,20 @@ class PrismConceptExtractor implements ConceptExtractorInterface
         return $this->normalizeConcepts($rawConcepts);
     }
 
-    protected function buildPrompt(string $source, string $schema): string
+    protected function buildPrompt(string $source, string $schema, ?string $language): string
     {
         $truncated = strlen($source) > 12000 ? substr($source, 0, 12000) : $source;
+
+        $labelLanguageRule = $language && $language !== 'en'
+            ? "- Labels MUST be written in the document's language ({$language})."
+            : '- Labels should be in English.';
 
         return <<<PROMPT
 Extract up to 10 key learning concepts from the text.
 Rules:
 - Return ONLY JSON.
-- Keep keys stable and machine-friendly (kebab-case).
+- Keys MUST always be in English kebab-case, regardless of the document language.
+{$labelLanguageRule}
 - Keep labels short and learner-friendly.
 - Difficulty must be a number between 0 and 1.
 - Avoid duplicate concepts.

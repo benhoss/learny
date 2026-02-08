@@ -35,7 +35,7 @@ class OcrJobTest extends TestCase
         });
 
         $this->app->bind(ConceptExtractorInterface::class, fn () => new class implements ConceptExtractorInterface {
-            public function extract(string $text): array
+            public function extract(string $text, ?string $language = null): array
             {
                 return [
                     ['key' => 'fractions.addition', 'label' => 'Adding fractions', 'difficulty' => 0.7],

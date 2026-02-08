@@ -47,7 +47,7 @@ class DocumentUploadTest extends TestCase
         });
 
         $this->app->bind(ConceptExtractorInterface::class, fn () => new class implements ConceptExtractorInterface {
-            public function extract(string $text): array
+            public function extract(string $text, ?string $language = null): array
             {
                 return [
                     ['key' => 'division.basics', 'label' => 'Division basics', 'difficulty' => 0.4],

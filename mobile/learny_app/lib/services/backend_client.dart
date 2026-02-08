@@ -73,12 +73,38 @@ class BackendClient {
 
   Future<Map<String, dynamic>> createChild({
     required String name,
-    required String gradeLevel,
+    String? gradeLevel,
+    int? birthYear,
+    String? schoolClass,
+    String? preferredLanguage,
+    String? gender,
+    String? genderSelfDescription,
+    List<String>? learningStylePreferences,
+    Map<String, dynamic>? supportNeeds,
+    List<Map<String, dynamic>>? confidenceBySubject,
   }) async {
+    final payload = <String, dynamic>{
+      'name': name,
+      if (gradeLevel != null && gradeLevel.isNotEmpty) 'grade_level': gradeLevel,
+      if (birthYear != null) 'birth_year': birthYear,
+      if (schoolClass != null && schoolClass.isNotEmpty)
+        'school_class': schoolClass,
+      if (preferredLanguage != null && preferredLanguage.isNotEmpty)
+        'preferred_language': preferredLanguage,
+      if (gender != null && gender.isNotEmpty) 'gender': gender,
+      if (genderSelfDescription != null && genderSelfDescription.isNotEmpty)
+        'gender_self_description': genderSelfDescription,
+      if (learningStylePreferences != null)
+        'learning_style_preferences': learningStylePreferences,
+      if (supportNeeds != null) 'support_needs': supportNeeds,
+      if (confidenceBySubject != null)
+        'confidence_by_subject': confidenceBySubject,
+    };
+
     final response = await _client.post(
       Uri.parse('$baseUrl/api/v1/children'),
       headers: _authHeaders(includeContentType: true),
-      body: jsonEncode({'name': name, 'grade_level': gradeLevel}),
+      body: jsonEncode(payload),
     );
 
     if (response.statusCode != 201) {
@@ -200,6 +226,88 @@ class BackendClient {
 
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
     return payload['data'] as Map<String, dynamic>;
+  }
+
+
+  Future<List<dynamic>> listSchoolAssessments({required String childId}) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('List school assessments failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return (payload['data'] as List<dynamic>?) ?? [];
+  }
+
+  Future<Map<String, dynamic>> createSchoolAssessment({
+    required String childId,
+    required String subject,
+    required String assessmentType,
+    required double score,
+    required double maxScore,
+    required String assessedAt,
+    String? grade,
+    String? teacherNote,
+    String source = 'manual',
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        'subject': subject,
+        'assessment_type': assessmentType,
+        'score': score,
+        'max_score': maxScore,
+        'assessed_at': assessedAt,
+        'grade': grade,
+        'teacher_note': teacherNote,
+        'source': source,
+      }),
+    );
+
+    if (response.statusCode != 201) {
+      throw BackendException('Create school assessment failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> updateSchoolAssessment({
+    required String childId,
+    required String assessmentId,
+    Map<String, dynamic> updates = const {},
+  }) async {
+    final response = await _client.patch(
+      Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments/$assessmentId'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode(updates),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Update school assessment failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<void> deleteSchoolAssessment({
+    required String childId,
+    required String assessmentId,
+  }) async {
+    final response = await _client.delete(
+      Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments/$assessmentId'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Delete school assessment failed: ${response.body}');
+    }
   }
 
   Future<List<dynamic>> listDocuments({required String childId}) async {

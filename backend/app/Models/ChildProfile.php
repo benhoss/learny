@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use MongoDB\Laravel\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use MongoDB\Laravel\Eloquent\Model;
 
 class ChildProfile extends Model
 {
     use HasFactory;
+
     protected $collection = 'child_profiles';
 
     protected $fillable = [
@@ -15,6 +16,13 @@ class ChildProfile extends Model
         'name',
         'grade_level',
         'birth_year',
+        'school_class',
+        'preferred_language',
+        'gender',
+        'gender_self_description',
+        'learning_style_preferences',
+        'support_needs',
+        'confidence_by_subject',
         'notes',
         'streak_days',
         'longest_streak',
@@ -29,6 +37,9 @@ class ChildProfile extends Model
 
     protected $casts = [
         'birth_year' => 'integer',
+        'learning_style_preferences' => 'array',
+        'support_needs' => 'array',
+        'confidence_by_subject' => 'array',
         'streak_days' => 'integer',
         'longest_streak' => 'integer',
         'total_xp' => 'integer',
@@ -47,6 +58,10 @@ class ChildProfile extends Model
         'recommendation_why_level' => 'detailed',
         'last_memory_reset_at' => null,
         'last_memory_reset_scope' => null,
+    ];
+
+    protected $appends = [
+        'age',
     ];
 
     public function user()
@@ -72,5 +87,21 @@ class ChildProfile extends Model
     public function learningPacks()
     {
         return $this->hasMany(LearningPack::class, 'child_profile_id');
+    }
+
+    public function getAgeAttribute(): ?int
+    {
+        $birthYear = $this->birth_year;
+        if ($birthYear === null) {
+            return null;
+        }
+
+        $age = now()->year - (int) $birthYear;
+
+        if ($age < 0 || $age > 25) {
+            return null;
+        }
+
+        return $age;
     }
 }

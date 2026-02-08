@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\LearningPackController;
 use App\Http\Controllers\Api\MemoryPreferencesController;
 use App\Http\Controllers\Api\RevisionSessionController;
 use App\Http\Controllers\Api\ReviewQueueController;
+use App\Http\Controllers\Api\SchoolAssessmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', HealthController::class);
@@ -33,6 +34,7 @@ Route::prefix('v1')->group(function () {
         Route::get('children/{child}/progress', [ChildProgressController::class, 'progress']);
         Route::get('children/{child}/home-recommendations', [HomeRecommendationController::class, 'index']);
         Route::get('children/{child}/memory/preferences', [MemoryPreferencesController::class, 'show']);
+        Route::get('children/{child}/school-assessments', [SchoolAssessmentController::class, 'index']);
 
         Route::get('children/{child}/documents', [DocumentController::class, 'index']);
         Route::get('children/{child}/documents/{document}', [DocumentController::class, 'show']);
@@ -54,6 +56,9 @@ Route::prefix('v1')->group(function () {
                 ->only(['store', 'update', 'destroy']);
 
             Route::post('children/{child}/mastery', [ChildProgressController::class, 'upsertMastery']);
+            Route::post('children/{child}/school-assessments', [SchoolAssessmentController::class, 'store']);
+            Route::patch('children/{child}/school-assessments/{assessment}', [SchoolAssessmentController::class, 'update']);
+            Route::delete('children/{child}/school-assessments/{assessment}', [SchoolAssessmentController::class, 'destroy']);
             Route::put('children/{child}/memory/preferences', [MemoryPreferencesController::class, 'update']);
             Route::post('children/{child}/memory/clear-scope', [MemoryPreferencesController::class, 'clearScope']);
             Route::post('children/{child}/home-recommendations/events', [HomeRecommendationController::class, 'track']);

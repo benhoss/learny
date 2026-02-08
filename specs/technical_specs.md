@@ -96,3 +96,8 @@ Mobile App (Flutter / React Native)
   - End-to-end test of snap → upload → generate → quiz.
   - Validate schemas with new fields.
   - Verify output language matches input material/context.
+
+## 9. Detailed Feature Specs
+
+- Personalized Learner Profile 2.0: see `specs/personalized_learner_profile_2_0_spec.md`.
+- School Results Hub: see `specs/school_results_hub_spec.md`.

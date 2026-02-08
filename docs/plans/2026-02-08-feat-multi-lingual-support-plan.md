@@ -355,31 +355,31 @@ $judith = ChildProfile::create([
 
 ### Functional Requirements
 
-- [ ] Flutter app displays all UI strings in the child's `preferred_language`
-- [ ] Switching child profiles switches the app locale
-- [ ] Before a child is selected, the app follows the device locale (fallback to English)
-- [ ] ARB files exist for `en`, `fr`, `nl` with all ~120+ extracted strings
-- [ ] ICU plural syntax is used for strings with counts (concepts, cards, questions, days)
-- [ ] Backend revision prompts and recommendation titles are translated server-side
-- [ ] `RevisionComposer` uses `Translator::get()` with child's `preferred_language`
-- [ ] `MemorySignalProjector` uses `Translator::get()` with child's `preferred_language`
-- [ ] `RevisionSessionController` returns translated session labels
-- [ ] Concept keys remain English kebab-case regardless of source language
-- [ ] `PrismConceptExtractor` prompt explicitly instructs English keys + localized labels
-- [ ] Language picker appears on profile creation screen (EN/FR/NL)
-- [ ] `preferred_language` validation restricts to `en`, `fr`, `nl`
-- [ ] TestSeeder creates Judith: name="Judith", birth_year=2014, grade_level="1ere secondaire", preferred_language="fr"
-- [ ] True/False game labels show localized text ("Vrai"/"Faux" in French)
-- [ ] Day-of-week abbreviations use `intl` DateFormat for localization
-- [ ] Processing screen fun facts are translated
-- [ ] iOS `Info.plist` declares `CFBundleLocalizations` for en, fr, nl
+- [x] Flutter app displays all UI strings in the child's `preferred_language`
+- [x] Switching child profiles switches the app locale
+- [x] Before a child is selected, the app follows the device locale (fallback to English)
+- [x] ARB files exist for `en`, `fr`, `nl` with all ~120+ extracted strings
+- [x] ICU plural syntax is used for strings with counts (concepts, cards, questions, days)
+- [x] Backend revision prompts and recommendation titles are translated server-side
+- [x] `RevisionComposer` uses `Translator::get()` with child's `preferred_language`
+- [x] `MemorySignalProjector` uses `Translator::get()` with child's `preferred_language`
+- [x] `RevisionSessionController` returns translated session labels
+- [x] Concept keys remain English kebab-case regardless of source language
+- [x] `PrismConceptExtractor` prompt explicitly instructs English keys + localized labels
+- [x] Language picker appears on profile creation screen (EN/FR/NL)
+- [x] `preferred_language` validation restricts to `en`, `fr`, `nl`
+- [x] TestSeeder creates Judith: name="Judith", birth_year=2014, grade_level="1ere secondaire", preferred_language="fr"
+- [x] True/False game labels show localized text ("Vrai"/"Faux" in French)
+- [x] Day-of-week abbreviations use `intl` DateFormat for localization
+- [x] Processing screen fun facts are translated
+- [x] iOS `Info.plist` declares `CFBundleLocalizations` for en, fr, nl
 
 ### Testing Requirements
 
-- [ ] Widget test verifying all locales load without error
+- [x] Widget test verifying all locales load without error
 - [ ] Backend test for `Translator::get()` with each locale + fallback
 - [ ] Backend test confirming RevisionComposer returns French strings for `preferred_language: 'fr'`
-- [ ] Existing tests continue to pass (33/35 backend, 7/7 Flutter widget)
+- [x] Existing tests continue to pass (33/35 backend, 7/7 Flutter widget)
 
 ## Dependencies & Risks
 

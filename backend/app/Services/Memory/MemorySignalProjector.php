@@ -6,6 +6,7 @@ use App\Models\ChildProfile;
 use App\Models\Document;
 use App\Models\LearningMemoryEvent;
 use App\Models\MasteryProfile;
+use App\Services\Translator;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 
@@ -13,6 +14,7 @@ class MemorySignalProjector
 {
     public function buildRecommendations(ChildProfile $child): array
     {
+        $t = Translator::forChild($child);
         $childId = (string) $child->_id;
         $personalizationEnabled = (bool) ($child->memory_personalization_enabled ?? true);
         $includeWhy = (bool) ($child->recommendation_why_enabled ?? true);
@@ -31,8 +33,8 @@ class MemorySignalProjector
                 $recommendations[] = [
                     'id' => 'due:'.$profile->concept_key,
                     'type' => 'review_due',
-                    'title' => 'Review now: '.$label,
-                    'subtitle' => 'This concept is due for spaced revision.',
+                    'title' => $t->get('recommendation.review_title', ['label' => $label]),
+                    'subtitle' => $t->get('recommendation.review_subtitle'),
                     'concept_key' => (string) $profile->concept_key,
                     'priority_score' => 100,
                     'action' => 'start_revision',
@@ -70,8 +72,8 @@ class MemorySignalProjector
                 $recommendations[] = [
                     'id' => 'mistake:'.$conceptKey,
                     'type' => 'weak_area',
-                    'title' => 'Practice weak area',
-                    'subtitle' => $conceptKey.' had '.$count.' recent mistakes.',
+                    'title' => $t->get('recommendation.weak_title'),
+                    'subtitle' => $t->get('recommendation.weak_subtitle', ['concept' => $conceptKey, 'count' => $count]),
                     'concept_key' => $conceptKey,
                     'priority_score' => 90,
                     'action' => 'start_revision',
@@ -99,7 +101,7 @@ class MemorySignalProjector
             $recommendations[] = [
                 'id' => 'recent-doc:'.(string) $recentDocument->_id,
                 'type' => 'recent_upload',
-                'title' => 'Continue latest upload',
+                'title' => $t->get('recommendation.recent_upload_title'),
                 'subtitle' => (string) ($recentDocument->subject ?: $recentDocument->original_filename),
                 'concept_key' => null,
                 'priority_score' => 70,
@@ -120,8 +122,8 @@ class MemorySignalProjector
             $recommendations[] = [
                 'id' => 'streak-rescue:'.$childId,
                 'type' => 'streak_rescue',
-                'title' => 'Streak rescue session',
-                'subtitle' => 'Keep your streak alive with a 2-minute quick review.',
+                'title' => $t->get('recommendation.streak_title'),
+                'subtitle' => $t->get('recommendation.streak_subtitle'),
                 'concept_key' => null,
                 'priority_score' => 95,
                 'action' => 'start_streak_rescue',
@@ -142,8 +144,8 @@ class MemorySignalProjector
             $recommendations[] = [
                 'id' => 'generic:resume',
                 'type' => 'generic_practice',
-                'title' => 'Start a quick practice',
-                'subtitle' => 'Personalization is paused. You can still learn from uploads.',
+                'title' => $t->get('recommendation.generic_title'),
+                'subtitle' => $t->get('recommendation.generic_subtitle'),
                 'concept_key' => null,
                 'priority_score' => 80,
                 'action' => 'start_learning',

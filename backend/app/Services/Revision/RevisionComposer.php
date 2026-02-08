@@ -6,13 +6,17 @@ use App\Models\ChildProfile;
 use App\Models\GameResult;
 use App\Models\LearningPack;
 use App\Models\MasteryProfile;
+use App\Services\Translator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class RevisionComposer
 {
+    protected Translator $translator;
+
     public function compose(ChildProfile $child, int $limit = 5): array
     {
+        $this->translator = Translator::forChild($child);
         $limit = max(3, min(10, $limit));
         $childId = (string) $child->_id;
 
@@ -84,10 +88,10 @@ class RevisionComposer
                 'source' => 'review_queue',
                 'concept_key' => (string) $profile->concept_key,
                 'concept_label' => $label,
-                'prompt' => 'Which concept should you review now?',
+                'prompt' => $this->translator->get('revision.prompt_review'),
                 'options' => $options,
                 'correct_index' => max(0, (int) array_search($label, $options, true)),
-                'selection_reason' => 'Due now in your review queue',
+                'selection_reason' => $this->translator->get('revision.reason_due'),
                 'confidence' => 0.95,
                 'priority_score' => 100,
                 'explainability' => [
@@ -123,7 +127,7 @@ class RevisionComposer
 
                 $options = collect([$expected, $response])
                     ->filter(fn (string $option) => $option !== '')
-                    ->push('Not sure yet')
+                    ->push($this->translator->get('revision.not_sure'))
                     ->unique()
                     ->values()
                     ->all();
@@ -136,11 +140,11 @@ class RevisionComposer
                     'id' => (string) Str::uuid(),
                     'source' => 'recent_mistake',
                     'concept_key' => $topic,
-                    'concept_label' => $topic !== '' ? $topic : 'Recent mistake',
+                    'concept_label' => $topic !== '' ? $topic : $this->translator->get('revision.recent_mistake'),
                     'prompt' => $prompt,
                     'options' => $options,
                     'correct_index' => max(0, (int) array_search($expected, $options, true)),
-                    'selection_reason' => 'Based on a recent wrong answer',
+                    'selection_reason' => $this->translator->get('revision.reason_mistake'),
                     'confidence' => 0.9,
                     'priority_score' => 90,
                     'explainability' => [
@@ -185,11 +189,11 @@ class RevisionComposer
                     'source' => 'recent_pack',
                     'concept_key' => $concept['key'],
                     'concept_label' => $concept['label'],
-                    'prompt' => 'Pick the concept from your recent upload.',
+                    'prompt' => $this->translator->get('revision.prompt_recent_upload'),
                     'options' => $options,
                     'correct_index' => max(0, (int) array_search($concept['label'], $options, true)),
                     'document_id' => $concept['document_id'],
-                    'selection_reason' => 'From your latest uploaded document',
+                    'selection_reason' => $this->translator->get('revision.reason_recent_upload'),
                     'confidence' => 0.75,
                     'priority_score' => 70,
                     'explainability' => [

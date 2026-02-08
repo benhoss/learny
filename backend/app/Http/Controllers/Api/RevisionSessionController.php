@@ -8,6 +8,7 @@ use App\Models\LearningMemoryEvent;
 use App\Models\MasteryProfile;
 use App\Models\RevisionSession;
 use App\Services\Revision\RevisionComposer;
+use App\Services\Translator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +33,7 @@ class RevisionSessionController extends Controller
             'total_items' => count($items),
             'correct_items' => 0,
             'xp_earned' => 0,
-            'subject_label' => 'Quick Revision',
+            'subject_label' => Translator::forChild($child)->get('revision.subject_label'),
             'duration_minutes' => 5,
             'items' => $items,
             'results' => [],

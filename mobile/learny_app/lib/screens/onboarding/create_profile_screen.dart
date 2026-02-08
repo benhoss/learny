@@ -5,11 +5,25 @@ import '../../theme/app_assets.dart';
 import '../../theme/app_theme.dart';
 import '../shared/gradient_scaffold.dart';
 
-class CreateProfileScreen extends StatelessWidget {
+class CreateProfileScreen extends StatefulWidget {
   const CreateProfileScreen({super.key});
 
   @override
+  State<CreateProfileScreen> createState() => _CreateProfileScreenState();
+}
+
+class _CreateProfileScreenState extends State<CreateProfileScreen> {
+  static const _supportedLanguages = [
+    ('en', 'English'),
+    ('fr', 'Français'),
+    ('nl', 'Nederlands'),
+  ];
+
+  String _selectedLanguage = 'en';
+
+  @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return GradientScaffold(
       gradient: LearnyGradients.hero,
       child: Padding(
@@ -17,7 +31,7 @@ class CreateProfileScreen extends StatelessWidget {
         child: ListView(
           children: [
             Text(
-              L10n.of(context).createProfileTitle,
+              l.createProfileTitle,
               style: Theme.of(context)
                   .textTheme
                   .headlineLarge
@@ -25,7 +39,7 @@ class CreateProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              L10n.of(context).createProfileSubtitle,
+              l.createProfileSubtitle,
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
@@ -34,13 +48,38 @@ class CreateProfileScreen extends StatelessWidget {
             const SizedBox(height: 24),
             TextField(
               decoration: InputDecoration(
-                labelText: L10n.of(context).createProfileNameLabel,
-                hintText: L10n.of(context).createProfileNameHint,
+                labelText: l.createProfileNameLabel,
+                hintText: l.createProfileNameHint,
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              L10n.of(context).createProfileAvatarLabel,
+              l.createProfileLanguageLabel,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _selectedLanguage,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              items: _supportedLanguages
+                  .map((lang) => DropdownMenuItem(
+                        value: lang.$1,
+                        child: Text(lang.$2),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _selectedLanguage = value);
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l.createProfileAvatarLabel,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
@@ -59,7 +98,7 @@ class CreateProfileScreen extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, AppRoutes.consent),
-              child: Text(L10n.of(context).createProfileContinue),
+              child: Text(l.createProfileContinue),
             ),
           ],
         ),

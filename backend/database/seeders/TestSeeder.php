@@ -21,7 +21,17 @@ class TestSeeder extends Seeder
             'name' => 'Alex',
             'grade_level' => '6th',
             'birth_year' => 2013,
+            'preferred_language' => 'en',
             'notes' => 'Prefers math games.',
+        ]);
+
+        ChildProfile::create([
+            'user_id' => (string) $user->_id,
+            'name' => 'Judith',
+            'grade_level' => '1ere secondaire',
+            'birth_year' => 2014,
+            'preferred_language' => 'fr',
+            'notes' => 'Belgium, French-speaking',
         ]);
     }
 }

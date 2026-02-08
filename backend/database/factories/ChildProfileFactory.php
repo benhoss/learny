@@ -16,6 +16,7 @@ class ChildProfileFactory extends Factory
             'name' => $this->faker->firstName(),
             'grade_level' => $this->faker->randomElement(['5th', '6th', '7th']),
             'birth_year' => $this->faker->numberBetween(2010, 2015),
+            'preferred_language' => $this->faker->randomElement(['en', 'fr', 'nl']),
             'notes' => $this->faker->sentence(),
         ];
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Concerns\FindsOwnedChild;
 use App\Http\Controllers\Controller;
 use App\Models\ChildProfile;
 use Illuminate\Http\JsonResponse;
@@ -11,6 +12,7 @@ use Illuminate\Validation\Rule;
 
 class ChildProfileController extends Controller
 {
+    use FindsOwnedChild;
     private const GENDER_OPTIONS = [
         'female',
         'male',
@@ -39,9 +41,7 @@ class ChildProfileController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate($this->rules(false));
-
         $data['user_id'] = (string) Auth::guard('api')->id();
-        $data = $this->normalizePayload($data);
 
         $profile = ChildProfile::create($data);
 
@@ -52,7 +52,7 @@ class ChildProfileController extends Controller
 
     public function show(string $id): JsonResponse
     {
-        $profile = $this->findOwnedProfile($id);
+        $profile = $this->findOwnedChild($id);
 
         return response()->json([
             'data' => $profile,
@@ -61,11 +61,9 @@ class ChildProfileController extends Controller
 
     public function update(Request $request, string $id): JsonResponse
     {
-        $profile = $this->findOwnedProfile($id);
+        $profile = $this->findOwnedChild($id);
 
         $data = $request->validate($this->rules(true));
-
-        $data = $this->normalizePayload($data, $profile);
 
         $profile->fill($data);
         $profile->save();
@@ -77,7 +75,7 @@ class ChildProfileController extends Controller
 
     public function destroy(string $id): JsonResponse
     {
-        $profile = $this->findOwnedProfile($id);
+        $profile = $this->findOwnedChild($id);
         $profile->delete();
 
         return response()->json([
@@ -85,57 +83,29 @@ class ChildProfileController extends Controller
         ]);
     }
 
-    protected function findOwnedProfile(string $id): ChildProfile
-    {
-        $userId = (string) Auth::guard('api')->id();
-
-        return ChildProfile::where('_id', $id)
-            ->where('user_id', $userId)
-            ->firstOrFail();
-    }
-
-    private function normalizePayload(array $data, ?ChildProfile $profile = null): array
-    {
-        $gender = $data['gender'] ?? $profile?->gender;
-
-        if ($gender !== 'self_describe') {
-            $data['gender_self_description'] = null;
-        }
-
-        $preferredLanguage = $data['preferred_language'] ?? null;
-        if (is_string($preferredLanguage) && $preferredLanguage !== '') {
-            $segments = explode('-', $preferredLanguage, 2);
-            $language = strtolower($segments[0]);
-            $region = isset($segments[1]) ? strtoupper($segments[1]) : null;
-            $data['preferred_language'] = $region === null ? $language : $language.'-'.$region;
-        }
-
-        return $data;
-    }
-
     private function rules(bool $partial): array
     {
-        $prefix = $partial ? 'sometimes|' : '';
+        $s = $partial ? ['sometimes'] : [];
 
         return [
-            'name' => [$prefix.'required', 'string', 'max:100'],
-            'grade_level' => [$prefix.'nullable', 'string', 'max:50'],
-            'birth_year' => [$prefix.'nullable', 'integer', 'between:2000,2100'],
-            'notes' => [$prefix.'nullable', 'string', 'max:500'],
-            'school_class' => [$prefix.'nullable', 'string', 'max:50'],
-            'preferred_language' => [$prefix.'nullable', 'string', 'max:10', 'regex:/^[A-Za-z]{2,3}(-[A-Za-z]{2})?$/'],
-            'gender' => [$prefix.'nullable', Rule::in(self::GENDER_OPTIONS)],
-            'gender_self_description' => [$prefix.'nullable', 'string', 'max:50', 'required_if:gender,self_describe', 'prohibited_unless:gender,self_describe'],
-            'learning_style_preferences' => [$prefix.'nullable', 'array'],
+            'name' => [...$s, 'required', 'string', 'max:100'],
+            'grade_level' => [...$s, 'nullable', 'string', 'max:50'],
+            'birth_year' => [...$s, 'nullable', 'integer', 'between:2000,2100'],
+            'notes' => [...$s, 'nullable', 'string', 'max:500'],
+            'school_class' => [...$s, 'nullable', 'string', 'max:50'],
+            'preferred_language' => [...$s, 'nullable', 'string', Rule::in(['en', 'fr', 'nl'])],
+            'gender' => [...$s, 'nullable', Rule::in(self::GENDER_OPTIONS)],
+            'gender_self_description' => [...$s, 'nullable', 'string', 'max:50', 'required_if:gender,self_describe', 'prohibited_unless:gender,self_describe'],
+            'learning_style_preferences' => [...$s, 'nullable', 'array', 'max:10'],
             'learning_style_preferences.*' => ['string', Rule::in(self::LEARNING_STYLE_OPTIONS), 'distinct'],
-            'support_needs' => [$prefix.'nullable', 'array:attention_support,dyslexia_friendly_mode,larger_text,reduced_clutter_ui,extra_processing_time,other_notes'],
+            'support_needs' => [...$s, 'nullable', 'array:attention_support,dyslexia_friendly_mode,larger_text,reduced_clutter_ui,extra_processing_time,other_notes'],
             'support_needs.attention_support' => ['sometimes', 'boolean'],
             'support_needs.dyslexia_friendly_mode' => ['sometimes', 'boolean'],
             'support_needs.larger_text' => ['sometimes', 'boolean'],
             'support_needs.reduced_clutter_ui' => ['sometimes', 'boolean'],
             'support_needs.extra_processing_time' => ['sometimes', 'boolean'],
             'support_needs.other_notes' => ['sometimes', 'nullable', 'string', 'max:300'],
-            'confidence_by_subject' => [$prefix.'nullable', 'array'],
+            'confidence_by_subject' => [...$s, 'nullable', 'array', 'max:30'],
             'confidence_by_subject.*.subject' => ['required_with:confidence_by_subject', 'string', 'max:80'],
             'confidence_by_subject.*.confidence_level' => ['required_with:confidence_by_subject', 'integer', 'between:1,5'],
         ];

@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FlashcardsGame",
+  "type": "object",
+  "required": ["cards"],
+  "properties": {
+    "title": { "type": "string" },
+    "intro": { "type": "string" },
+    "estimated_time_minutes": { "type": "integer", "minimum": 1 },
+    "difficulty": { "type": "number", "minimum": 0, "maximum": 1 },
+    "cards": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["front", "back"],
+        "properties": {
+          "front": { "type": "string" },
+          "back": { "type": "string" },
+          "hint": { "type": "string" },
+          "topic": { "type": "string" },
+          "difficulty": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}

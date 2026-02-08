@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LearningPack",
+  "type": "object",
+  "required": ["concepts", "objective", "items"],
+  "properties": {
+    "objective": { "type": "string", "minLength": 3 },
+    "summary": { "type": "string" },
+    "language": { "type": "string" },
+    "difficulty": { "type": "number", "minimum": 0, "maximum": 1 },
+    "topics": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "estimated_time_minutes": { "type": "integer", "minimum": 1 },
+    "engagement": {
+      "type": "object",
+      "properties": {
+        "tone": { "type": "string" },
+        "persona": { "type": "string" },
+        "encouragement": { "type": "string" }
+      }
+    },
+    "concepts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["key", "label"],
+        "properties": {
+          "key": { "type": "string" },
+          "label": { "type": "string" },
+          "difficulty": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "content"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "flashcards",
+              "quiz",
+              "matching",
+              "true_false",
+              "fill_blank",
+              "ordering",
+              "multiple_select",
+              "short_answer"
+            ]
+          },
+          "content": { "type": "object" }
+        }
+      }
+    }
+  }
+}

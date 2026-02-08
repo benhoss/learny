@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OrderingGame",
+  "type": "object",
+  "required": ["items"],
+  "properties": {
+    "title": { "type": "string" },
+    "intro": { "type": "string" },
+    "estimated_time_minutes": { "type": "integer", "minimum": 1 },
+    "difficulty": { "type": "number", "minimum": 0, "maximum": 1 },
+    "items": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["prompt", "sequence"],
+        "properties": {
+          "prompt": { "type": "string" },
+          "sequence": {
+            "type": "array",
+            "minItems": 2,
+            "items": { "type": "string" }
+          },
+          "topic": { "type": "string" },
+          "difficulty": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}

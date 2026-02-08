@@ -79,7 +79,7 @@ class LearningPackController extends Controller
             ->where('child_profile_id', (string) $child->_id)
             ->firstOrFail();
 
-        $schemaPath = storage_path('app/schemas/learning_pack.json');
+        $schemaPath = resource_path('schemas/learning_pack.json');
         $validator->validate($data['content'], $schemaPath);
 
         $pack = LearningPack::create([

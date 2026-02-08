@@ -115,14 +115,14 @@ class GameController extends Controller
     protected function schemaForType(string $type): string
     {
         return match ($type) {
-            'flashcards' => storage_path('app/schemas/game_flashcards.json'),
-            'quiz' => storage_path('app/schemas/game_quiz.json'),
-            'matching' => storage_path('app/schemas/game_matching.json'),
-            'true_false' => storage_path('app/schemas/game_true_false.json'),
-            'fill_blank' => storage_path('app/schemas/game_fill_blank.json'),
-            'ordering' => storage_path('app/schemas/game_ordering.json'),
-            'multiple_select' => storage_path('app/schemas/game_multiple_select.json'),
-            'short_answer' => storage_path('app/schemas/game_short_answer.json'),
+            'flashcards' => resource_path('schemas/game_flashcards.json'),
+            'quiz' => resource_path('schemas/game_quiz.json'),
+            'matching' => resource_path('schemas/game_matching.json'),
+            'true_false' => resource_path('schemas/game_true_false.json'),
+            'fill_blank' => resource_path('schemas/game_fill_blank.json'),
+            'ordering' => resource_path('schemas/game_ordering.json'),
+            'multiple_select' => resource_path('schemas/game_multiple_select.json'),
+            'short_answer' => resource_path('schemas/game_short_answer.json'),
             default => throw ValidationException::withMessages([
                 'type' => ['Unsupported game type.'],
             ]),

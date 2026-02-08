@@ -53,7 +53,7 @@ class GenerateGamesFromLearningPack implements ShouldQueue
         foreach ($types as $type) {
             try {
                 $payload = $generator->generate($pack, $type);
-                $validator->validate($payload, storage_path("app/schemas/game_{$type}.json"));
+                $validator->validate($payload, resource_path("schemas/game_{$type}.json"));
 
                 Game::create([
                     'user_id' => (string) $pack->user_id,

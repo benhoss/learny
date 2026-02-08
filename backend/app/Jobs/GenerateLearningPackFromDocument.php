@@ -48,7 +48,7 @@ class GenerateLearningPackFromDocument implements ShouldQueue
 
         try {
             $content = $generator->generate($document, $concepts);
-            $validator->validate($content, storage_path('app/schemas/learning_pack.json'));
+            $validator->validate($content, resource_path('schemas/learning_pack.json'));
 
             $pack = LearningPack::create([
                 'user_id' => (string) $document->user_id,

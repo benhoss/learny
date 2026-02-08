@@ -111,8 +111,8 @@ class BackendClient {
       throw BackendException('Create child failed: ${response.body}');
     }
 
-    final payload = jsonDecode(response.body) as Map<String, dynamic>;
-    return payload['data'] as Map<String, dynamic>;
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return decoded['data'] as Map<String, dynamic>;
   }
 
   Future<Map<String, dynamic>> uploadDocument({
@@ -708,10 +708,22 @@ class BackendClient {
 }
 
 class BackendException implements Exception {
-  BackendException(this.message);
+  BackendException(this.message, {this.statusCode});
 
   final String message;
+  final int? statusCode;
 
   @override
   String toString() => message;
+
+  static BackendException fromResponse(String operation, int statusCode, String body) {
+    String userMessage;
+    try {
+      final decoded = jsonDecode(body) as Map<String, dynamic>;
+      userMessage = decoded['message']?.toString() ?? '$operation failed';
+    } catch (_) {
+      userMessage = '$operation failed';
+    }
+    return BackendException(userMessage, statusCode: statusCode);
+  }
 }

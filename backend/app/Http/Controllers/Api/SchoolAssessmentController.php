@@ -19,18 +19,16 @@ class SchoolAssessmentController extends Controller
         'ocr',
     ];
 
-    public function index(string $childId): JsonResponse
+    public function index(Request $request, string $childId): JsonResponse
     {
         $child = $this->findOwnedChild($childId);
 
         $items = SchoolAssessment::where('child_profile_id', (string) $child->_id)
             ->orderByDesc('assessed_at')
             ->orderByDesc('_id')
-            ->get();
+            ->paginate((int) $request->input('per_page', 20));
 
-        return response()->json([
-            'data' => $items,
-        ]);
+        return response()->json($items);
     }
 
     public function store(Request $request, string $childId): JsonResponse
@@ -100,17 +98,17 @@ class SchoolAssessmentController extends Controller
 
     private function rules(bool $partial): array
     {
-        $prefix = $partial ? 'sometimes|' : '';
+        $s = $partial ? ['sometimes'] : [];
 
         return [
-            'subject' => [$prefix.'required', 'string', 'max:100'],
-            'assessment_type' => [$prefix.'required', 'string', 'max:80'],
-            'score' => [$prefix.'required', 'numeric', 'min:0', 'max:1000'],
-            'max_score' => [$prefix.'required', 'numeric', 'min:1', 'max:1000'],
-            'grade' => [$prefix.'nullable', 'string', 'max:20'],
-            'assessed_at' => [$prefix.'required', 'date'],
-            'teacher_note' => [$prefix.'nullable', 'string', 'max:500'],
-            'source' => [$prefix.'nullable', Rule::in(self::SOURCE_OPTIONS)],
+            'subject' => [...$s, 'required', 'string', 'max:100'],
+            'assessment_type' => [...$s, 'required', 'string', 'max:80'],
+            'score' => [...$s, 'required', 'numeric', 'min:0', 'max:1000'],
+            'max_score' => [...$s, 'required', 'numeric', 'min:1', 'max:1000'],
+            'grade' => [...$s, 'nullable', 'string', 'max:20'],
+            'assessed_at' => [...$s, 'required', 'date_format:Y-m-d\TH:i:s\Z,Y-m-d'],
+            'teacher_note' => [...$s, 'nullable', 'string', 'max:500'],
+            'source' => ['sometimes', Rule::in(self::SOURCE_OPTIONS)],
         ];
     }
 }

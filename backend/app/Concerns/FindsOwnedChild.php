@@ -11,7 +11,7 @@ trait FindsOwnedChild
     {
         $userId = (string) Auth::guard('api')->id();
         $boundChildId = config('learny.bound_child_profile_id');
-        $resolvedChildId = (! app()->isProduction() && filled($boundChildId))
+        $resolvedChildId = (app()->environment('local') && filled($boundChildId))
             ? (string) $boundChildId
             : $childId;
 

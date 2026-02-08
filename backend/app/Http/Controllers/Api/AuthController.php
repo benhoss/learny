@@ -36,11 +36,11 @@ class AuthController extends Controller
         $token = Auth::guard('api')->attempt($credentials);
 
         if (! $token) {
-            $demoEmail = env('DEMO_USER_EMAIL', 'parent@example.com');
-            $demoPassword = env('DEMO_USER_PASSWORD', 'password1234');
+            $demoEmail = env('DEMO_USER_EMAIL');
+            $demoPassword = env('DEMO_USER_PASSWORD');
             $demoName = env('DEMO_USER_NAME', 'Learny Parent');
 
-            if (app()->environment('local') && $credentials['email'] === $demoEmail) {
+            if (app()->environment('local') && $demoEmail && $demoPassword && $credentials['email'] === $demoEmail) {
                 $user = User::where('email', $demoEmail)->first();
                 if (! $user) {
                     $user = User::create([

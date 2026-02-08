@@ -35,6 +35,10 @@ class ChildProfile extends Model
         'last_memory_reset_scope',
     ];
 
+    protected $hidden = [
+        'user_id',
+    ];
+
     protected $casts = [
         'birth_year' => 'integer',
         'learning_style_preferences' => 'array',
@@ -87,6 +91,39 @@ class ChildProfile extends Model
     public function learningPacks()
     {
         return $this->hasMany(LearningPack::class, 'child_profile_id');
+    }
+
+    public function schoolAssessments()
+    {
+        return $this->hasMany(SchoolAssessment::class, 'child_profile_id');
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (ChildProfile $profile) {
+            $profile->schoolAssessments()->delete();
+        });
+    }
+
+    public function setPreferredLanguageAttribute(?string $value): void
+    {
+        if (is_string($value) && $value !== '') {
+            $segments = explode('-', $value, 2);
+            $language = strtolower($segments[0]);
+            $region = isset($segments[1]) ? strtoupper($segments[1]) : null;
+            $value = $region === null ? $language : $language.'-'.$region;
+        }
+
+        $this->attributes['preferred_language'] = $value;
+    }
+
+    public function setGenderAttribute(?string $value): void
+    {
+        $this->attributes['gender'] = $value;
+
+        if ($value !== 'self_describe') {
+            $this->attributes['gender_self_description'] = null;
+        }
     }
 
     public function getAgeAttribute(): ?int

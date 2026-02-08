@@ -23,6 +23,10 @@ class SchoolAssessment extends Model
         'source',
     ];
 
+    protected $hidden = [
+        'child_profile_id',
+    ];
+
     protected $casts = [
         'score' => 'float',
         'max_score' => 'float',

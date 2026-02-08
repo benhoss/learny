@@ -39,8 +39,8 @@ class SchoolAssessmentTest extends TestCase
             ]);
 
         $create->assertStatus(201)
-            ->assertJsonPath('data.subject', 'Math')
-            ->assertJsonPath('data.score_percent', 80.0);
+            ->assertJsonPath('data.subject', 'Math');
+        $this->assertEquals(80.0, $create->json('data.score_percent'));
 
         $assessmentId = $this->extractId($create->json('data'));
 
@@ -48,8 +48,8 @@ class SchoolAssessmentTest extends TestCase
             ->getJson('/api/v1/children/'.(string) $child->_id.'/school-assessments');
 
         $index->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.assessment_type', 'weekly_test');
+            ->assertJsonCount(1, 'data');
+        $this->assertEquals('weekly_test', $index->json('data.0.assessment_type'));
 
         $update = $this->withHeader('Authorization', 'Bearer '.$token)
             ->patchJson('/api/v1/children/'.(string) $child->_id.'/school-assessments/'.$assessmentId, [
@@ -59,8 +59,8 @@ class SchoolAssessmentTest extends TestCase
             ]);
 
         $update->assertOk()
-            ->assertJsonPath('data.score_percent', 90.0)
             ->assertJsonPath('data.source', 'ocr');
+        $this->assertEquals(90.0, $update->json('data.score_percent'));
 
         $delete = $this->withHeader('Authorization', 'Bearer '.$token)
             ->deleteJson('/api/v1/children/'.(string) $child->_id.'/school-assessments/'.$assessmentId);

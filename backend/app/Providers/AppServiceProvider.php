@@ -61,6 +61,10 @@ class AppServiceProvider extends ServiceProvider
             throw new RuntimeException('BOUND_CHILD_PROFILE_ID must not be set in production.');
         }
 
+        if (app()->isProduction() && (env('DEMO_USER_EMAIL') || env('DEMO_USER_PASSWORD'))) {
+            throw new RuntimeException('DEMO_USER_EMAIL/DEMO_USER_PASSWORD must not be set in production.');
+        }
+
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->id ?: $request->ip()));
 
         RateLimiter::for('api-write', fn (Request $request) => Limit::perMinute(30)->by($request->user()?->id ?: $request->ip()));

@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Poppins:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 20% 23%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 23%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 23%;
+    --primary: 192 70% 70%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 156 62% 73%;
+    --secondary-foreground: 220 20% 23%;
+    --muted: 210 30% 97%;
+    --muted-foreground: 210 15% 50%;
+    --accent: 252 50% 82%;
+    --accent-foreground: 220 20% 23%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 25% 93%;
+    --input: 210 25% 93%;
+    --ring: 192 70% 70%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-cream text-neutral-dark font-nunito antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-poppins font-semibold;
+  }
+}
+
+@layer components {
+  /* Mobile Container */
+  .mobile-container {
+    @apply max-w-md mx-auto min-h-screen bg-cream relative;
+  }
+  
+  /* Primary Button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white rounded-full bg-gradient-to-r from-sky to-mint shadow-button transition-all duration-200 active:scale-[0.98];
+  }
+  
+  .btn-primary:hover {
+    @apply shadow-button-hover;
+  }
+  
+  /* Secondary Button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold text-sky-dark bg-white border-2 border-sky rounded-full transition-all duration-200 active:scale-[0.98];
+  }
+  
+  .btn-secondary:hover {
+    @apply bg-sky-light/30;
+  }
+  
+  /* Ghost Button */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-neutral-medium transition-colors duration-200;
+  }
+  
+  .btn-ghost:hover {
+    @apply text-neutral-dark;
+  }
+  
+  /* Card Styles */
+  .card {
+    @apply bg-white rounded-3xl p-6 shadow-card;
+  }
+  
+  .card-interactive {
+    @apply card transition-all duration-200 active:scale-[0.98];
+  }
+  
+  .card-interactive:hover {
+    @apply shadow-card-hover;
+  }
+  
+  /* Upload Button */
+  .upload-btn {
+    @apply flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-sky rounded-2xl bg-sky-light/20 transition-all duration-200;
+  }
+  
+  .upload-btn:hover {
+    @apply border-solid bg-sky-light/30;
+  }
+  
+  /* Quiz Option */
+  .quiz-option {
+    @apply w-full p-4 text-left bg-white border-2 border-neutral-soft rounded-xl transition-all duration-200;
+  }
+  
+  .quiz-option:hover {
+    @apply border-sky bg-sky-light/10;
+  }
+  
+  .quiz-option.selected {
+    @apply border-sky bg-sky-light/20;
+  }
+  
+  .quiz-option.correct {
+    @apply border-success bg-success-light/30;
+  }
+  
+  /* Progress Bar */
+  .progress-bar {
+    @apply h-2 bg-neutral-soft rounded-full overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full bg-gradient-to-r from-sky to-mint rounded-full transition-all duration-500;
+  }
+  
+  /* Screen Header */
+  .screen-header {
+    @apply px-6 pt-12 pb-4;
+  }
+  
+  /* Screen Content */
+  .screen-content {
+    @apply px-6 pb-8 flex-1;
+  }
+  
+  /* Safe Area Bottom */
+  .safe-bottom {
+    @apply pb-8;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-sky to-mint bg-clip-text text-transparent;
+  }
+  
+  .gradient-welcome {
+    background: linear-gradient(180deg, #E8F7FA 0%, #FFF8F0 100%);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

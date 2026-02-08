@@ -54,17 +54,23 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: tokens.gradientAccent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    LucideIcons.sparkles,
-                    color: Colors.white,
-                    size: 24,
+                GestureDetector(
+                  onTap: state.children.length > 1
+                      ? () => _showChildSwitcher(context)
+                      : null,
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: LearnyColors.skyPrimary,
+                    child: Text(
+                      profile.name.isNotEmpty
+                          ? profile.name.characters.first.toUpperCase()
+                          : '?',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -261,6 +267,75 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showChildSwitcher(BuildContext context) {
+    final state = AppStateScope.of(context);
+    final l = L10n.of(context);
+    final tokens = context.tokens;
+
+    showModalBottomSheet<void>(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.all(tokens.spaceLg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l.switchProfile,
+              style: Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: LearnyColors.neutralDark,
+              ),
+            ),
+            SizedBox(height: tokens.spaceSm),
+            Text(
+              l.switchProfileHint,
+              style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
+                color: LearnyColors.neutralMedium,
+              ),
+            ),
+            SizedBox(height: tokens.spaceMd),
+            ...state.children.map(
+              (child) {
+                final isSelected = child.id == state.backendChildId;
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: isSelected
+                        ? LearnyColors.skyPrimary
+                        : LearnyColors.neutralSoft,
+                    child: Text(
+                      child.name.characters.first.toUpperCase(),
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : LearnyColors.neutralDark,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  title: Text(child.name),
+                  subtitle: Text(child.gradeLabel),
+                  trailing: isSelected
+                      ? const Icon(Icons.check_circle_rounded,
+                          color: LearnyColors.skyPrimary)
+                      : null,
+                  onTap: isSelected
+                      ? null
+                      : () {
+                          Navigator.of(sheetContext).pop();
+                          state.selectChild(child.id);
+                        },
+                );
+              },
+            ),
+            SizedBox(height: tokens.spaceMd),
           ],
         ),
       ),

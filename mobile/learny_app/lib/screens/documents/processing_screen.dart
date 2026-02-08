@@ -819,7 +819,6 @@ class _SuccessState extends StatelessWidget {
               borderRadius: tokens.radiusLg,
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   LucideIcons.sparkles,
@@ -827,10 +826,12 @@ class _SuccessState extends StatelessWidget {
                   size: 18,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  L10n.of(context).processingSuccessDetail,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: LearnyColors.neutralMedium,
+                Expanded(
+                  child: Text(
+                    L10n.of(context).processingSuccessDetail,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: LearnyColors.neutralMedium,
+                    ),
                   ),
                 ),
               ],

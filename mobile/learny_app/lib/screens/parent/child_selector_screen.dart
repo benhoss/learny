@@ -16,19 +16,25 @@ class ChildSelectorScreen extends StatelessWidget {
       body: Column(
         children: state.children
             .map(
-              (child) => ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: child.id == state.profile.id
-                      ? LearnyColors.peach
-                      : LearnyColors.sky,
-                  child: Text(child.name.characters.first),
-                ),
-                title: Text(child.name),
-                subtitle: Text(child.gradeLabel),
-                trailing: child.id == state.profile.id
-                    ? const Icon(Icons.check_circle_rounded, color: LearnyColors.teal)
-                    : null,
-              ),
+              (child) {
+                final isSelected = child.id == state.backendChildId;
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: isSelected
+                        ? LearnyColors.peach
+                        : LearnyColors.sky,
+                    child: Text(child.name.characters.first),
+                  ),
+                  title: Text(child.name),
+                  subtitle: Text(child.gradeLabel),
+                  trailing: isSelected
+                      ? const Icon(Icons.check_circle_rounded, color: LearnyColors.teal)
+                      : null,
+                  onTap: isSelected
+                      ? null
+                      : () => state.selectChild(child.id),
+                );
+              },
             )
             .toList(),
       ),

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\HomeRecommendationController;
 use App\Http\Controllers\Api\LearningPackController;
 use App\Http\Controllers\Api\MemoryPreferencesController;
+use App\Http\Controllers\Api\QuizSessionController;
 use App\Http\Controllers\Api\RevisionSessionController;
 use App\Http\Controllers\Api\ReviewQueueController;
 use App\Http\Controllers\Api\SchoolAssessmentController;
@@ -49,6 +50,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('children/{child}/review-queue', [ReviewQueueController::class, 'index']);
         Route::get('children/{child}/revision-session', [RevisionSessionController::class, 'start']);
+        Route::get('children/{child}/quiz-sessions/active', [QuizSessionController::class, 'active']);
 
         // Write endpoints with stricter rate limiting.
         Route::middleware('throttle:api-write')->group(function () {
@@ -71,7 +73,9 @@ Route::prefix('v1')->group(function () {
             Route::post('children/{child}/learning-packs/{pack}/games', [GameController::class, 'store']);
 
             Route::post('children/{child}/learning-packs/{pack}/games/{game}/results', [GameResultController::class, 'store']);
+            Route::post('children/{child}/learning-packs/{pack}/games/{game}/quiz-sessions', [QuizSessionController::class, 'create']);
             Route::post('children/{child}/learning-packs/{pack}/games/{game}/retry', [GameController::class, 'retry']);
+            Route::patch('children/{child}/quiz-sessions/{session}', [QuizSessionController::class, 'update']);
             Route::post('children/{child}/revision-session/{session}', [RevisionSessionController::class, 'submit']);
         });
     });

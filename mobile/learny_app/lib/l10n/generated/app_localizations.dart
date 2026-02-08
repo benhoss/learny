@@ -315,6 +315,66 @@ abstract class L10n {
   /// **'Question 0 / 0'**
   String get quizEmptyProgress;
 
+  /// Button to save in-flight quiz and leave
+  ///
+  /// In en, this message translates to:
+  /// **'Save & Exit'**
+  String get quizSaveAndExit;
+
+  /// Title for quiz setup screen
+  ///
+  /// In en, this message translates to:
+  /// **'Build Your Quiz'**
+  String get quizSetupTitle;
+
+  /// Subtitle for quiz setup screen
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how many questions you want today.'**
+  String get quizSetupSubtitle;
+
+  /// Selected question count label
+  ///
+  /// In en, this message translates to:
+  /// **'{count} questions'**
+  String quizSetupCountValue(int count);
+
+  /// Fun line for short quiz length
+  ///
+  /// In en, this message translates to:
+  /// **'Quick sprint mode. Fast focus, big wins.'**
+  String get quizSetupFunLineShort;
+
+  /// Fun line for medium quiz length
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced challenge unlocked. You got this.'**
+  String get quizSetupFunLineMedium;
+
+  /// Fun line for long quiz length
+  ///
+  /// In en, this message translates to:
+  /// **'Legend mode activated. Deep focus time.'**
+  String get quizSetupFunLineLong;
+
+  /// Start button on quiz setup screen
+  ///
+  /// In en, this message translates to:
+  /// **'Start My Quiz'**
+  String get quizSetupStartButton;
+
+  /// Hint when a resumable quiz exists
+  ///
+  /// In en, this message translates to:
+  /// **'You have {remaining} questions left in your saved quiz.'**
+  String quizSetupResumeHint(int remaining);
+
+  /// Resume quiz button on setup screen
+  ///
+  /// In en, this message translates to:
+  /// **'Resume Saved Quiz'**
+  String get quizSetupResumeButton;
+
   /// True/false game type title
   ///
   /// In en, this message translates to:
@@ -1658,6 +1718,18 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'{progress}% • {message}'**
   String statusWithProgress(int progress, String message);
+
+  /// Child switcher bottom sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'Switch Profile'**
+  String get switchProfile;
+
+  /// Child switcher bottom sheet hint
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a profile to switch'**
+  String get switchProfileHint;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

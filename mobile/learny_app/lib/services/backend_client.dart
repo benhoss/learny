@@ -85,7 +85,8 @@ class BackendClient {
   }) async {
     final payload = <String, dynamic>{
       'name': name,
-      if (gradeLevel != null && gradeLevel.isNotEmpty) 'grade_level': gradeLevel,
+      if (gradeLevel != null && gradeLevel.isNotEmpty)
+        'grade_level': gradeLevel,
       if (birthYear != null) 'birth_year': birthYear,
       if (schoolClass != null && schoolClass.isNotEmpty)
         'school_class': schoolClass,
@@ -228,7 +229,6 @@ class BackendClient {
     return payload['data'] as Map<String, dynamic>;
   }
 
-
   Future<List<dynamic>> listSchoolAssessments({required String childId}) async {
     final response = await _client.get(
       Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments'),
@@ -236,7 +236,9 @@ class BackendClient {
     );
 
     if (response.statusCode != 200) {
-      throw BackendException('List school assessments failed: ${response.body}');
+      throw BackendException(
+        'List school assessments failed: ${response.body}',
+      );
     }
 
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
@@ -270,7 +272,9 @@ class BackendClient {
     );
 
     if (response.statusCode != 201) {
-      throw BackendException('Create school assessment failed: ${response.body}');
+      throw BackendException(
+        'Create school assessment failed: ${response.body}',
+      );
     }
 
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
@@ -283,13 +287,17 @@ class BackendClient {
     Map<String, dynamic> updates = const {},
   }) async {
     final response = await _client.patch(
-      Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments/$assessmentId'),
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/school-assessments/$assessmentId',
+      ),
       headers: _authHeaders(includeContentType: true),
       body: jsonEncode(updates),
     );
 
     if (response.statusCode != 200) {
-      throw BackendException('Update school assessment failed: ${response.body}');
+      throw BackendException(
+        'Update school assessment failed: ${response.body}',
+      );
     }
 
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
@@ -301,12 +309,16 @@ class BackendClient {
     required String assessmentId,
   }) async {
     final response = await _client.delete(
-      Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments/$assessmentId'),
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/school-assessments/$assessmentId',
+      ),
       headers: _authHeaders(),
     );
 
     if (response.statusCode != 200) {
-      throw BackendException('Delete school assessment failed: ${response.body}');
+      throw BackendException(
+        'Delete school assessment failed: ${response.body}',
+      );
     }
   }
 
@@ -442,6 +454,75 @@ class BackendClient {
     } catch (error) {
       throw BackendException('Submit game result failed: $error');
     }
+  }
+
+  Future<Map<String, dynamic>> createQuizSession({
+    required String childId,
+    required String packId,
+    required String gameId,
+    required int questionCount,
+  }) async {
+    final response = await _client.post(
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/learning-packs/$packId/games/$gameId/quiz-sessions',
+      ),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({'question_count': questionCount}),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw BackendException('Create quiz session failed: ${response.body}');
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>?> fetchActiveQuizSession({
+    required String childId,
+  }) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/v1/children/$childId/quiz-sessions/active'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException(
+        'Fetch active quiz session failed: ${response.body}',
+      );
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    final data = payload['data'];
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>> updateQuizSession({
+    required String childId,
+    required String sessionId,
+    int? currentIndex,
+    int? correctCount,
+    List<Map<String, dynamic>>? results,
+    String? status,
+  }) async {
+    final response = await _client.patch(
+      Uri.parse('$baseUrl/api/v1/children/$childId/quiz-sessions/$sessionId'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        if (currentIndex != null) 'current_index': currentIndex,
+        if (correctCount != null) 'correct_count': correctCount,
+        if (results != null) 'results': results,
+        if (status != null) 'status': status,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Update quiz session failed: ${response.body}');
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   Future<Map<String, dynamic>?> fetchReviewQueue({
@@ -716,7 +797,11 @@ class BackendException implements Exception {
   @override
   String toString() => message;
 
-  static BackendException fromResponse(String operation, int statusCode, String body) {
+  static BackendException fromResponse(
+    String operation,
+    int statusCode,
+    String body,
+  ) {
     String userMessage;
     try {
       final decoded = jsonDecode(body) as Map<String, dynamic>;

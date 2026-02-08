@@ -105,12 +105,14 @@ class AppState extends ChangeNotifier {
   String? currentGameId;
   String? pipelineStage;
   bool hasFirstPlayableSignal = false;
+  bool isSwitchingChild = false;
   bool isSyncingDocuments = false;
   String? documentSyncError;
   bool isSyncingActivities = false;
   String? activitySyncError;
   bool hasMoreActivities = true;
   List<Map<String, dynamic>> _revisionSubmissionPayload = [];
+  Map<String, dynamic>? activeQuizSessionData;
 
   int _docCounter = 0;
 
@@ -172,6 +174,7 @@ class AppState extends ChangeNotifier {
     uploadProgressPercent = 0;
     processingProgressPercent = 0;
     processingStageLabel = 'Waiting';
+    activeQuizSessionData = null;
     memoryPersonalizationEnabled = true;
     recommendationWhyEnabled = true;
     recommendationWhyLevel = 'detailed';
@@ -192,6 +195,60 @@ class AppState extends ChangeNotifier {
   void _syncLocaleFromLanguage(String? languageCode) {
     if (languageCode != null && supportedLanguages.contains(languageCode)) {
       setLocale(Locale(languageCode));
+    }
+  }
+
+  ChildProfile? get selectedChildProfile {
+    final id = backendChildId;
+    if (id == null) return null;
+    return children.where((c) => c.id == id).firstOrNull;
+  }
+
+  Future<void> selectChild(String childId) async {
+    if (childId == backendChildId) return;
+    isSwitchingChild = true;
+    notifyListeners();
+
+    try {
+      backendChildId = childId;
+
+      final child = children.where((c) => c.id == childId).firstOrNull;
+      if (child != null) {
+        profile = profile.copyWith(
+          name: child.name,
+          gradeLabel: child.gradeLabel,
+        );
+        _syncLocaleFromLanguage(child.preferredLanguage);
+      }
+
+      // Clear session state
+      quizSession = null;
+      flashcardsPayload = null;
+      matchingPayload = null;
+      gamePayloads = {};
+      gameIds = {};
+      selectedPackId = null;
+      currentGameType = null;
+      currentGameTitle = null;
+      currentGameId = null;
+      lastGameOutcome = null;
+      lastResultSyncError = null;
+      inPackSession = false;
+      packSessionStage = null;
+      packGameQueue = [];
+      packGameIndex = 0;
+      revisionSession = null;
+      activeQuizSessionData = null;
+      homeRecommendations = [];
+
+      await _hydrateFromBackend();
+      await _refreshReviewCount();
+      await refreshActivitiesFromBackend();
+      await _refreshMemoryPreferences();
+      await _refreshHomeRecommendations();
+    } finally {
+      isSwitchingChild = false;
+      notifyListeners();
     }
   }
 
@@ -314,7 +371,7 @@ class AppState extends ChangeNotifier {
     ];
   }
 
-  Future<void> startQuiz({String? packId}) async {
+  Future<void> prepareQuizSetup({String? packId}) async {
     final id =
         packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
     if (id == null) {
@@ -326,23 +383,180 @@ class AppState extends ChangeNotifier {
     currentGameId = null;
     lastGameOutcome = null;
     lastResultSyncError = null;
+    activeQuizSessionData = null;
 
     if (!gamePayloads.containsKey('quiz')) {
       await _loadReadyGamesForPack(id);
     }
 
     final payload = gamePayloads['quiz'];
-    if (payload != null) {
+    currentGameId = gameIds['quiz'];
+    currentGameTitle = payload?['title']?.toString() ?? currentGameTitle;
+
+    await _refreshActiveQuizSession();
+    notifyListeners();
+  }
+
+  Future<bool> startQuizFromSetup({
+    required int questionCount,
+    String? packId,
+  }) async {
+    await prepareQuizSetup(packId: packId);
+
+    final childId = backendChildId;
+    final resolvedPackId = selectedPackId;
+    final gameId = currentGameId;
+    if (childId == null || resolvedPackId == null || gameId == null) {
+      return false;
+    }
+
+    try {
+      final payload = await backend.createQuizSession(
+        childId: childId,
+        packId: resolvedPackId,
+        gameId: gameId,
+        questionCount: questionCount,
+      );
+      final data = payload['data'];
+      if (data is! Map<String, dynamic>) {
+        return false;
+      }
+      activeQuizSessionData = data;
+      return _hydrateQuizSessionFromBackend(data);
+    } catch (error) {
+      lastResultSyncError = error.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> resumeQuizFromSetup({String? packId}) async {
+    await prepareQuizSetup(packId: packId);
+    final data = activeQuizSessionData;
+    if (data == null) {
+      return false;
+    }
+    return _hydrateQuizSessionFromBackend(data);
+  }
+
+  Future<void> startQuiz({String? packId}) async {
+    if ((currentGameType ?? 'quiz') == 'quiz') {
+      final resumed = await resumeQuizFromSetup(packId: packId);
+      if (resumed) {
+        return;
+      }
+      await startQuizFromSetup(questionCount: 10, packId: packId);
+      return;
+    }
+
+    final id =
+        packId ?? selectedPackId ?? (packs.isNotEmpty ? packs.first.id : null);
+    if (id == null) {
+      return;
+    }
+    selectedPackId = id;
+    lastResultSyncError = null;
+
+    if (!gamePayloads.containsKey(currentGameType)) {
+      await _loadReadyGamesForPack(id);
+    }
+
+    final payload = currentGameType == null
+        ? null
+        : gamePayloads[currentGameType!];
+    if (payload != null && currentGameType != null) {
       _loadQuizFromPayload({
-        'type': 'quiz',
+        'type': currentGameType,
         'payload': payload,
-        '_id': gameIds['quiz'],
+        '_id': gameIds[currentGameType],
         'learning_pack_id': id,
       });
     } else {
       quizSession = QuizSession(packId: id, questions: const []);
     }
     notifyListeners();
+  }
+
+  bool get hasActiveQuizSession => activeQuizSessionData != null;
+
+  int get activeQuizRemainingCount {
+    final data = activeQuizSessionData;
+    if (data == null) {
+      return 0;
+    }
+    final requested = (data['requested_question_count'] as num?)?.toInt() ?? 0;
+    final current = (data['current_index'] as num?)?.toInt() ?? 0;
+    return max(0, requested - current);
+  }
+
+  Future<void> _refreshActiveQuizSession() async {
+    final childId = backendChildId;
+    final gameId = currentGameId;
+    final packId = selectedPackId;
+    if (childId == null || gameId == null || packId == null) {
+      activeQuizSessionData = null;
+      return;
+    }
+
+    try {
+      final session = await backend.fetchActiveQuizSession(childId: childId);
+      if (session == null) {
+        activeQuizSessionData = null;
+        return;
+      }
+
+      final sessionGameId = session['game_id']?.toString();
+      final sessionPackId = session['learning_pack_id']?.toString();
+      final status = session['status']?.toString() ?? '';
+      final resumable =
+          (status == 'active' || status == 'paused') &&
+          sessionGameId == gameId &&
+          sessionPackId == packId;
+      activeQuizSessionData = resumable ? session : null;
+    } catch (_) {
+      activeQuizSessionData = null;
+    }
+  }
+
+  bool _hydrateQuizSessionFromBackend(Map<String, dynamic> data) {
+    final payload = gamePayloads['quiz'];
+    final gameId = currentGameId;
+    final packId = selectedPackId;
+    if (payload == null || gameId == null || packId == null) {
+      return false;
+    }
+
+    final sessionId = data['id']?.toString();
+    final questionIndices = (data['question_indices'] as List<dynamic>? ?? [])
+        .map((item) => (item as num?)?.toInt())
+        .whereType<int>()
+        .toList();
+    final requestedCount =
+        (data['requested_question_count'] as num?)?.toInt() ??
+        questionIndices.length;
+    final currentIndex = (data['current_index'] as num?)?.toInt() ?? 0;
+    final correctCount = (data['correct_count'] as num?)?.toInt() ?? 0;
+    final results = (data['results'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
+
+    _loadQuizFromPayload(
+      {
+        'type': 'quiz',
+        'payload': payload,
+        '_id': gameId,
+        'learning_pack_id': packId,
+      },
+      includeQuestionIndices: questionIndices,
+      backendSessionId: sessionId,
+      requestedQuestionCount: requestedCount,
+      startIndex: currentIndex,
+      correctCount: correctCount,
+      previousResults: results,
+    );
+
+    notifyListeners();
+    return true;
   }
 
   Future<void> startPackSession({String? packId}) async {
@@ -855,7 +1069,9 @@ class AppState extends ChangeNotifier {
     }
 
     try {
-      final rawAssessments = await backend.listSchoolAssessments(childId: childId);
+      final rawAssessments = await backend.listSchoolAssessments(
+        childId: childId,
+      );
       schoolAssessments = (rawAssessments.whereType<Map<String, dynamic>>())
           .map(SchoolAssessment.fromJson)
           .toList();
@@ -1327,7 +1543,15 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  void _loadQuizFromPayload(Map<String, dynamic> game) {
+  void _loadQuizFromPayload(
+    Map<String, dynamic> game, {
+    List<int>? includeQuestionIndices,
+    String? backendSessionId,
+    int? requestedQuestionCount,
+    int? startIndex,
+    int? correctCount,
+    List<Map<String, dynamic>>? previousResults,
+  }) {
     currentGameId = _extractId(game);
     final packId =
         _extractId({'_id': game['learning_pack_id']}) ??
@@ -1367,7 +1591,15 @@ class AppState extends ChangeNotifier {
       }
     } else {
       final questions = payload['questions'] as List<dynamic>? ?? [];
-      for (final item in questions) {
+      final filteredIndices = includeQuestionIndices
+          ?.where((index) => index >= 0 && index < questions.length)
+          .toSet();
+      for (final entry in questions.asMap().entries) {
+        final index = entry.key;
+        final item = entry.value;
+        if (filteredIndices != null && !filteredIndices.contains(index)) {
+          continue;
+        }
         final data = item as Map<String, dynamic>;
         if (type == 'true_false') {
           mapped.add(
@@ -1433,7 +1665,35 @@ class AppState extends ChangeNotifier {
       }
     }
 
-    quizSession = QuizSession(packId: packId, questions: mapped);
+    final normalizedIndices = includeQuestionIndices == null
+        ? List<int>.generate(mapped.length, (index) => index)
+        : includeQuestionIndices
+              .where((index) => index >= 0)
+              .toList(growable: false);
+
+    quizSession = QuizSession(
+      packId: packId,
+      questions: mapped,
+      backendSessionId: backendSessionId,
+      questionIndices: normalizedIndices,
+      requestedQuestionCount: requestedQuestionCount,
+    );
+
+    final session = quizSession!;
+    final restoredResults = (previousResults ?? <Map<String, dynamic>>[])
+        .map((entry) => Map<String, dynamic>.from(entry))
+        .toList();
+    session.results = restoredResults;
+    session.incorrectIndices = <int>[];
+    for (var i = 0; i < restoredResults.length; i += 1) {
+      final correct = restoredResults[i]['correct'] == true;
+      if (!correct) {
+        session.incorrectIndices.add(i);
+      }
+    }
+    session.correctCount = max(0, correctCount ?? 0);
+    final resolvedIndex = max(startIndex ?? 0, restoredResults.length);
+    session.currentIndex = resolvedIndex.clamp(0, mapped.length).toInt();
   }
 
   void startGameType(String type) {
@@ -1456,6 +1716,13 @@ class AppState extends ChangeNotifier {
       if (payload != null) {
         matchingPayload = payload;
       }
+      notifyListeners();
+      return;
+    }
+
+    if (type == 'quiz') {
+      quizSession = null;
+      activeQuizSessionData = null;
       notifyListeners();
       return;
     }
@@ -1526,6 +1793,9 @@ class AppState extends ChangeNotifier {
     }
     if (type == 'matching') {
       return AppRoutes.matching;
+    }
+    if (type == 'quiz') {
+      return AppRoutes.quizSetup;
     }
     return AppRoutes.quiz;
   }
@@ -1617,6 +1887,42 @@ class AppState extends ChangeNotifier {
     );
   }
 
+  Future<void> _syncQuizSessionProgress({String status = 'active'}) async {
+    final childId = backendChildId;
+    final session = quizSession;
+    final backendSessionId = session?.backendSessionId;
+    if (childId == null || session == null || backendSessionId == null) {
+      return;
+    }
+
+    try {
+      final payload = await backend.updateQuizSession(
+        childId: childId,
+        sessionId: backendSessionId,
+        currentIndex: session.currentIndex,
+        correctCount: session.correctCount,
+        results: List<Map<String, dynamic>>.from(session.results),
+        status: status,
+      );
+      final data = payload['data'];
+      if (data is Map<String, dynamic>) {
+        if (status == 'completed' || status == 'abandoned') {
+          activeQuizSessionData = null;
+        } else {
+          activeQuizSessionData = data;
+        }
+      }
+    } catch (error) {
+      lastResultSyncError = error.toString();
+    }
+  }
+
+  Future<void> saveAndExitQuiz() async {
+    await _syncQuizSessionProgress(status: 'paused');
+    quizSession = null;
+    notifyListeners();
+  }
+
   Future<void> answerCurrentQuestion(int selectedIndex) async {
     final session = quizSession;
     if (session == null) {
@@ -1652,6 +1958,9 @@ class AppState extends ChangeNotifier {
         correctAnswers: session.correctCount,
         results: List<Map<String, dynamic>>.from(session.results),
       );
+      await _syncQuizSessionProgress(status: 'completed');
+    } else {
+      await _syncQuizSessionProgress(status: 'active');
     }
     notifyListeners();
   }
@@ -1699,6 +2008,9 @@ class AppState extends ChangeNotifier {
         correctAnswers: session.correctCount,
         results: List<Map<String, dynamic>>.from(session.results),
       );
+      await _syncQuizSessionProgress(status: 'completed');
+    } else {
+      await _syncQuizSessionProgress(status: 'active');
     }
     notifyListeners();
   }
@@ -1742,6 +2054,9 @@ class AppState extends ChangeNotifier {
         correctAnswers: session.correctCount,
         results: List<Map<String, dynamic>>.from(session.results),
       );
+      await _syncQuizSessionProgress(status: 'completed');
+    } else {
+      await _syncQuizSessionProgress(status: 'active');
     }
     notifyListeners();
   }
@@ -1783,6 +2098,9 @@ class AppState extends ChangeNotifier {
         correctAnswers: session.correctCount,
         results: List<Map<String, dynamic>>.from(session.results),
       );
+      await _syncQuizSessionProgress(status: 'completed');
+    } else {
+      await _syncQuizSessionProgress(status: 'active');
     }
     notifyListeners();
   }
@@ -2162,6 +2480,7 @@ class AppState extends ChangeNotifier {
 
   void resetQuiz() {
     quizSession = null;
+    activeQuizSessionData = null;
     flashcardsPayload = null;
     matchingPayload = null;
     currentGameType = null;

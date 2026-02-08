@@ -132,6 +132,41 @@ class L10nNl extends L10n {
   String get quizEmptyProgress => 'Vraag 0 / 0';
 
   @override
+  String get quizSaveAndExit => 'Opslaan en afsluiten';
+
+  @override
+  String get quizSetupTitle => 'Stel je quiz samen';
+
+  @override
+  String get quizSetupSubtitle => 'Kies hoeveel vragen je vandaag wilt.';
+
+  @override
+  String quizSetupCountValue(int count) {
+    return '$count vragen';
+  }
+
+  @override
+  String get quizSetupFunLineShort => 'Sprintmodus. Snel, scherp en klaar.';
+
+  @override
+  String get quizSetupFunLineMedium => 'Gebalanceerde uitdaging. Jij kunt dit.';
+
+  @override
+  String get quizSetupFunLineLong =>
+      'Legendemodus actief. Tijd voor diepe focus.';
+
+  @override
+  String get quizSetupStartButton => 'Start mijn quiz';
+
+  @override
+  String quizSetupResumeHint(int remaining) {
+    return 'Je hebt nog $remaining vragen in je opgeslagen quiz.';
+  }
+
+  @override
+  String get quizSetupResumeButton => 'Hervat opgeslagen quiz';
+
+  @override
   String get gameTypeTrueFalse => 'Waar of Niet Waar';
 
   @override
@@ -859,4 +894,10 @@ class L10nNl extends L10n {
   String statusWithProgress(int progress, String message) {
     return '$progress% • $message';
   }
+
+  @override
+  String get switchProfile => 'Wissel van profiel';
+
+  @override
+  String get switchProfileHint => 'Tik op een profiel om te wisselen';
 }

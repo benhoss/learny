@@ -38,6 +38,16 @@
   "quizFinish": "Afronden",
   "quizProgress": "Vraag {current} van {total}",
   "quizEmptyProgress": "Vraag 0 / 0",
+  "quizSaveAndExit": "Opslaan en afsluiten",
+  "quizSetupTitle": "Stel je quiz samen",
+  "quizSetupSubtitle": "Kies hoeveel vragen je vandaag wilt.",
+  "quizSetupCountValue": "{count} vragen",
+  "quizSetupFunLineShort": "Sprintmodus. Snel, scherp en klaar.",
+  "quizSetupFunLineMedium": "Gebalanceerde uitdaging. Jij kunt dit.",
+  "quizSetupFunLineLong": "Legendemodus actief. Tijd voor diepe focus.",
+  "quizSetupStartButton": "Start mijn quiz",
+  "quizSetupResumeHint": "Je hebt nog {remaining} vragen in je opgeslagen quiz.",
+  "quizSetupResumeButton": "Hervat opgeslagen quiz",
 
   "gameTypeTrueFalse": "Waar of Niet Waar",
   "gameTypeMultiSelect": "Kies alle juiste antwoorden",
@@ -289,5 +299,8 @@
   "processingStepGenerating": "Genereren",
   "processingStepCreatingGames": "Spellen maken",
 
-  "statusWithProgress": "{progress}% \u2022 {message}"
+  "statusWithProgress": "{progress}% \u2022 {message}",
+
+  "switchProfile": "Wissel van profiel",
+  "switchProfileHint": "Tik op een profiel om te wisselen"
 }

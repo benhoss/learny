@@ -23,6 +23,7 @@ class AppRoutes {
   static const packDetail = '/pack-detail';
   static const packSession = '/pack-session';
 
+  static const quizSetup = '/quiz-setup';
   static const quiz = '/quiz';
   static const flashcards = '/flashcards';
   static const matching = '/matching';

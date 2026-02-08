@@ -4,10 +4,16 @@ class QuizSession {
   QuizSession({
     required this.packId,
     required this.questions,
+    this.backendSessionId,
+    this.questionIndices = const [],
+    this.requestedQuestionCount,
   });
 
   final String packId;
   final List<QuizQuestion> questions;
+  final String? backendSessionId;
+  final List<int> questionIndices;
+  final int? requestedQuestionCount;
   int currentIndex = 0;
   int correctCount = 0;
   List<int> incorrectIndices = [];

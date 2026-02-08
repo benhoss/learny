@@ -278,6 +278,31 @@ class _QuizScreenState extends State<QuizScreen> {
                 masteryPercent: masteryAvg,
               ),
 
+              SizedBox(height: tokens.spaceSm),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _isSubmitting
+                      ? null
+                      : () async {
+                          await state.saveAndExitQuiz();
+                          if (!context.mounted) {
+                            return;
+                          }
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            AppRoutes.home,
+                            (route) => false,
+                          );
+                        },
+                  icon: const Icon(
+                    Icons.pause_circle_outline_rounded,
+                    size: 18,
+                  ),
+                  label: Text(L10n.of(context).quizSaveAndExit),
+                ),
+              ),
+
               SizedBox(height: tokens.spaceMd),
 
               // Question card
@@ -289,7 +314,8 @@ class _QuizScreenState extends State<QuizScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        question?.prompt ?? L10n.of(context).quizLoadingQuestion,
+                        question?.prompt ??
+                            L10n.of(context).quizLoadingQuestion,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                           height: 1.3,
@@ -436,7 +462,10 @@ class _QuizScreenState extends State<QuizScreen> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 12),
                               child: AnswerChip(
-                                text: _localizedOption(context, question.options[index]),
+                                text: _localizedOption(
+                                  context,
+                                  question.options[index],
+                                ),
                                 isSelected: isSelected,
                                 isCorrect: _showingResult
                                     ? isCorrectOption
@@ -493,7 +522,9 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        (currentIndex + 1 >= total) ? L10n.of(context).quizFinish : L10n.of(context).quizCheckAnswer,
+                        (currentIndex + 1 >= total)
+                            ? L10n.of(context).quizFinish
+                            : L10n.of(context).quizCheckAnswer,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
                               color: hasSelection && !_showingResult

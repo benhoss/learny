@@ -38,6 +38,16 @@
   "quizFinish": "Terminer",
   "quizProgress": "Question {current} sur {total}",
   "quizEmptyProgress": "Question 0 / 0",
+  "quizSaveAndExit": "Sauvegarder et quitter",
+  "quizSetupTitle": "Compose ton quiz",
+  "quizSetupSubtitle": "Choisis le nombre de questions pour aujourd'hui.",
+  "quizSetupCountValue": "{count} questions",
+  "quizSetupFunLineShort": "Mode sprint. Rapide, fun, efficace.",
+  "quizSetupFunLineMedium": "Défi équilibré activé. Tu gères.",
+  "quizSetupFunLineLong": "Mode légende activé. Focus maximal.",
+  "quizSetupStartButton": "Lancer mon quiz",
+  "quizSetupResumeHint": "Il te reste {remaining} questions dans ton quiz sauvegardé.",
+  "quizSetupResumeButton": "Reprendre le quiz sauvegardé",
 
   "gameTypeTrueFalse": "Vrai ou Faux",
   "gameTypeMultiSelect": "Choisis toutes les bonnes réponses",
@@ -289,5 +299,8 @@
   "processingStepGenerating": "Génération",
   "processingStepCreatingGames": "Création des jeux",
 
-  "statusWithProgress": "{progress} % \u2022 {message}"
+  "statusWithProgress": "{progress} % \u2022 {message}",
+
+  "switchProfile": "Changer de profil",
+  "switchProfileHint": "Appuie sur un profil pour changer"
 }

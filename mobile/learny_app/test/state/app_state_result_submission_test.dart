@@ -367,7 +367,7 @@ void main() {
         'action_payload': {'document_id': 'doc-1'},
       });
 
-      expect(route, AppRoutes.quiz);
+      expect(route, AppRoutes.quizSetup);
       expect(backend.trackCalls, 1);
       expect(backend.lastTrackedAction, 'resume_recent_upload');
     });

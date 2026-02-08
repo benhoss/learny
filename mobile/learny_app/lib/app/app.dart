@@ -14,6 +14,7 @@ import '../screens/documents/upload_screen.dart';
 import '../screens/games/flashcards_screen.dart';
 import '../screens/games/matching_screen.dart';
 import '../screens/games/quiz_screen.dart';
+import '../screens/games/quiz_setup_screen.dart';
 import '../screens/games/results_screen.dart';
 import '../screens/home/home_shell.dart';
 import '../screens/home/notifications_screen.dart';
@@ -76,71 +77,74 @@ class LearnyApp extends StatelessWidget {
         builder: (context) {
           final state = AppStateScope.of(context);
           return MaterialApp(
-        title: 'Learny',
-        theme: LearnyTheme.light(),
-        locale: state.locale,
-        localizationsDelegates: L10n.localizationsDelegates,
-        supportedLocales: L10n.supportedLocales,
-        initialRoute: BackendConfig.disableOnboarding ? AppRoutes.home : AppRoutes.welcome,
-        onGenerateRoute: (settings) {
-          if (BackendConfig.disableOnboarding &&
-              _onboardingRoutes.contains(settings.name)) {
-            return MaterialPageRoute(
-              settings: const RouteSettings(name: AppRoutes.home),
-              builder: (_) => const HomeShell(),
-            );
-          }
-          return null;
-        },
-        routes: {
-          AppRoutes.welcome: (_) => const WelcomeScreen(),
-          AppRoutes.howItWorks: (_) => const HowItWorksScreen(),
-          AppRoutes.createProfile: (_) => const CreateProfileScreen(),
-          AppRoutes.consent: (_) => const ConsentScreen(),
-          AppRoutes.plan: (_) => const PlanScreen(),
-          AppRoutes.signup: (_) => const SignupScreen(),
-          AppRoutes.login: (_) => const LoginScreen(),
-          AppRoutes.forgotPassword: (_) => const ForgotPasswordScreen(),
-          AppRoutes.verifyEmail: (_) => const VerifyEmailScreen(),
-          AppRoutes.home: (_) => const HomeShell(),
-          AppRoutes.notifications: (_) => const NotificationsScreen(),
-          AppRoutes.cameraCapture: (_) => const CameraCaptureScreen(),
-          AppRoutes.upload: (_) => const UploadScreen(),
-          AppRoutes.review: (_) => const ReviewScreen(),
-          AppRoutes.processing: (_) => const ProcessingScreen(),
-          AppRoutes.library: (_) => const LibraryScreen(),
-          AppRoutes.packsList: (_) => const PacksListScreen(),
-          AppRoutes.packDetail: (_) => const PackDetailScreen(),
-          AppRoutes.packSession: (_) => const PackSessionScreen(),
-          AppRoutes.quiz: (_) => const QuizScreen(),
-          AppRoutes.flashcards: (_) => const FlashcardsScreen(),
-          AppRoutes.matching: (_) => const MatchingScreen(),
-          AppRoutes.results: (_) => const ResultsScreen(),
-          AppRoutes.revisionSetup: (_) => const RevisionSetupScreen(),
-          AppRoutes.revisionSession: (_) => const RevisionSessionScreen(),
-          AppRoutes.revisionResults: (_) => const RevisionResultsScreen(),
-          AppRoutes.progressOverview: (_) => const ProgressOverviewScreen(),
-          AppRoutes.masteryDetail: (_) => const MasteryDetailScreen(),
-          AppRoutes.streaksRewards: (_) => const StreaksRewardsScreen(),
-          AppRoutes.achievements: (_) => const AchievementsScreen(),
-        AppRoutes.parentDashboard: (_) => const ParentDashboardScreen(),
-        AppRoutes.childSelector: (_) => const ChildSelectorScreen(),
-        AppRoutes.weeklySummary: (_) => const WeeklySummaryScreen(),
-        AppRoutes.weakAreas: (_) => const WeakAreasScreen(),
-        AppRoutes.learningTime: (_) => const LearningTimeScreen(),
-        AppRoutes.parentPin: (_) => const ParentPinScreen(),
-        AppRoutes.parentSettings: (_) => const ParentSettingsScreen(),
-          AppRoutes.safetyPrivacy: (_) => const SafetyPrivacyScreen(),
-          AppRoutes.faq: (_) => const FaqScreen(),
-          AppRoutes.contactSupport: (_) => const ContactSupportScreen(),
-          AppRoutes.subscription: (_) => const SubscriptionScreen(),
-          AppRoutes.upgradePlan: (_) => const UpgradePlanScreen(),
-          AppRoutes.accountSettings: (_) => const AccountSettingsScreen(),
-          AppRoutes.deleteAccount: (_) => const DeleteAccountScreen(),
-          AppRoutes.emptyState: (_) => const EmptyStateScreen(),
-          AppRoutes.errorState: (_) => const ErrorStateScreen(),
-          AppRoutes.offline: (_) => const OfflineScreen(),
-        },
+            title: 'Learny',
+            theme: LearnyTheme.light(),
+            locale: state.locale,
+            localizationsDelegates: L10n.localizationsDelegates,
+            supportedLocales: L10n.supportedLocales,
+            initialRoute: BackendConfig.disableOnboarding
+                ? AppRoutes.home
+                : AppRoutes.welcome,
+            onGenerateRoute: (settings) {
+              if (BackendConfig.disableOnboarding &&
+                  _onboardingRoutes.contains(settings.name)) {
+                return MaterialPageRoute(
+                  settings: const RouteSettings(name: AppRoutes.home),
+                  builder: (_) => const HomeShell(),
+                );
+              }
+              return null;
+            },
+            routes: {
+              AppRoutes.welcome: (_) => const WelcomeScreen(),
+              AppRoutes.howItWorks: (_) => const HowItWorksScreen(),
+              AppRoutes.createProfile: (_) => const CreateProfileScreen(),
+              AppRoutes.consent: (_) => const ConsentScreen(),
+              AppRoutes.plan: (_) => const PlanScreen(),
+              AppRoutes.signup: (_) => const SignupScreen(),
+              AppRoutes.login: (_) => const LoginScreen(),
+              AppRoutes.forgotPassword: (_) => const ForgotPasswordScreen(),
+              AppRoutes.verifyEmail: (_) => const VerifyEmailScreen(),
+              AppRoutes.home: (_) => const HomeShell(),
+              AppRoutes.notifications: (_) => const NotificationsScreen(),
+              AppRoutes.cameraCapture: (_) => const CameraCaptureScreen(),
+              AppRoutes.upload: (_) => const UploadScreen(),
+              AppRoutes.review: (_) => const ReviewScreen(),
+              AppRoutes.processing: (_) => const ProcessingScreen(),
+              AppRoutes.library: (_) => const LibraryScreen(),
+              AppRoutes.packsList: (_) => const PacksListScreen(),
+              AppRoutes.packDetail: (_) => const PackDetailScreen(),
+              AppRoutes.packSession: (_) => const PackSessionScreen(),
+              AppRoutes.quizSetup: (_) => const QuizSetupScreen(),
+              AppRoutes.quiz: (_) => const QuizScreen(),
+              AppRoutes.flashcards: (_) => const FlashcardsScreen(),
+              AppRoutes.matching: (_) => const MatchingScreen(),
+              AppRoutes.results: (_) => const ResultsScreen(),
+              AppRoutes.revisionSetup: (_) => const RevisionSetupScreen(),
+              AppRoutes.revisionSession: (_) => const RevisionSessionScreen(),
+              AppRoutes.revisionResults: (_) => const RevisionResultsScreen(),
+              AppRoutes.progressOverview: (_) => const ProgressOverviewScreen(),
+              AppRoutes.masteryDetail: (_) => const MasteryDetailScreen(),
+              AppRoutes.streaksRewards: (_) => const StreaksRewardsScreen(),
+              AppRoutes.achievements: (_) => const AchievementsScreen(),
+              AppRoutes.parentDashboard: (_) => const ParentDashboardScreen(),
+              AppRoutes.childSelector: (_) => const ChildSelectorScreen(),
+              AppRoutes.weeklySummary: (_) => const WeeklySummaryScreen(),
+              AppRoutes.weakAreas: (_) => const WeakAreasScreen(),
+              AppRoutes.learningTime: (_) => const LearningTimeScreen(),
+              AppRoutes.parentPin: (_) => const ParentPinScreen(),
+              AppRoutes.parentSettings: (_) => const ParentSettingsScreen(),
+              AppRoutes.safetyPrivacy: (_) => const SafetyPrivacyScreen(),
+              AppRoutes.faq: (_) => const FaqScreen(),
+              AppRoutes.contactSupport: (_) => const ContactSupportScreen(),
+              AppRoutes.subscription: (_) => const SubscriptionScreen(),
+              AppRoutes.upgradePlan: (_) => const UpgradePlanScreen(),
+              AppRoutes.accountSettings: (_) => const AccountSettingsScreen(),
+              AppRoutes.deleteAccount: (_) => const DeleteAccountScreen(),
+              AppRoutes.emptyState: (_) => const EmptyStateScreen(),
+              AppRoutes.errorState: (_) => const ErrorStateScreen(),
+              AppRoutes.offline: (_) => const OfflineScreen(),
+            },
           );
         },
       ),

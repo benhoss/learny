@@ -75,6 +75,26 @@
   "@quizProgress": { "description": "Question progress indicator", "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
   "quizEmptyProgress": "Question 0 / 0",
   "@quizEmptyProgress": { "description": "Empty progress indicator" },
+  "quizSaveAndExit": "Save & Exit",
+  "@quizSaveAndExit": { "description": "Button to save in-flight quiz and leave" },
+  "quizSetupTitle": "Build Your Quiz",
+  "@quizSetupTitle": { "description": "Title for quiz setup screen" },
+  "quizSetupSubtitle": "Choose how many questions you want today.",
+  "@quizSetupSubtitle": { "description": "Subtitle for quiz setup screen" },
+  "quizSetupCountValue": "{count} questions",
+  "@quizSetupCountValue": { "description": "Selected question count label", "placeholders": { "count": { "type": "int" } } },
+  "quizSetupFunLineShort": "Quick sprint mode. Fast focus, big wins.",
+  "@quizSetupFunLineShort": { "description": "Fun line for short quiz length" },
+  "quizSetupFunLineMedium": "Balanced challenge unlocked. You got this.",
+  "@quizSetupFunLineMedium": { "description": "Fun line for medium quiz length" },
+  "quizSetupFunLineLong": "Legend mode activated. Deep focus time.",
+  "@quizSetupFunLineLong": { "description": "Fun line for long quiz length" },
+  "quizSetupStartButton": "Start My Quiz",
+  "@quizSetupStartButton": { "description": "Start button on quiz setup screen" },
+  "quizSetupResumeHint": "You have {remaining} questions left in your saved quiz.",
+  "@quizSetupResumeHint": { "description": "Hint when a resumable quiz exists", "placeholders": { "remaining": { "type": "int" } } },
+  "quizSetupResumeButton": "Resume Saved Quiz",
+  "@quizSetupResumeButton": { "description": "Resume quiz button on setup screen" },
 
   "gameTypeTrueFalse": "True or False",
   "@gameTypeTrueFalse": { "description": "True/false game type title" },
@@ -550,5 +570,10 @@
   "@processingStepCreatingGames": { "description": "Processing step: creating games" },
 
   "statusWithProgress": "{progress}% \u2022 {message}",
-  "@statusWithProgress": { "description": "Status message with progress prefix", "placeholders": { "progress": { "type": "int" }, "message": { "type": "String" } } }
+  "@statusWithProgress": { "description": "Status message with progress prefix", "placeholders": { "progress": { "type": "int" }, "message": { "type": "String" } } },
+
+  "switchProfile": "Switch Profile",
+  "@switchProfile": { "description": "Child switcher bottom sheet title" },
+  "switchProfileHint": "Tap a profile to switch",
+  "@switchProfileHint": { "description": "Child switcher bottom sheet hint" }
 }

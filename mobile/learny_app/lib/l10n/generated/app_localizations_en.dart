@@ -133,6 +133,42 @@ class L10nEn extends L10n {
   String get quizEmptyProgress => 'Question 0 / 0';
 
   @override
+  String get quizSaveAndExit => 'Save & Exit';
+
+  @override
+  String get quizSetupTitle => 'Build Your Quiz';
+
+  @override
+  String get quizSetupSubtitle => 'Choose how many questions you want today.';
+
+  @override
+  String quizSetupCountValue(int count) {
+    return '$count questions';
+  }
+
+  @override
+  String get quizSetupFunLineShort =>
+      'Quick sprint mode. Fast focus, big wins.';
+
+  @override
+  String get quizSetupFunLineMedium =>
+      'Balanced challenge unlocked. You got this.';
+
+  @override
+  String get quizSetupFunLineLong => 'Legend mode activated. Deep focus time.';
+
+  @override
+  String get quizSetupStartButton => 'Start My Quiz';
+
+  @override
+  String quizSetupResumeHint(int remaining) {
+    return 'You have $remaining questions left in your saved quiz.';
+  }
+
+  @override
+  String get quizSetupResumeButton => 'Resume Saved Quiz';
+
+  @override
   String get gameTypeTrueFalse => 'True or False';
 
   @override
@@ -860,4 +896,10 @@ class L10nEn extends L10n {
   String statusWithProgress(int progress, String message) {
     return '$progress% • $message';
   }
+
+  @override
+  String get switchProfile => 'Switch Profile';
+
+  @override
+  String get switchProfileHint => 'Tap a profile to switch';
 }

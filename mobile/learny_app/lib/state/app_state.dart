@@ -920,10 +920,28 @@ class AppState extends ChangeNotifier {
     if (id == null || id.isEmpty) {
       return null;
     }
+    final learningStylePreferences =
+        (child['learning_style_preferences'] as List<dynamic>? ?? const [])
+            .map((item) => item.toString())
+            .toList();
+    final supportNeeds =
+        (child['support_needs'] as Map<String, dynamic>?) ?? const {};
+    final confidenceBySubject =
+        (child['confidence_by_subject'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .toList();
+
     return ChildProfile(
       id: id,
       name: child['name']?.toString() ?? BackendConfig.childName,
       gradeLabel: child['grade_level']?.toString() ?? BackendConfig.childGrade,
+      age: (child['age'] as num?)?.toInt(),
+      schoolClass: child['school_class']?.toString(),
+      preferredLanguage: child['preferred_language']?.toString(),
+      gender: child['gender']?.toString(),
+      learningStylePreferences: learningStylePreferences,
+      supportNeeds: supportNeeds,
+      confidenceBySubject: confidenceBySubject,
     );
   }
 

@@ -74,11 +74,37 @@ class BackendClient {
   Future<Map<String, dynamic>> createChild({
     required String name,
     required String gradeLevel,
+    int? birthYear,
+    String? schoolClass,
+    String? preferredLanguage,
+    String? gender,
+    String? genderSelfDescription,
+    List<String>? learningStylePreferences,
+    Map<String, dynamic>? supportNeeds,
+    List<Map<String, dynamic>>? confidenceBySubject,
   }) async {
+    final payload = <String, dynamic>{
+      'name': name,
+      'grade_level': gradeLevel,
+      if (birthYear != null) 'birth_year': birthYear,
+      if (schoolClass != null && schoolClass.isNotEmpty)
+        'school_class': schoolClass,
+      if (preferredLanguage != null && preferredLanguage.isNotEmpty)
+        'preferred_language': preferredLanguage,
+      if (gender != null && gender.isNotEmpty) 'gender': gender,
+      if (genderSelfDescription != null && genderSelfDescription.isNotEmpty)
+        'gender_self_description': genderSelfDescription,
+      if (learningStylePreferences != null)
+        'learning_style_preferences': learningStylePreferences,
+      if (supportNeeds != null) 'support_needs': supportNeeds,
+      if (confidenceBySubject != null)
+        'confidence_by_subject': confidenceBySubject,
+    };
+
     final response = await _client.post(
       Uri.parse('$baseUrl/api/v1/children'),
       headers: _authHeaders(includeContentType: true),
-      body: jsonEncode({'name': name, 'grade_level': gradeLevel}),
+      body: jsonEncode(payload),
     );
 
     if (response.statusCode != 201) {

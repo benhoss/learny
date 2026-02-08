@@ -73,7 +73,7 @@ class BackendClient {
 
   Future<Map<String, dynamic>> createChild({
     required String name,
-    required String gradeLevel,
+    String? gradeLevel,
     int? birthYear,
     String? schoolClass,
     String? preferredLanguage,
@@ -85,7 +85,7 @@ class BackendClient {
   }) async {
     final payload = <String, dynamic>{
       'name': name,
-      'grade_level': gradeLevel,
+      if (gradeLevel != null && gradeLevel.isNotEmpty) 'grade_level': gradeLevel,
       if (birthYear != null) 'birth_year': birthYear,
       if (schoolClass != null && schoolClass.isNotEmpty)
         'school_class': schoolClass,

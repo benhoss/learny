@@ -41,6 +41,7 @@ class ChildProfileController extends Controller
         $data = $request->validate($this->rules(false));
 
         $data['user_id'] = (string) Auth::guard('api')->id();
+        $data = $this->normalizePayload($data);
 
         $profile = ChildProfile::create($data);
 
@@ -63,6 +64,8 @@ class ChildProfileController extends Controller
         $profile = $this->findOwnedProfile($id);
 
         $data = $request->validate($this->rules(true));
+
+        $data = $this->normalizePayload($data, $profile);
 
         $profile->fill($data);
         $profile->save();
@@ -91,6 +94,25 @@ class ChildProfileController extends Controller
             ->firstOrFail();
     }
 
+    private function normalizePayload(array $data, ?ChildProfile $profile = null): array
+    {
+        $gender = $data['gender'] ?? $profile?->gender;
+
+        if ($gender !== 'self_describe') {
+            $data['gender_self_description'] = null;
+        }
+
+        $preferredLanguage = $data['preferred_language'] ?? null;
+        if (is_string($preferredLanguage) && $preferredLanguage !== '') {
+            $segments = explode('-', $preferredLanguage, 2);
+            $language = strtolower($segments[0]);
+            $region = isset($segments[1]) ? strtoupper($segments[1]) : null;
+            $data['preferred_language'] = $region === null ? $language : $language.'-'.$region;
+        }
+
+        return $data;
+    }
+
     private function rules(bool $partial): array
     {
         $prefix = $partial ? 'sometimes|' : '';
@@ -101,9 +123,9 @@ class ChildProfileController extends Controller
             'birth_year' => [$prefix.'nullable', 'integer', 'between:2000,2100'],
             'notes' => [$prefix.'nullable', 'string', 'max:500'],
             'school_class' => [$prefix.'nullable', 'string', 'max:50'],
-            'preferred_language' => [$prefix.'nullable', 'string', 'max:10', 'regex:/^[a-z]{2,3}(-[A-Z]{2})?$/'],
+            'preferred_language' => [$prefix.'nullable', 'string', 'max:10', 'regex:/^[A-Za-z]{2,3}(-[A-Za-z]{2})?$/'],
             'gender' => [$prefix.'nullable', Rule::in(self::GENDER_OPTIONS)],
-            'gender_self_description' => [$prefix.'nullable', 'string', 'max:50', 'required_if:gender,self_describe'],
+            'gender_self_description' => [$prefix.'nullable', 'string', 'max:50', 'required_if:gender,self_describe', 'prohibited_unless:gender,self_describe'],
             'learning_style_preferences' => [$prefix.'nullable', 'array'],
             'learning_style_preferences.*' => ['string', Rule::in(self::LEARNING_STYLE_OPTIONS), 'distinct'],
             'support_needs' => [$prefix.'nullable', 'array:attention_support,dyslexia_friendly_mode,larger_text,reduced_clutter_ui,extra_processing_time,other_notes'],

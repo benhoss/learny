@@ -924,11 +924,14 @@ class AppState extends ChangeNotifier {
         (child['learning_style_preferences'] as List<dynamic>? ?? const [])
             .map((item) => item.toString())
             .toList();
-    final supportNeeds =
-        (child['support_needs'] as Map<String, dynamic>?) ?? const {};
+    final supportNeedsRaw = child['support_needs'];
+    final supportNeeds = supportNeedsRaw is Map
+        ? Map<String, dynamic>.from(supportNeedsRaw)
+        : const <String, dynamic>{};
     final confidenceBySubject =
         (child['confidence_by_subject'] as List<dynamic>? ?? const [])
-            .whereType<Map<String, dynamic>>()
+            .whereType<Map>()
+            .map((entry) => Map<String, dynamic>.from(entry))
             .toList();
 
     return ChildProfile(

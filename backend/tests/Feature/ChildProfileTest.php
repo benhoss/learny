@@ -73,6 +73,57 @@ class ChildProfileTest extends TestCase
         $this->assertEquals(0, ChildProfile::count());
     }
 
+
+    public function test_rejects_gender_self_description_without_self_describe_gender(): void
+    {
+        $user = User::create([
+            'name' => 'Parent',
+            'email' => 'parent5@example.com',
+            'password' => 'secret123',
+        ]);
+
+        $token = Auth::guard('api')->login($user);
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/children', [
+                'name' => 'Jamie',
+                'gender' => 'female',
+                'gender_self_description' => 'Learner-defined',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['gender_self_description']);
+    }
+
+    public function test_update_clears_gender_self_description_when_gender_changes(): void
+    {
+        $user = User::create([
+            'name' => 'Parent',
+            'email' => 'parent6@example.com',
+            'password' => 'secret123',
+        ]);
+
+        $token = Auth::guard('api')->login($user);
+
+        $create = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/children', [
+                'name' => 'Jamie',
+                'gender' => 'self_describe',
+                'gender_self_description' => 'Questioning',
+            ]);
+
+        $childId = $this->extractId($create->json('data'));
+
+        $update = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/children/'.$childId, [
+                'gender' => 'male',
+            ]);
+
+        $update->assertOk()
+            ->assertJsonPath('data.gender', 'male')
+            ->assertJsonPath('data.gender_self_description', null);
+    }
+
     public function test_rejects_unknown_support_need_keys(): void
     {
         $user = User::create([

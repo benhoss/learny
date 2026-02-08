@@ -228,6 +228,88 @@ class BackendClient {
     return payload['data'] as Map<String, dynamic>;
   }
 
+
+  Future<List<dynamic>> listSchoolAssessments({required String childId}) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('List school assessments failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return (payload['data'] as List<dynamic>?) ?? [];
+  }
+
+  Future<Map<String, dynamic>> createSchoolAssessment({
+    required String childId,
+    required String subject,
+    required String assessmentType,
+    required double score,
+    required double maxScore,
+    required String assessedAt,
+    String? grade,
+    String? teacherNote,
+    String source = 'manual',
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        'subject': subject,
+        'assessment_type': assessmentType,
+        'score': score,
+        'max_score': maxScore,
+        'assessed_at': assessedAt,
+        'grade': grade,
+        'teacher_note': teacherNote,
+        'source': source,
+      }),
+    );
+
+    if (response.statusCode != 201) {
+      throw BackendException('Create school assessment failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> updateSchoolAssessment({
+    required String childId,
+    required String assessmentId,
+    Map<String, dynamic> updates = const {},
+  }) async {
+    final response = await _client.patch(
+      Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments/$assessmentId'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode(updates),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Update school assessment failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<void> deleteSchoolAssessment({
+    required String childId,
+    required String assessmentId,
+  }) async {
+    final response = await _client.delete(
+      Uri.parse('$baseUrl/api/v1/children/$childId/school-assessments/$assessmentId'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Delete school assessment failed: ${response.body}');
+    }
+  }
+
   Future<List<dynamic>> listDocuments({required String childId}) async {
     final response = await _client.get(
       Uri.parse('$baseUrl/api/v1/children/$childId/documents'),

@@ -22,6 +22,7 @@ abstract class TestCase extends BaseTestCase
             'game_results',
             'revision_sessions',
             'learning_memory_events',
+            'school_assessments',
         ]);
     }
 

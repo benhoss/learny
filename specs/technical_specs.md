@@ -100,3 +100,4 @@ Mobile App (Flutter / React Native)
 ## 9. Detailed Feature Specs
 
 - Personalized Learner Profile 2.0: see `specs/personalized_learner_profile_2_0_spec.md`.
+- School Results Hub: see `specs/school_results_hub_spec.md`.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../shared/placeholder_screen.dart';
 
@@ -7,16 +8,17 @@ class ForgotPasswordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Reset Password',
-      subtitle: 'We\'ll send a reset link to your email.',
+      title: l.forgotPasswordTitle,
+      subtitle: l.forgotPasswordSubtitle,
       gradient: LearnyGradients.trust,
       body: TextField(
-        decoration: const InputDecoration(labelText: 'Email address'),
+        decoration: InputDecoration(labelText: l.forgotPasswordEmailAddressLabel),
       ),
       primaryAction: ElevatedButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Send Link'),
+        child: Text(l.forgotPasswordSendLink),
       ),
     );
   }

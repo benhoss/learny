@@ -1,6 +1,5 @@
 {
   "@@locale": "fr",
-
   "appTitle": "Learny",
   "homeGreeting": "Bonjour,",
   "homeWelcomeMessage": "Prêt à apprendre quelque chose de nouveau aujourd'hui ? Transformons tes leçons en jeux amusants !",
@@ -24,7 +23,6 @@
   "homeRecommendation": "Recommandation",
   "homeNoExplainability": "Pas d'explication supplémentaire disponible pour cette suggestion.",
   "homeClose": "Fermer",
-
   "quizCorrectFeedback": "Tu es en forme !",
   "quizIncorrectFeedback": "Revois l'explication et continue.",
   "quizNoQuizMessage": "Aucun quiz n'est encore prêt pour ce pack.",
@@ -48,7 +46,6 @@
   "quizSetupStartButton": "Lancer mon quiz",
   "quizSetupResumeHint": "Il te reste {remaining} questions dans ton quiz sauvegardé.",
   "quizSetupResumeButton": "Reprendre le quiz sauvegardé",
-
   "gameTypeTrueFalse": "Vrai ou Faux",
   "gameTypeMultiSelect": "Choisis toutes les bonnes réponses",
   "gameTypeFillBlank": "Complète la phrase",
@@ -57,7 +54,6 @@
   "gameTypeMatching": "Associer les paires",
   "gameTypeFlashcards": "Cartes mémoire",
   "gameTypeQuiz": "Quiz rapide",
-
   "gameSubtitleTrueFalse": "Jugements rapides",
   "gameSubtitleMultiSelect": "Plusieurs bonnes réponses",
   "gameSubtitleFillBlank": "Complète la phrase",
@@ -66,10 +62,8 @@
   "gameSubtitleMatching": "Associe les concepts liés",
   "gameSubtitleFlashcards": "Révise les concepts",
   "gameSubtitleQuiz": "Questions à choix multiples",
-
   "trueFalseTrue": "Vrai",
   "trueFalseFalse": "Faux",
-
   "flashcardsDefaultTitle": "Cartes mémoire",
   "flashcardsFront": "Recto",
   "flashcardsBack": "Verso",
@@ -81,14 +75,12 @@
   "flashcardsQuestion": "Question",
   "flashcardsAnswer": "Réponse",
   "flashcardsTapToFlip": "Appuie pour retourner",
-
   "matchingDefaultTitle": "Jeu d'association",
   "matchingSubtitle": "Touche deux éléments correspondants",
   "matchingNoItems": "Aucune paire disponible.",
   "matchingProgress": "{matched} paires sur {total} trouvées",
   "matchingContinue": "Continuer",
   "matchingMismatch": "Pas tout à fait - réessaie !",
-
   "resultsGreatJob": "Bravo !",
   "resultsSubtitle": "Tu as gagné {xp} XP dans cette manche et maintenu ta série.",
   "resultsSyncError": "La synchronisation est retardée. Nous réessaierons automatiquement.",
@@ -98,7 +90,6 @@
   "resultsSeeProgress": "Voir les progrès",
   "resultsBackToHome": "Retour à l'accueil",
   "resultsRetryMistakes": "Réessayer les erreurs",
-
   "processingReadyTitle": "Prêt à apprendre !",
   "processingTitle": "Création de ton quiz",
   "processingGoBack": "Retour",
@@ -109,7 +100,6 @@
   "processingSuccessDetail": "Jeux personnalisés créés à partir de ton document",
   "processingErrorTitle": "Quelque chose n'a pas fonctionné",
   "processingErrorHint": "Essaie d'importer une image plus claire ou un autre document.",
-
   "processingStartFlashcards": "Commencer les cartes",
   "processingStartMatching": "Commencer l'association",
   "processingStartTrueFalse": "Commencer Vrai/Faux",
@@ -119,7 +109,6 @@
   "processingStartOrdering": "Commencer le tri",
   "processingStartQuiz": "Commencer le quiz",
   "processingStartLearning": "Commencer",
-
   "statusQueued": "En attente...",
   "statusOcr": "Lecture de ton document...",
   "statusConceptQueueing": "Préparation des concepts...",
@@ -128,6 +117,10 @@
   "statusPackGeneration": "Construction du pack...",
   "statusGameQueueing": "Préparation des jeux...",
   "statusGameGeneration": "Génération des jeux et quiz...",
+  "statusQuickScanQueued": "Préparation de l'analyse rapide...",
+  "statusQuickScanProcessing": "Analyse du sujet et de la langue...",
+  "statusAwaitingValidation": "Validez le sujet et la langue pour continuer.",
+  "statusQuickScanFailed": "L'analyse rapide a échoué. Relancez l'analyse ou saisissez manuellement.",
   "statusReady": "Quiz prêt !",
   "statusOcrFailed": "La lecture a échoué. Réessaie.",
   "statusConceptExtractionFailed": "L'extraction a échoué. Réessaie.",
@@ -141,8 +134,11 @@
   "statusGenerationFailed": "La génération a échoué",
   "statusCreatingGames": "Création des jeux et quiz...",
   "statusGenerationTimedOut": "La génération a expiré. Réessaie.",
-
   "stageFirstGameReady": "Premier jeu prêt",
+  "stageQuickScanQueue": "File analyse rapide",
+  "stageQuickScanProcessing": "Analyse rapide",
+  "stageAwaitingValidation": "En attente de validation",
+  "stageQuickScanFailed": "Analyse rapide échouée",
   "stageQueued": "En attente",
   "stageOcr": "Lecture",
   "stageConceptQueue": "File concepts",
@@ -158,14 +154,15 @@
   "stageGameFailed": "Jeux échoués",
   "stageProcessing": "Traitement",
   "stageProcessed": "Traité",
-
   "docStatusQueued": "En attente",
+  "docStatusQuickScanQueued": "Analyse rapide en file",
+  "docStatusQuickScanProcessing": "Analyse rapide en cours",
+  "docStatusAwaitingValidation": "Validation requise",
   "docStatusProcessing": "Traitement",
   "docStatusProcessed": "Traité",
   "docStatusReady": "Prêt",
   "docStatusFailed": "Échoué",
   "docStatusUnknown": "Inconnu",
-
   "uploadTitle": "Importer un fichier",
   "uploadSubtitle": "PDF et images acceptés.",
   "uploadDragOrBrowse": "Glisse ou parcours",
@@ -181,7 +178,6 @@
   "uploadSuggestMetadata": "Suggérer avec l'IA",
   "uploadSuggestionUnavailable": "Suggestion indisponible pour le moment.",
   "uploadChooseFile": "Choisir un fichier",
-
   "createProfileTitle": "C'est parti !",
   "createProfileSubtitle": "Apprenons ensemble.",
   "createProfileNameLabel": "Nom du profil",
@@ -189,28 +185,23 @@
   "createProfileAvatarLabel": "Choisis ton avatar",
   "createProfileContinue": "Continuer",
   "createProfileLanguageLabel": "Langue",
-
   "feedbackCorrect": "Correct !",
   "feedbackIncorrect": "Pas tout à fait",
   "feedbackContinue": "Continuer",
-
   "resultSummaryAccuracy": "{correct} sur {total} correct",
   "resultSummaryStreak": "Série",
   "resultSummaryStreakDays": "{count, plural, =1{1 jour} other{{count} jours}}",
   "resultSummaryMastery": "Maîtrise",
-
   "reviewScreenTitle": "Vérifier la capture",
   "reviewScreenSubtitle": "Recadre, tourne ou reprends si nécessaire.",
   "reviewAddPage": "Ajouter une page",
   "reviewLooksGood": "C'est bon",
   "reviewRetake": "Reprendre",
-
   "libraryTitle": "Bibliothèque",
   "librarySubtitle": "Tes documents importés.",
   "libraryAddNew": "Nouveau document",
   "librarySyncButton": "Synchroniser",
   "libraryRegenerateTooltip": "Re-générer le quiz",
-
   "revisionSetupTitle": "Révision Express",
   "revisionSetupSubtitle": "Boost rapide de 5 minutes avant un contrôle.",
   "revisionSetupDuration": "Durée",
@@ -222,35 +213,29 @@
   "revisionSetupAdaptivePartial": "Erreurs récentes + derniers imports",
   "revisionSetupStartButton": "Commencer la session",
   "revisionSetupNoItems": "Pas encore de révision disponible. Termine d'abord un jeu.",
-
   "revisionSessionTitle": "Session Express",
   "revisionSessionNoSession": "Pas encore de session disponible.\nImporte et termine un jeu pour débloquer la révision.",
   "revisionSessionLoading": "Chargement...",
   "revisionSessionFinish": "Terminer",
   "revisionSessionNext": "Suivant",
-
   "revisionResultsTitle": "Révision terminée !",
   "revisionResultsSubtitle": "Tu as révisé {correct} concepts clés.",
   "revisionResultsAccuracy": "Précision : {correct}/{total}",
   "revisionResultsTotalXp": "XP total : {xp}",
   "revisionResultsBackHome": "Retour à l'accueil",
   "revisionResultsSeeProgress": "Voir les progrès",
-
   "packDetailDefaultTitle": "Pack d'apprentissage",
   "packDetailNoPack": "Aucun pack sélectionné.",
   "packDetailNoGamesTitle": "Pas encore de jeux",
   "packDetailNoGamesMessage": "Importe ou regénère ce document pour créer des jeux.",
   "packDetailStartSession": "Commencer la session",
-
   "packSessionDefaultTitle": "Plan de session",
   "packSessionSubtitle": "Session guidée de {minutes} minutes.",
   "packSessionNoGamesTitle": "Pas de jeux prêts",
   "packSessionNoGamesMessage": "Termine le traitement du document, puis lance la session.",
   "packSessionStartNow": "Commencer",
   "packSessionNoGamesSnackBar": "Aucun jeu n'est encore prêt pour ce pack.",
-
   "packsListTitle": "Packs d'apprentissage",
-
   "funFactBrainPowerTitle": "Puissance cérébrale",
   "funFactBrainPower": "Ton cerveau utilise environ 20 % de l'énergie de ton corps, alors qu'il ne représente que 2 % de ton poids !",
   "funFactOctopusTitle": "Pieuvre intelligente",
@@ -281,11 +266,9 @@
   "funFactDream": "Ton cerveau rejoue ce que tu as appris pendant la journée quand tu rêves !",
   "funFactPracticeTitle": "La pratique rend parfait",
   "funFactPractice": "Il faut environ 10 000 heures de pratique pour devenir expert en quelque chose.",
-
   "languageEnglish": "English",
   "languageFrench": "Français",
   "languageDutch": "Nederlands",
-
   "noChildProfile": "Aucun profil enfant disponible.",
   "noImageSelected": "Aucune image sélectionnée.",
   "missingDocumentId": "ID du document manquant.",
@@ -293,14 +276,545 @@
   "documentProcessingFailed": "Le traitement du document a échoué.",
   "packMissingId": "Le pack n'a pas d'identifiant.",
   "resultSyncSkipped": "Synchronisation ignorée : childId/packId/gameId manquant.",
-
   "processingStepUploading": "Envoi",
   "processingStepProcessing": "Traitement",
   "processingStepGenerating": "Génération",
   "processingStepCreatingGames": "Création des jeux",
-
-  "statusWithProgress": "{progress} % \u2022 {message}",
-
+  "statusWithProgress": "{progress} % • {message}",
   "switchProfile": "Changer de profil",
-  "switchProfileHint": "Appuie sur un profil pour changer"
+  "switchProfileHint": "Appuie sur un profil pour changer",
+  "accountSettingsEmailLabel": "E-mail",
+  "accountSettingsGradeRangeLabel": "Plage de notes préférée",
+  "accountSettingsNameLabel": "Nom",
+  "accountSettingsSaveChanges": "Enregistrer les modifications",
+  "accountSettingsSubtitle": "Gérer le profil et les préférences des parents.",
+  "accountSettingsTitle": "Paramètres du compte",
+  "achievementsSubtitle": "Je célèbre les victoires, qu’elles soient grandes ou petites.",
+  "achievementsTitle": "Réussites",
+  "authEmailLabel": "E-mail",
+  "authPasswordLabel": "Mot de passe",
+  "cameraCaptureChooseMultiplePages": "Choisir plusieurs pages",
+  "cameraCaptureChooseSinglePhoto": "Choisir une seule photo",
+  "cameraCaptureSubtitle": "Encadrez la feuille de calcul et prenez une photo.",
+  "cameraCaptureTakePhoto": "Prendre une photo",
+  "cameraCaptureTitle": "Snap Homework",
+  "cameraCaptureUploadPdfInstead": "Télécharger le PDF à la place",
+  "childSelectorSubtitle": "Basculer entre les enfants.",
+  "childSelectorTitle": "Profils enfants",
+  "commonCancel": "Annuler",
+  "commonClear": "Vide",
+  "contactSupportFrom": "De : {email}",
+  "@contactSupportFrom": {
+    "description": "Auto-added localization for contactSupportFrom",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "contactSupportMessageLabel": "Message",
+  "contactSupportSendMessage": "Envoyer un message",
+  "contactSupportSubtitle": "NOUS VOUS RÉPONDRONS DANS LES 24 HEURES",
+  "contactSupportTitle": "Contacter le support",
+  "contactSupportTopicLabel": "Thème",
+  "createProfileAvatarDino": "Dino",
+  "createProfileAvatarFox": "Renard",
+  "createProfileAvatarFoxBuddy": "Ami Renard",
+  "createProfileAvatarOwl": "Hibou",
+  "createProfileAvatarPenguin": "Pingouin",
+  "createProfileAvatarRobot": "Robot",
+  "deleteAccountBody": "La suppression du compte de {name} supprimera tous les profils et documents enfants. Cela ne peut pas être annulé.",
+  "@deleteAccountBody": {
+    "description": "Auto-added localization for deleteAccountBody",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountConfirmDelete": "Confirmer la suppression",
+  "deleteAccountSubtitle": "Cette action est permanente.",
+  "deleteAccountTitle": "Supprimer le compte",
+  "emptyStateSubtitle": "Téléchargez une feuille de calcul pour commencer.",
+  "emptyStateTitle": "Rien ici pour l'instant.",
+  "errorStateSubtitle": "Nous n'avons pas pu traiter le document.",
+  "errorStateTitle": "Quelque chose a mal tournée",
+  "errorStateTryAgain": "Réessayez",
+  "faqSubtitle": "• des réponses à des questions courantes",
+  "faqTitle": "FAQ",
+  "forgotPasswordEmailAddressLabel": "Adresse e-mail",
+  "forgotPasswordSendLink": "Ajouter un lien",
+  "forgotPasswordSubtitle": "Nous enverrons un lien de réinitialisation à votre adresse e-mail.",
+  "forgotPasswordTitle": "Réinit mot de passe",
+  "homeTabHome": "Accueil",
+  "homeTabPacks": "Packs",
+  "homeTabProgress": "Avancement",
+  "homeTabSettings": "Réglages",
+  "learningTimeMinutes": "{minutes} min",
+  "@learningTimeMinutes": {
+    "description": "Auto-added localization for learningTimeMinutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "learningTimeSubtitle": "Une comparaison des données canadiennes et néerlandaises sur l&apos;emploi du temps montre que les adolescents néerlandais consacrent 20 minutes par jour de plus que les adolescents canadiens à l&apos;école et aux travaux scolaires, mais environ 20 minutes de moins au travail rémunéré et 10 minutes de moins aux tâches domestiques.",
+  "learningTimeTitle": "Durée du cours",
+  "loginButton": "Se connecter",
+  "loginCreateAccountPrompt": "Vous êtes nouveau ici ? Créez un compte.",
+  "loginForgotPassword": "Mot de passe oublié ?",
+  "loginSubtitle": "Connectez-vous pour poursuivre le parcours d'apprentissage de votre enfant.",
+  "loginTitle": "Bienvenu à nouveau",
+  "masteryDetailsEmptySubtitle": "Téléchargez et terminez des jeux pour développer la maîtrise du concept.",
+  "masteryDetailsNoDataSubtitle": "Exécutez au moins un jeu généré pour remplir cette vue.",
+  "masteryDetailsNoDataTitle": "Pas encore de données de maîtrise",
+  "masteryDetailsSubtitle": "Répartition au niveau du concept à partir du contenu de votre étude téléchargé.",
+  "masteryDetailsTitle": "Maîtrise du détail",
+  "masteryStatusMastered": "Maitrise",
+  "masteryStatusNeedsReview": "Nécessite une révision@option: check trans-unit state",
+  "masteryStatusPracticing": "Entraînement",
+  "masteryStatusWithPercent": "{label} • {percent}%",
+  "@masteryStatusWithPercent": {
+    "description": "Auto-added localization for masteryStatusWithPercent",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsMarkRead": "Marquer comme lu",
+  "notificationsSubtitle": "Nudges amicaux pour les parents et les enfants.",
+  "notificationsTitle": "Notifications",
+  "offlineRetry": "Réessayer",
+  "offlineSubtitle": "Vérifiez votre connexion pour synchroniser la progression.",
+  "offlineTitle": "Vous êtes déconnecté(e)",
+  "onboardingConsentAgreeButton": "accepter et poursuivre",
+  "onboardingConsentCoppaSubtitle": "Consentement des parents requis avant utilisation.",
+  "onboardingConsentCoppaTitle": "COPPA-friendly",
+  "onboardingConsentEducatorSubtitle": "Le contenu est conforme aux normes de l'école.",
+  "onboardingConsentEducatorTitle": "Conçu par un éducateur",
+  "onboardingConsentNoDataSellingSubtitle": "Nous ne partageons ni ne vendons jamais d'informations personnelles.",
+  "onboardingConsentNoDataSellingTitle": "Aucune vente de données",
+  "onboardingConsentSubtitle": "Nous gardons les enfants en sécurité, privés et sans publicité.",
+  "onboardingConsentTitle": "Formulaire de consentement des parents",
+  "onboardingCreateProfileButton": "Créez un profil",
+  "onboardingFoxBlurb": "Apprendre le renard permet de pratiquer de manière ludique et concentrée.",
+  "onboardingGetStarted": "Démarrez",
+  "onboardingHowItWorksSubtitle": "Des devoirs à la maîtrise en 3 étapes rapides.",
+  "onboardingHowItWorksTitle": "Comment ça marche",
+  "onboardingStep1Subtitle": "Prenez une photo de n'importe quelle feuille de calcul ou page.",
+  "onboardingStep1Title": "Vos devoirs",
+  "onboardingStep2Subtitle": "Cartes-éclair, quiz et correspondance en quelques secondes.",
+  "onboardingStep2Title": "L'IA crée des jeux d'apprentissage",
+  "onboardingStep3Subtitle": "Sessions courtes avec des stries et des boosters d'XP.",
+  "onboardingStep3Title": "Apprendre et gagner des récompenses",
+  "onboardingWelcomeSubtitle": "Votre compagnon d'apprentissage IA pour des sessions d'étude intelligentes et ludiques.",
+  "onboardingWelcomeTitle": "Bienvenue dans Learny !",
+  "packsItemsMinutes": "{itemCount} articles • {minutes} min",
+  "@packsItemsMinutes": {
+    "description": "Auto-added localization for packsItemsMinutes",
+    "placeholders": {
+      "itemCount": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "packsMasteryProgress": "{percent}% Maîtrise • Concepts {mastered}/{total}",
+  "@packsMasteryProgress": {
+    "description": "Auto-added localization for packsMasteryProgress",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "mastered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "packsStartSession": "Débuter une séance",
+  "packsSubtitle": "Packs personnalisés basés sur les devoirs.",
+  "packsTitle": "Packs d'apprentissage",
+  "packsViewLibrary": "Bibliothèque de documents",
+  "parentDashboardActiveChild": "Enfant actif",
+  "parentDashboardChildSelector": "Sélecteur enfant",
+  "parentDashboardLearningTime": "Durée du cours",
+  "parentDashboardSubtitle": "Suivez les progrès et guidez les prochaines étapes.",
+  "parentDashboardTitle": "Tableau de bord parent",
+  "parentDashboardWeakAreas": "Points faibles",
+  "parentDashboardWeeklySummary": "Résumé hebdomadaire",
+  "parentOnlyLabel": "Parent seulement",
+  "parentPinChangeSubtitle": "Définissez un nouveau code PIN pour l'accès réservé aux parents.",
+  "parentPinChangeTitle": "Modifier le code NIP",
+  "parentPinCodeLabel": "Code à 4 chiffres",
+  "parentPinEnterSubtitle": "Saisissez votre code PIN de travail pour continuer.",
+  "parentPinSaveButton": "Enregistrer le CODE PIN",
+  "parentPinUnlockButton": "Déverrouiller les paramètres parents",
+  "parentSettingsChildProfiles": "Profils enfants",
+  "parentSettingsParentProfile": "Profil parent",
+  "parentSettingsProfilesCount": "Profils {count}",
+  "@parentSettingsProfilesCount": {
+    "description": "Auto-added localization for parentSettingsProfilesCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "parentSettingsProtectSubtitle": "Protéger les paramètres réservés aux parents.",
+  "parentSettingsSetChangePin": "Définir / Changer le CODE PIN",
+  "parentSettingsSubscription": "Inscription",
+  "parentSettingsSubtitle": "Gérez les contrôles d'abonnement et de famille.",
+  "parentSettingsTitle": "paramètres parentaux",
+  "planAlreadyHaveAccount": "Vous avez déjà un compte? Connectez vous",
+  "planChooseSubtitle": "Commencez gratuitement. Mettez à niveau à tout moment.",
+  "planChooseTitle": "Choisissez votre abonnement",
+  "planFamilySubtitle": "Jusqu'à 4 profils enfants",
+  "planFamilyTitle": "Famille",
+  "planFreeSubtitle": "3 paquets par mois",
+  "planFreeTitle": "Libre",
+  "planProSubtitle": "Packs illimités + jeux",
+  "planProTitle": "Pro",
+  "safetyPrivacyCoppaSubtitle": "Il faut un consentement parental.",
+  "safetyPrivacyCoppaTitle": "Conforme COPPA",
+  "safetyPrivacyEncryptedSubtitle": "Les fichiers sont protégés",
+  "safetyPrivacyEncryptedTitle": "Stockage chiffré",
+  "safetyPrivacyNoAdsSubtitle": "Nous ne monétisons pas les données",
+  "safetyPrivacyNoAdsTitle": "Aucune publicité, aucune vente",
+  "safetyPrivacySubtitle": "Construit pour les enfants, approuvé par les parents.",
+  "safetyPrivacyTitle": "Sécurité / confidentialité",
+  "settingsClearAllConfirm": "Cela efface tous les signaux de mémoire d'apprentissage. Continuer ?",
+  "settingsClearAllLearningMemorySubtitle": "Événements, révision, résultats du jeu, maîtrise.",
+  "settingsClearAllLearningMemoryTitle": "Effacer toute la mémoire d'apprentissage",
+  "settingsClearEventsOnlySubtitle": "Maintient la maîtrise et les résultats.",
+  "settingsClearEventsOnlyTitle": "Supprimer les événements",
+  "settingsClearMemoryScopeTitle": "Effacer la portée de la mémoire",
+  "settingsClearRevisionSessionsSubtitle": "Supprime l'historique des révisions rapides.",
+  "settingsClearRevisionSessionsTitle": "Séances de révision claires",
+  "settingsClearScopeConfirm": "Effacer l'étendue de mémoire « {scope} » ?",
+  "@settingsClearScopeConfirm": {
+    "description": "Auto-added localization for settingsClearScopeConfirm",
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsConfirmClearMemoryTitle": "Confirmer la mémoire claire",
+  "settingsDeleteAccountSubtitle": "C'est une action destructrice.",
+  "settingsDetailLevelBrief": "Résumé",
+  "settingsDetailLevelDetailed": "Détaillé",
+  "settingsLastReset": "Dernière réinitialisation : {scope} à {time}",
+  "@settingsLastReset": {
+    "description": "Auto-added localization for settingsLastReset",
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLearningMemoryTitle": "Apprentissage/mémoire",
+  "settingsNoRecentMemoryReset": "Aucune réinitialisation récente de la mémoire.",
+  "settingsNotificationsSubtitle": "Obtenez des mises à jour sur les nouveaux packs et les nouvelles séries.",
+  "settingsNotificationsTitle": "Notifications",
+  "settingsPersonalizedRecommendationsSubtitle": "Utilisez l'historique des activités pour adapter les prochaines étapes.",
+  "settingsPersonalizedRecommendationsTitle": "Personalized Recommendations:",
+  "settingsRationaleDetailLevelTitle": "Niveau de détail de la justification",
+  "settingsRecommendationRationaleSubtitle": "Afficher les explications « pourquoi cette suggestion ».",
+  "settingsRecommendationRationaleTitle": "<g id=\"1\">Recommandation/Justification </g>",
+  "settingsSoundEffectsSubtitle": "Jouer des sons pendant les jeux.",
+  "settingsSoundEffectsTitle": "Effets Sonores",
+  "settingsStudyRemindersSubtitle": "Rappels quotidiens pour les courtes sessions.",
+  "settingsStudyRemindersTitle": "Rappels de l'étude",
+  "settingsTitle": "Réglages",
+  "settingsUnknownScope": "inconnu",
+  "signupCreateAccount": "Créer compte",
+  "signupFullNameLabel": "Nom complet",
+  "signupLoginPrompt": "Vous avez déjà un compte? Connectez vous",
+  "signupSubtitle": "Configurez un profil parent sécurisé pour gérer l'apprentissage.",
+  "signupTitle": "Créez votre compte parent",
+  "streaksRewardsBadges": "Badges {count}",
+  "@streaksRewardsBadges": {
+    "description": "Auto-added localization for streaksRewardsBadges",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streaksRewardsCurrentStreak": "Série actuelle",
+  "streaksRewardsDays": "{count} jours",
+  "@streaksRewardsDays": {
+    "description": "Auto-added localization for streaksRewardsDays",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streaksRewardsSubtitle": "Continuez sur votre lancée. ",
+  "streaksRewardsTitle": "Streaks et récompenses",
+  "streaksRewardsUnlocked": "Récompenses débloquées",
+  "subscriptionCurrentPlan": "Formule actuelle : {plan}",
+  "@subscriptionCurrentPlan": {
+    "description": "Auto-added localization for subscriptionCurrentPlan",
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionPlanIncluded": "Accès complet inclus avec le plan gratuit.",
+  "subscriptionSubtitle": "Learny est gratuit à utiliser. Les parents peuvent mettre à niveau à tout moment.",
+  "subscriptionTitle": "Inscription",
+  "subscriptionUpgradePlan": "Mettre à niveau l'abonnement",
+  "upgradePlanContinueToCheckout": "Continuer à la caisse",
+  "upgradePlanSubtitle": "Débloquez des packs illimités et des informations sur les parents.",
+  "upgradePlanTitle": "Mettre à niveau l'abonnement",
+  "verifyEmailCodeLabel": "Code de vérification",
+  "verifyEmailContinueToApp": "Continuer vers l'application",
+  "verifyEmailResendCode": "Renvoyer le code",
+  "verifyEmailSubtitle": "Nous avons envoyé un code à 6 chiffres à parent@example.com.",
+  "verifyEmailTitle": "Vérifier votre courriel",
+  "weakAreasSubtitle": "Zones de concentration à examiner ensuite.",
+  "weakAreasTitle": "Points faibles",
+  "weeklySummaryAchievements": "Réussites",
+  "weeklySummaryNewBadges": "{count} nouveaux badges",
+  "@weeklySummaryNewBadges": {
+    "description": "Auto-added localization for weeklySummaryNewBadges",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummarySessionsCompleted": "Sessions terminées :",
+  "weeklySummarySessionsValue": "{count} sessions",
+  "@weeklySummarySessionsValue": {
+    "description": "Auto-added localization for weeklySummarySessionsValue",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummarySubtitle": "Faits marquants des 7 derniers jours.",
+  "weeklySummaryTimeSpent": "Temps utilisé",
+  "weeklySummaryTimeSpentValue": "{hours}h {minutes}m",
+  "@weeklySummaryTimeSpentValue": {
+    "description": "Auto-added localization for weeklySummaryTimeSpentValue",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummaryTitle": "Résumé hebdomadaire",
+  "weeklySummaryTopSubject": "Sujet principal",
+  "processingAlternativesLabel": "Alternatives : {alternatives}",
+  "@processingAlternativesLabel": {
+    "description": "Auto-added localization for processingAlternativesLabel",
+    "placeholders": {
+      "alternatives": {
+        "type": "String"
+      }
+    }
+  },
+  "processingConfidenceLabel": "Confiance : {percent}%{modelSuffix}",
+  "@processingConfidenceLabel": {
+    "description": "Auto-added localization for processingConfidenceLabel",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "modelSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "processingConfirmGenerate": "Confirmer et générer",
+  "processingLanguageLabel": "Langue",
+  "processingNoAlternatives": "Aucune alternative suggérée.",
+  "processingRescan": "Balayer à nouveau",
+  "processingStarting": "Démarrage...",
+  "processingTopicLabel": "Thème",
+  "processingTopicLanguageRequired": "Le sujet et la langue sont requis pour continuer.",
+  "processingValidateScanSubtitle": "Confirmez ou modifiez le sujet et la langue avant le début de la génération approfondie.",
+  "processingValidateScanTitle": "Valider l'analyse de l'IA",
+  "progressActivitySummary": "{percent}% • {scoreLabel} • +{xp} XP",
+  "@progressActivitySummary": {
+    "description": "Auto-added localization for progressActivitySummary",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "scoreLabel": {
+        "type": "String"
+      },
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "progressCouldNotRegenerateDocument": "Impossible de régénérer le document pour le moment.",
+  "progressCouldNotReopen": "Impossible de rouvrir ce sujet : {error}",
+  "@progressCouldNotReopen": {
+    "description": "Auto-added localization for progressCouldNotReopen",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "progressCouldNotStartRegenerationFor": "Impossible de démarrer la régénération pour {gameType}.",
+  "@progressCouldNotStartRegenerationFor": {
+    "description": "Auto-added localization for progressCouldNotStartRegenerationFor",
+    "placeholders": {
+      "gameType": {
+        "type": "String"
+      }
+    }
+  },
+  "progressDeltaNew": "Nouveau",
+  "progressDocumentRegenerationStarted": "La régénération du document a commencé.",
+  "progressGenerateNewGameTypeSubtitle": "Choisissez un type à régénérer à partir de ce document",
+  "progressGenerateNewGameTypeTitle": "Générer un nouveau type de jeu",
+  "progressLatestCheerEmpty": "Téléchargez un document et terminez un jeu pour démarrer votre dynamique.",
+  "progressLoadOlderActivity": "Charger une activité plus ancienne",
+  "progressMetricAvgScore": "Score moy.",
+  "progressMetricRecentXp": "XP récente",
+  "progressMetricSessions": "Sessions",
+  "progressMetricStreak": "Série",
+  "progressMetricStreakValue": "{days}d",
+  "@progressMetricStreakValue": {
+    "description": "Auto-added localization for progressMetricStreakValue",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "progressMomentumBuilding": "Avancer plus vite et mieux",
+  "progressMomentumExcellent": "Excellente dynamique",
+  "progressMomentumReady": "Prêtes au démarrage",
+  "progressMomentumSteady": "Un élan constant",
+  "progressNewGameType": "Nouveau type de jeu",
+  "progressNoActivitySubtitle": "Jouez à un jeu généré pour voir les résultats et la motivation ici.",
+  "progressNoActivityTitle": "Aucune activité pour l'instant",
+  "progressNoReadyGames": "Aucun jeu prêt trouvé pour ce sujet pour le moment.",
+  "progressOpenOverview": "Aperçu de la progression",
+  "progressOverviewAreasToFocus": "Domaines prioritaires",
+  "progressOverviewBadges": "Badges",
+  "progressOverviewDayStreak": "Day Streak",
+  "progressOverviewLevelLearner": "Niveau {level} Étudiant",
+  "@progressOverviewLevelLearner": {
+    "description": "Auto-added localization for progressOverviewLevelLearner",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewMastery": "Maîtrise",
+  "progressOverviewMinutes": "{minutes} min",
+  "@progressOverviewMinutes": {
+    "description": "Auto-added localization for progressOverviewMinutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewSessions": "Sessions",
+  "progressOverviewTitle": "Votre progression",
+  "progressOverviewTopSubject": "Sujet principal",
+  "progressOverviewTopicMastery": "Maîtrise du sujet",
+  "progressOverviewTopicMasteryEmpty": "Complétez quelques leçons pour voir votre maîtrise !",
+  "progressOverviewTotalXp": "{xp} XP total",
+  "@progressOverviewTotalXp": {
+    "description": "Auto-added localization for progressOverviewTotalXp",
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewXpToNextLevel": "{xpToNext} XP au niveau {nextLevel}",
+  "@progressOverviewXpToNextLevel": {
+    "description": "Auto-added localization for progressOverviewXpToNextLevel",
+    "placeholders": {
+      "xpToNext": {
+        "type": "int"
+      },
+      "nextLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewXpToday": "XP aujourd'hui",
+  "progressPastActivityTitle": "Activité passée",
+  "progressRedoDocument": "Refaire le document",
+  "progressRedoSubject": "Refaire le sujet",
+  "progressRefresh": "Actualiser",
+  "progressRegenerationStartedFor": "La régénération a commencé pour {gameType}.",
+  "@progressRegenerationStartedFor": {
+    "description": "Auto-added localization for progressRegenerationStartedFor",
+    "placeholders": {
+      "gameType": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScoreBandImproving": "En amélioration",
+  "progressScoreBandKeepGoing": "Continue",
+  "progressScoreBandStrong": "Fort",
+  "progressScoreLabel": "{correct}/{total} correct",
+  "@progressScoreLabel": {
+    "description": "Auto-added localization for progressScoreLabel",
+    "placeholders": {
+      "correct": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressSubtitle": "Résultats passés, tendances et quoi refaire ensuite.",
+  "progressWeeklyMastery": "{percent}% maîtrise des packs de cette semaine",
+  "@progressWeeklyMastery": {
+    "description": "Auto-added localization for progressWeeklyMastery",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "progressWeeklyProgressTitle": "Progrès hebdomadaire",
+  "docStatusQuickScanQueued": "File d'attente d'analyse rapide",
+  "docStatusQuickScanProcessing": "anayse rapide",
+  "docStatusAwaitingValidation": "En attente de validation",
+  "stageQuickScanQueue": "File d'attente d'analyse rapide",
+  "stageQuickScanProcessing": "Scan rapide",
+  "stageAwaitingValidation": "En attente de validation",
+  "stageQuickScanFailed": "Échec de l'analyse rapide",
+  "statusQuickScanQueued": "Analyse rapide en file d'attente...",
+  "statusQuickScanProcessing": "Exécution de l'analyse rapide...",
+  "statusAwaitingValidation": "En attente de votre validation...",
+  "statusQuickScanFailed": "Échec de l'analyse rapide. Veuillez réessayer."
 }

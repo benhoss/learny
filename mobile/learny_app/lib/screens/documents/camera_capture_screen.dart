@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../state/app_state_scope.dart';
 import '../../theme/app_theme.dart';
@@ -115,9 +116,10 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Snap Homework',
-      subtitle: 'Frame the worksheet and snap a photo.',
+      title: l.cameraCaptureTitle,
+      subtitle: l.cameraCaptureSubtitle,
       gradient: LearnyGradients.trust,
       body: Container(
         height: 220,
@@ -132,23 +134,23 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
       ),
       primaryAction: ElevatedButton(
         onPressed: () => _pickImage(ImageSource.camera),
-        child: const Text('Take Photo'),
+        child: Text(l.cameraCaptureTakePhoto),
       ),
       secondaryAction: Column(
         children: [
           OutlinedButton(
             onPressed: () => _pickImage(ImageSource.gallery),
-            child: const Text('Choose Single Photo'),
+            child: Text(l.cameraCaptureChooseSinglePhoto),
           ),
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: _pickMultipleFromGallery,
-            child: const Text('Choose Multiple Pages'),
+            child: Text(l.cameraCaptureChooseMultiplePages),
           ),
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => Navigator.pushNamed(context, AppRoutes.upload),
-            child: const Text('Upload PDF Instead'),
+            child: Text(l.cameraCaptureUploadPdfInstead),
           ),
         ],
       ),

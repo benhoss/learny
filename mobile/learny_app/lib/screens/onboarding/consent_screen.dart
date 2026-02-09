@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../shared/gradient_scaffold.dart';
@@ -8,6 +9,7 @@ class ConsentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return GradientScaffold(
       gradient: LearnyGradients.trust,
       child: Padding(
@@ -15,7 +17,7 @@ class ConsentScreen extends StatelessWidget {
         child: ListView(
           children: [
             Text(
-              'Parent Consent',
+              l.onboardingConsentTitle,
               style: Theme.of(context)
                   .textTheme
                   .headlineLarge
@@ -23,7 +25,7 @@ class ConsentScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'We keep kids safe, private, and ad-free.',
+              l.onboardingConsentSubtitle,
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
@@ -32,23 +34,23 @@ class ConsentScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _ConsentItem(
               icon: Icons.shield_rounded,
-              title: 'COPPA-friendly',
-              subtitle: 'Parent consent required before use.',
+              title: l.onboardingConsentCoppaTitle,
+              subtitle: l.onboardingConsentCoppaSubtitle,
             ),
             _ConsentItem(
               icon: Icons.lock_rounded,
-              title: 'No data selling',
-              subtitle: 'We never share or sell personal info.',
+              title: l.onboardingConsentNoDataSellingTitle,
+              subtitle: l.onboardingConsentNoDataSellingSubtitle,
             ),
             _ConsentItem(
               icon: Icons.verified_rounded,
-              title: 'Educator designed',
-              subtitle: 'Content aligns to school standards.',
+              title: l.onboardingConsentEducatorTitle,
+              subtitle: l.onboardingConsentEducatorSubtitle,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, AppRoutes.plan),
-              child: const Text('Agree & Continue'),
+              child: Text(l.onboardingConsentAgreeButton),
             ),
           ],
         ),

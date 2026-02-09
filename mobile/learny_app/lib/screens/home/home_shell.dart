@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import 'home_screen.dart';
 import 'packs_screen.dart';
@@ -37,11 +38,11 @@ class _HomeShellState extends State<HomeShell> {
         onDestinationSelected: (index) {
           setState(() => _currentIndex = index);
         },
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_rounded), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.auto_stories_rounded), label: 'Packs'),
-          NavigationDestination(icon: Icon(Icons.insights_rounded), label: 'Progress'),
-          NavigationDestination(icon: Icon(Icons.settings_rounded), label: 'Settings'),
+        destinations: [
+          NavigationDestination(icon: const Icon(Icons.home_rounded), label: L10n.of(context).homeTabHome),
+          NavigationDestination(icon: const Icon(Icons.auto_stories_rounded), label: L10n.of(context).homeTabPacks),
+          NavigationDestination(icon: const Icon(Icons.insights_rounded), label: L10n.of(context).homeTabProgress),
+          NavigationDestination(icon: const Icon(Icons.settings_rounded), label: L10n.of(context).homeTabSettings),
         ],
       ),
     );

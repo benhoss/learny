@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_assets.dart';
 import '../../theme/app_theme.dart';
@@ -9,6 +10,7 @@ class HowItWorksScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return GradientScaffold(
       gradient: LearnyGradients.trust,
       child: Padding(
@@ -17,7 +19,7 @@ class HowItWorksScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'How It Works',
+              l.onboardingHowItWorksTitle,
               style: Theme.of(context)
                   .textTheme
                   .headlineLarge
@@ -25,7 +27,7 @@ class HowItWorksScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'From homework to mastery in 3 quick steps.',
+              l.onboardingHowItWorksSubtitle,
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
@@ -53,7 +55,7 @@ class HowItWorksScreen extends StatelessWidget {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      'Learny the fox keeps practice playful and focused.',
+                      l.onboardingFoxBlurb,
                       style: Theme.of(context)
                           .textTheme
                           .bodyMedium
@@ -64,23 +66,23 @@ class HowItWorksScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const _StepCard(
-              title: 'Snap your homework',
-              subtitle: 'Take a photo of any worksheet or page.',
+            _StepCard(
+              title: l.onboardingStep1Title,
+              subtitle: l.onboardingStep1Subtitle,
               icon: Icons.camera_alt_rounded,
               color: LearnyColors.coral,
             ),
             const SizedBox(height: 16),
-            const _StepCard(
-              title: 'AI creates learning games',
-              subtitle: 'Flashcards, quizzes, and matching in seconds.',
+            _StepCard(
+              title: l.onboardingStep2Title,
+              subtitle: l.onboardingStep2Subtitle,
               icon: Icons.auto_awesome_rounded,
               color: LearnyColors.teal,
             ),
             const SizedBox(height: 16),
-            const _StepCard(
-              title: 'Learn & earn rewards',
-              subtitle: 'Short sessions with streaks and XP boosts.',
+            _StepCard(
+              title: l.onboardingStep3Title,
+              subtitle: l.onboardingStep3Subtitle,
               icon: Icons.emoji_events_rounded,
               color: LearnyColors.purple,
             ),
@@ -89,7 +91,7 @@ class HowItWorksScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Navigator.pushNamed(context, AppRoutes.createProfile),
-                child: const Text('Create a Profile'),
+                child: Text(l.onboardingCreateProfileButton),
               ),
             ),
           ],

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import '../../state/app_state_scope.dart';
@@ -14,6 +15,7 @@ class ProgressOverviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     final tokens = context.tokens;
     final mastery = state.mastery;
     final overallMastery = mastery.isEmpty
@@ -50,7 +52,7 @@ class ProgressOverviewScreen extends StatelessWidget {
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      'Your Progress',
+                      l.progressOverviewTitle,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: LearnyColors.neutralDark,
@@ -72,7 +74,7 @@ class ProgressOverviewScreen extends StatelessWidget {
                     child: _StatCard(
                       icon: LucideIcons.zap,
                       iconColor: LearnyColors.sunshine,
-                      label: 'XP Today',
+                      label: l.progressOverviewXpToday,
                       value: '${state.xpToday}',
                       bgColor: LearnyColors.sunshineLight,
                     ),
@@ -82,7 +84,7 @@ class ProgressOverviewScreen extends StatelessWidget {
                     child: _StatCard(
                       icon: LucideIcons.flame,
                       iconColor: LearnyColors.coral,
-                      label: 'Day Streak',
+                      label: l.progressOverviewDayStreak,
                       value: '${state.streakDays}',
                       bgColor: LearnyColors.coralLight,
                     ),
@@ -92,7 +94,7 @@ class ProgressOverviewScreen extends StatelessWidget {
                     child: _StatCard(
                       icon: LucideIcons.target,
                       iconColor: LearnyColors.mintPrimary,
-                      label: 'Mastery',
+                      label: l.progressOverviewMastery,
                       value: '${(overallMastery * 100).round()}%',
                       bgColor: LearnyColors.mintLight,
                     ),
@@ -213,6 +215,7 @@ class _WeeklyActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     final tokens = context.tokens;
     final maxMinutes = learningTimes.isEmpty
         ? 30
@@ -240,7 +243,7 @@ class _WeeklyActivityCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'This Week',
+                l.homeThisWeek,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: LearnyColors.neutralDark,
@@ -254,7 +257,7 @@ class _WeeklyActivityCard extends StatelessWidget {
                   borderRadius: tokens.radiusFull,
                 ),
                 child: Text(
-                  '${weeklySummary.minutesSpent} min',
+                  l.progressOverviewMinutes(weeklySummary.minutesSpent),
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: LearnyColors.mintPrimary,
@@ -293,17 +296,17 @@ class _WeeklyActivityCard extends StatelessWidget {
             children: [
               _SummaryItem(
                 value: '${weeklySummary.sessionsCompleted}',
-                label: 'Sessions',
+                label: l.progressOverviewSessions,
                 icon: LucideIcons.gamepad2,
               ),
               _SummaryItem(
                 value: '${weeklySummary.newBadges}',
-                label: 'Badges',
+                label: l.progressOverviewBadges,
                 icon: LucideIcons.award,
               ),
               _SummaryItem(
                 value: weeklySummary.topSubject,
-                label: 'Top Subject',
+                label: l.progressOverviewTopSubject,
                 icon: LucideIcons.star,
               ),
             ],
@@ -453,6 +456,7 @@ class _TopicMasteryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     final tokens = context.tokens;
     final sortedEntries = mastery.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -476,7 +480,7 @@ class _TopicMasteryCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Topic Mastery',
+                l.progressOverviewTopicMastery,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: LearnyColors.neutralDark,
@@ -489,7 +493,7 @@ class _TopicMasteryCard extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(vertical: tokens.spaceMd),
               child: Text(
-                'Complete some lessons to see your mastery!',
+                l.progressOverviewTopicMasteryEmpty,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: LearnyColors.neutralLight,
                     ),
@@ -638,6 +642,7 @@ class _WeakAreasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     final tokens = context.tokens;
 
     return Container(
@@ -667,7 +672,7 @@ class _WeakAreasCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                'Areas to Focus',
+                l.progressOverviewAreasToFocus,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: LearnyColors.neutralDark,
@@ -774,6 +779,7 @@ class _TotalXpBadgeState extends State<_TotalXpBadge>
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     final tokens = context.tokens;
 
     return AnimatedBuilder(
@@ -835,7 +841,7 @@ class _TotalXpBadgeState extends State<_TotalXpBadge>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Level $_level Learner',
+                          l.progressOverviewLevelLearner(_level),
                           style:
                               Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w700,
@@ -852,7 +858,7 @@ class _TotalXpBadgeState extends State<_TotalXpBadge>
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '${widget.totalXp} XP total',
+                              l.progressOverviewTotalXp(widget.totalXp),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -883,7 +889,10 @@ class _TotalXpBadgeState extends State<_TotalXpBadge>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${100 - _xpInLevel} XP to Level ${_level + 1}',
+                          l.progressOverviewXpToNextLevel(
+                            100 - _xpInLevel,
+                            _level + 1,
+                          ),
                           style:
                               Theme.of(context).textTheme.labelSmall?.copyWith(
                                     color: LearnyColors.neutralLight,

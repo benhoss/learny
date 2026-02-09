@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../shared/placeholder_screen.dart';
@@ -8,33 +9,34 @@ class SignupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Create Parent Account',
-      subtitle: 'Set up a secure parent profile to manage learning.',
+      title: l.signupTitle,
+      subtitle: l.signupSubtitle,
       gradient: LearnyGradients.hero,
       body: Column(
         children: [
           TextField(
-            decoration: const InputDecoration(labelText: 'Full name'),
+            decoration: InputDecoration(labelText: l.signupFullNameLabel),
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: const InputDecoration(labelText: 'Email'),
+            decoration: InputDecoration(labelText: l.authEmailLabel),
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: const InputDecoration(labelText: 'Password'),
+            decoration: InputDecoration(labelText: l.authPasswordLabel),
           ),
           const SizedBox(height: 20),
         ],
       ),
       primaryAction: ElevatedButton(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.verifyEmail),
-        child: const Text('Create Account'),
+        child: Text(l.signupCreateAccount),
       ),
       secondaryAction: TextButton(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
-        child: const Text('Already have an account? Log in'),
+        child: Text(l.signupLoginPrompt),
       ),
     );
   }

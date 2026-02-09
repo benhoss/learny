@@ -10,11 +10,20 @@ import '../../widgets/games/pressable_scale.dart';
 class ProcessingScreen extends StatelessWidget {
   const ProcessingScreen({super.key});
 
-  static String _localizedStageLabel(L10n l, String? pipelineStage, bool hasFirstPlayableSignal) {
-    if (hasFirstPlayableSignal && pipelineStage != 'ready' && pipelineStage != 'game_generation_failed') {
+  static String _localizedStageLabel(
+    L10n l,
+    String? pipelineStage,
+    bool hasFirstPlayableSignal,
+  ) {
+    if (hasFirstPlayableSignal &&
+        pipelineStage != 'ready' &&
+        pipelineStage != 'game_generation_failed') {
       return l.stageFirstGameReady;
     }
     return switch (pipelineStage) {
+      'quick_scan_queued' => l.stageQuickScanQueue,
+      'quick_scan_processing' => l.stageQuickScanProcessing,
+      'awaiting_validation' => l.stageAwaitingValidation,
       'uploading' => l.processingStepUploading,
       'queued' => l.stageQueued,
       'ocr' => l.stageOcr,
@@ -25,6 +34,7 @@ class ProcessingScreen extends StatelessWidget {
       'game_generation_queued' => l.stageGameQueue,
       'game_generation' => l.stageGameGeneration,
       'ready' => l.stageReady,
+      'quick_scan_failed' => l.stageQuickScanFailed,
       'ocr_failed' => l.stageOcrFailed,
       'concept_extraction_failed' => l.stageConceptFailed,
       'learning_pack_failed' => l.stagePackFailed,
@@ -35,12 +45,22 @@ class ProcessingScreen extends StatelessWidget {
     };
   }
 
-  static String _localizedStatus(L10n l, String? pipelineStage, bool hasFirstPlayableSignal, int progressPercent) {
+  static String _localizedStatus(
+    L10n l,
+    String? pipelineStage,
+    bool hasFirstPlayableSignal,
+    int progressPercent,
+  ) {
     String message;
-    if (hasFirstPlayableSignal && pipelineStage != 'ready' && pipelineStage != 'game_generation_failed') {
+    if (hasFirstPlayableSignal &&
+        pipelineStage != 'ready' &&
+        pipelineStage != 'game_generation_failed') {
       message = l.statusFirstGameReady;
     } else {
       message = switch (pipelineStage) {
+        'quick_scan_queued' => l.statusQuickScanQueued,
+        'quick_scan_processing' => l.statusQuickScanProcessing,
+        'awaiting_validation' => l.statusAwaitingValidation,
         'uploading' => l.statusUploadingDocument,
         'queued' => l.statusQueued,
         'ocr' => l.statusOcr,
@@ -51,6 +71,7 @@ class ProcessingScreen extends StatelessWidget {
         'game_generation_queued' => l.statusGameQueueing,
         'game_generation' => l.statusGameGeneration,
         'ready' => l.statusReady,
+        'quick_scan_failed' => l.statusQuickScanFailed,
         'ocr_failed' => l.statusOcrFailed,
         'concept_extraction_failed' => l.statusConceptExtractionFailed,
         'learning_pack_failed' => l.statusPackGenerationFailed,
@@ -74,7 +95,13 @@ class ProcessingScreen extends StatelessWidget {
     final readyGameType = state.currentPackGameType;
     final isReady = state.hasReadyGeneratedGame;
     final hasError = state.generationError != null;
-    final status = _localizedStatus(l, state.pipelineStage, state.hasFirstPlayableSignal, state.processingProgressPercent);
+    final isAwaitingScanValidation = state.awaitingScanValidation;
+    final status = _localizedStatus(
+      l,
+      state.pipelineStage,
+      state.hasFirstPlayableSignal,
+      state.processingProgressPercent,
+    );
     final transferProgress = state.uploadProgressPercent < 0
         ? 0
         : state.uploadProgressPercent > 100
@@ -85,7 +112,11 @@ class ProcessingScreen extends StatelessWidget {
         : state.processingProgressPercent > 100
         ? 100
         : state.processingProgressPercent;
-    final processingStageLabel = _localizedStageLabel(l, state.pipelineStage, state.hasFirstPlayableSignal);
+    final processingStageLabel = _localizedStageLabel(
+      l,
+      state.pipelineStage,
+      state.hasFirstPlayableSignal,
+    );
     final ctaLabel = _startLabelForType(context, readyGameType);
 
     return Container(
@@ -119,7 +150,9 @@ class ProcessingScreen extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        isReady ? L10n.of(context).processingReadyTitle : L10n.of(context).processingTitle,
+                        isReady
+                            ? L10n.of(context).processingReadyTitle
+                            : L10n.of(context).processingTitle,
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(
                               fontWeight: FontWeight.w700,
@@ -138,6 +171,17 @@ class ProcessingScreen extends StatelessWidget {
                 FadeInSlide(
                   delay: const Duration(milliseconds: 100),
                   child: _SuccessState(),
+                ),
+              ] else if (isAwaitingScanValidation) ...[
+                FadeInSlide(
+                  delay: const Duration(milliseconds: 100),
+                  child: _ScanValidationState(
+                    topicSuggestion: state.scanSuggestedTopic,
+                    languageSuggestion: state.scanSuggestedLanguage,
+                    confidence: state.scanSuggestionConfidence,
+                    alternatives: state.scanSuggestionAlternatives,
+                    model: state.scanSuggestionModel,
+                  ),
                 ),
               ] else if (hasError) ...[
                 FadeInSlide(
@@ -399,7 +443,9 @@ class _ProcessingStateState extends State<_ProcessingState> {
           SizedBox(height: tokens.spaceMd),
 
           // Pipeline steps
-          _ProcessingSteps(pipelineStage: AppStateScope.of(context).pipelineStage),
+          _ProcessingSteps(
+            pipelineStage: AppStateScope.of(context).pipelineStage,
+          ),
 
           SizedBox(height: tokens.spaceLg),
 
@@ -685,6 +731,13 @@ class _ProcessingSteps extends StatelessWidget {
 
     int currentStep = 0;
     switch (pipelineStage) {
+      case 'quick_scan_queued':
+      case 'quick_scan_processing':
+        currentStep = 1;
+        break;
+      case 'awaiting_validation':
+        currentStep = 2;
+        break;
       case 'ocr':
       case 'concept_extraction_queued':
       case 'concept_extraction':
@@ -723,6 +776,186 @@ class _ProcessingSteps extends StatelessWidget {
             ),
         ],
       ],
+    );
+  }
+}
+
+class _ScanValidationState extends StatefulWidget {
+  const _ScanValidationState({
+    required this.topicSuggestion,
+    required this.languageSuggestion,
+    required this.confidence,
+    required this.alternatives,
+    required this.model,
+  });
+
+  final String? topicSuggestion;
+  final String? languageSuggestion;
+  final double confidence;
+  final List<String> alternatives;
+  final String? model;
+
+  @override
+  State<_ScanValidationState> createState() => _ScanValidationStateState();
+}
+
+class _ScanValidationStateState extends State<_ScanValidationState> {
+  late final TextEditingController _topicController;
+  late final TextEditingController _languageController;
+  bool _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _topicController = TextEditingController(
+      text: widget.topicSuggestion ?? '',
+    );
+    _languageController = TextEditingController(
+      text: widget.languageSuggestion ?? '',
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _ScanValidationState oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.topicSuggestion != widget.topicSuggestion &&
+        _topicController.text.trim().isEmpty) {
+      _topicController.text = widget.topicSuggestion ?? '';
+    }
+    if (oldWidget.languageSuggestion != widget.languageSuggestion &&
+        _languageController.text.trim().isEmpty) {
+      _languageController.text = widget.languageSuggestion ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _topicController.dispose();
+    _languageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final state = AppStateScope.of(context);
+    final l = L10n.of(context);
+    final confidencePercent = (widget.confidence * 100).round();
+    final alternativesText = widget.alternatives.isEmpty
+        ? l.processingNoAlternatives
+        : widget.alternatives.join(', ');
+
+    return Container(
+      padding: EdgeInsets.all(tokens.spaceLg + 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: tokens.radiusXl,
+        boxShadow: tokens.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            l.processingValidateScanTitle,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: LearnyColors.neutralDark,
+            ),
+          ),
+          SizedBox(height: tokens.spaceSm),
+          Text(
+            l.processingValidateScanSubtitle,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: LearnyColors.neutralMedium),
+          ),
+          SizedBox(height: tokens.spaceSm),
+          Text(
+            l.processingConfidenceLabel(
+              confidencePercent,
+              widget.model == null ? '' : ' • ${widget.model}',
+            ),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: LearnyColors.skyPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: tokens.spaceMd),
+          TextField(
+            controller: _topicController,
+            decoration: InputDecoration(labelText: l.processingTopicLabel),
+          ),
+          SizedBox(height: tokens.spaceSm),
+          TextField(
+            controller: _languageController,
+            decoration: InputDecoration(labelText: l.processingLanguageLabel),
+          ),
+          SizedBox(height: tokens.spaceSm),
+          Text(
+            l.processingAlternativesLabel(alternativesText),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: LearnyColors.neutralMedium),
+          ),
+          SizedBox(height: tokens.spaceMd),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _submitting
+                      ? null
+                      : () async {
+                          final topic = _topicController.text.trim();
+                          final language = _languageController.text.trim();
+                          if (topic.isEmpty || language.isEmpty) {
+                            if (!context.mounted) {
+                              return;
+                            }
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  l.processingTopicLanguageRequired,
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+                          setState(() => _submitting = true);
+                          await state.confirmCurrentDocumentScan(
+                            topic: topic,
+                            language: language,
+                          );
+                          if (!mounted) {
+                            return;
+                          }
+                          setState(() => _submitting = false);
+                        },
+                  child: Text(
+                    _submitting
+                        ? l.processingStarting
+                        : l.processingConfirmGenerate,
+                  ),
+                ),
+              ),
+              SizedBox(width: tokens.spaceSm),
+              OutlinedButton(
+                onPressed: _submitting
+                    ? null
+                    : () async {
+                        setState(() => _submitting = true);
+                        await state.rescanCurrentDocument();
+                        if (!mounted) {
+                          return;
+                        }
+                        setState(() => _submitting = false);
+                      },
+                child: Text(l.processingRescan),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import 'gradient_scaffold.dart';
 
@@ -25,7 +26,7 @@ class PlaceholderScreen extends StatelessWidget {
     return GradientScaffold(
       gradient: gradient,
       appBar: AppBar(
-        title: const Text('Learny'),
+        title: Text(L10n.of(context).appTitle),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
 import '../shared/placeholder_screen.dart';
@@ -9,20 +10,21 @@ class DeleteAccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Delete Account',
-      subtitle: 'This action is permanent.',
+      title: l.deleteAccountTitle,
+      subtitle: l.deleteAccountSubtitle,
       gradient: LearnyGradients.trust,
       body: Text(
-        'Deleting ${state.parentProfile.name}\'s account will remove all child profiles and documents. This cannot be undone.',
+        l.deleteAccountBody(state.parentProfile.name),
       ),
       primaryAction: ElevatedButton(
         onPressed: () {},
-        child: const Text('Confirm Delete'),
+        child: Text(l.deleteAccountConfirmDelete),
       ),
       secondaryAction: OutlinedButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cancel'),
+        child: Text(l.commonCancel),
       ),
     );
   }

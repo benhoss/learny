@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
 import '../shared/placeholder_screen.dart';
@@ -9,24 +10,23 @@ class MasteryDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     final masteryEntries = state.mastery.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return PlaceholderScreen(
-      title: 'Mastery Details',
+      title: l.masteryDetailsTitle,
       subtitle: masteryEntries.isEmpty
-          ? 'Upload and complete games to build concept mastery.'
-          : 'Concept-level breakdown from your uploaded study content.',
+          ? l.masteryDetailsEmptySubtitle
+          : l.masteryDetailsSubtitle,
       gradient: LearnyGradients.trust,
       body: Column(
         children: masteryEntries.isEmpty
-            ? const [
+            ? [
                 ListTile(
-                  leading: Icon(Icons.hourglass_empty_rounded),
-                  title: Text('No mastery data yet'),
-                  subtitle: Text(
-                    'Run at least one generated game to populate this view.',
-                  ),
+                  leading: const Icon(Icons.hourglass_empty_rounded),
+                  title: Text(l.masteryDetailsNoDataTitle),
+                  subtitle: Text(l.masteryDetailsNoDataSubtitle),
                 ),
               ]
             : masteryEntries.map((entry) {
@@ -42,14 +42,14 @@ class MasteryDetailScreen extends StatelessWidget {
                     ? LearnyColors.coral
                     : LearnyColors.purple;
                 final label = pct >= 80
-                    ? 'Mastered'
+                    ? l.masteryStatusMastered
                     : pct >= 50
-                    ? 'Practicing'
-                    : 'Needs review';
+                    ? l.masteryStatusPracticing
+                    : l.masteryStatusNeedsReview;
                 return ListTile(
                   leading: Icon(icon, color: color),
                   title: Text(entry.key),
-                  subtitle: Text('$label • $pct%'),
+                  subtitle: Text(l.masteryStatusWithPercent(label, pct)),
                 );
               }).toList(),
       ),

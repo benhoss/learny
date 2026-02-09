@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
@@ -10,25 +11,26 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Welcome Back',
-      subtitle: 'Log in to continue your child\'s learning journey.',
+      title: l.loginTitle,
+      subtitle: l.loginSubtitle,
       gradient: LearnyGradients.hero,
       body: Column(
         children: [
           TextField(
-            decoration: const InputDecoration(labelText: 'Email'),
+            decoration: InputDecoration(labelText: l.authEmailLabel),
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: const InputDecoration(labelText: 'Password'),
+            decoration: InputDecoration(labelText: l.authPasswordLabel),
           ),
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () => Navigator.pushNamed(context, AppRoutes.forgotPassword),
-              child: const Text('Forgot password?'),
+              child: Text(l.loginForgotPassword),
             ),
           ),
         ],
@@ -38,11 +40,11 @@ class LoginScreen extends StatelessWidget {
           state.completeOnboarding();
           Navigator.pushNamed(context, AppRoutes.home);
         },
-        child: const Text('Log In'),
+        child: Text(l.loginButton),
       ),
       secondaryAction: TextButton(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.signup),
-        child: const Text('New here? Create an account'),
+        child: Text(l.loginCreateAccountPrompt),
       ),
     );
   }

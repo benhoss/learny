@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../shared/gradient_scaffold.dart';
@@ -8,6 +9,7 @@ class PlanScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return GradientScaffold(
       gradient: LearnyGradients.hero,
       child: Padding(
@@ -15,7 +17,7 @@ class PlanScreen extends StatelessWidget {
         child: ListView(
           children: [
             Text(
-              'Choose Your Plan',
+              l.planChooseTitle,
               style: Theme.of(context)
                   .textTheme
                   .headlineLarge
@@ -23,7 +25,7 @@ class PlanScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Start free. Upgrade anytime.',
+              l.planChooseSubtitle,
               style: Theme.of(context)
                   .textTheme
                   .bodyLarge
@@ -31,22 +33,22 @@ class PlanScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             _PlanCard(
-              title: 'Free',
-              subtitle: '3 packs per month',
+              title: l.planFreeTitle,
+              subtitle: l.planFreeSubtitle,
               price: '\$0',
               highlight: false,
               onTap: () => Navigator.pushNamed(context, AppRoutes.signup),
             ),
             _PlanCard(
-              title: 'Pro',
-              subtitle: 'Unlimited packs + games',
+              title: l.planProTitle,
+              subtitle: l.planProSubtitle,
               price: '\$9.99',
               highlight: true,
               onTap: () => Navigator.pushNamed(context, AppRoutes.signup),
             ),
             _PlanCard(
-              title: 'Family',
-              subtitle: 'Up to 4 child profiles',
+              title: l.planFamilyTitle,
+              subtitle: l.planFamilySubtitle,
               price: '\$14.99',
               highlight: false,
               onTap: () => Navigator.pushNamed(context, AppRoutes.signup),
@@ -54,7 +56,7 @@ class PlanScreen extends StatelessWidget {
             const SizedBox(height: 12),
             TextButton(
               onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
-              child: const Text('Already have an account? Log in'),
+              child: Text(l.planAlreadyHaveAccount),
             ),
           ],
         ),

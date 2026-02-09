@@ -1,6 +1,5 @@
 {
   "@@locale": "nl",
-
   "appTitle": "Learny",
   "homeGreeting": "Goedemorgen,",
   "homeWelcomeMessage": "Klaar om iets nieuws te leren vandaag? Laten we je schoollessen omzetten in leuke spelletjes!",
@@ -24,7 +23,6 @@
   "homeRecommendation": "Aanbeveling",
   "homeNoExplainability": "Geen extra uitleg beschikbaar voor deze suggestie.",
   "homeClose": "Sluiten",
-
   "quizCorrectFeedback": "Je bent goed bezig!",
   "quizIncorrectFeedback": "Bekijk de uitleg en ga verder.",
   "quizNoQuizMessage": "Er is nog geen quiz klaar voor dit pakket.",
@@ -48,7 +46,6 @@
   "quizSetupStartButton": "Start mijn quiz",
   "quizSetupResumeHint": "Je hebt nog {remaining} vragen in je opgeslagen quiz.",
   "quizSetupResumeButton": "Hervat opgeslagen quiz",
-
   "gameTypeTrueFalse": "Waar of Niet Waar",
   "gameTypeMultiSelect": "Kies alle juiste antwoorden",
   "gameTypeFillBlank": "Vul het gat in",
@@ -57,7 +54,6 @@
   "gameTypeMatching": "Koppel de paren",
   "gameTypeFlashcards": "Geheugenkaarten",
   "gameTypeQuiz": "Snelle quiz",
-
   "gameSubtitleTrueFalse": "Snelle beoordelingen",
   "gameSubtitleMultiSelect": "Meerdere juiste antwoorden",
   "gameSubtitleFillBlank": "Maak de zin af",
@@ -66,10 +62,8 @@
   "gameSubtitleMatching": "Koppel gerelateerde concepten",
   "gameSubtitleFlashcards": "Opwarmconcepten",
   "gameSubtitleQuiz": "Meerkeuzevragen",
-
   "trueFalseTrue": "Waar",
   "trueFalseFalse": "Niet waar",
-
   "flashcardsDefaultTitle": "Geheugenkaarten",
   "flashcardsFront": "Voorkant",
   "flashcardsBack": "Achterkant",
@@ -81,14 +75,12 @@
   "flashcardsQuestion": "Vraag",
   "flashcardsAnswer": "Antwoord",
   "flashcardsTapToFlip": "Tik om te draaien",
-
   "matchingDefaultTitle": "Koppelspel",
   "matchingSubtitle": "Tik op twee bij elkaar horende items",
   "matchingNoItems": "Geen koppelparen beschikbaar.",
   "matchingProgress": "{matched} van {total} paren gekoppeld",
   "matchingContinue": "Doorgaan",
   "matchingMismatch": "Niet helemaal - probeer opnieuw!",
-
   "resultsGreatJob": "Goed gedaan!",
   "resultsSubtitle": "Je hebt {xp} XP verdiend in deze ronde en je reeks behouden.",
   "resultsSyncError": "Synchronisatie is vertraagd. We proberen het automatisch opnieuw.",
@@ -98,7 +90,6 @@
   "resultsSeeProgress": "Voortgang bekijken",
   "resultsBackToHome": "Terug naar start",
   "resultsRetryMistakes": "Fouten opnieuw proberen",
-
   "processingReadyTitle": "Klaar om te leren!",
   "processingTitle": "Je quiz wordt gemaakt",
   "processingGoBack": "Terug",
@@ -109,7 +100,6 @@
   "processingSuccessDetail": "Gepersonaliseerde spelletjes gemaakt van je document",
   "processingErrorTitle": "Er ging iets mis",
   "processingErrorHint": "Probeer een duidelijker beeld of een ander document te uploaden.",
-
   "processingStartFlashcards": "Start geheugenkaarten",
   "processingStartMatching": "Start koppelspel",
   "processingStartTrueFalse": "Start Waar/Niet waar",
@@ -119,7 +109,6 @@
   "processingStartOrdering": "Start sorteerspel",
   "processingStartQuiz": "Start de quiz",
   "processingStartLearning": "Begin met leren",
-
   "statusQueued": "In de wachtrij...",
   "statusOcr": "Je document lezen...",
   "statusConceptQueueing": "Concepten voorbereiden...",
@@ -128,6 +117,10 @@
   "statusPackGeneration": "Leerpakket samenstellen...",
   "statusGameQueueing": "Spelletjes voorbereiden...",
   "statusGameGeneration": "Spelletjes en quizzen genereren...",
+  "statusQuickScanQueued": "Snelle scan voorbereiden...",
+  "statusQuickScanProcessing": "Onderwerp en taal scannen...",
+  "statusAwaitingValidation": "Bevestig onderwerp en taal om door te gaan.",
+  "statusQuickScanFailed": "Snelle scan mislukt. Scan opnieuw of vul handmatig in.",
   "statusReady": "Quiz klaar!",
   "statusOcrFailed": "Lezen mislukt. Probeer opnieuw.",
   "statusConceptExtractionFailed": "Extractie mislukt. Probeer opnieuw.",
@@ -141,8 +134,11 @@
   "statusGenerationFailed": "Generatie mislukt",
   "statusCreatingGames": "Spelletjes en quizzen maken...",
   "statusGenerationTimedOut": "Generatie verlopen. Probeer opnieuw.",
-
   "stageFirstGameReady": "Eerste spel klaar",
+  "stageQuickScanQueue": "Snelle-scanwachtrij",
+  "stageQuickScanProcessing": "Snelle scan",
+  "stageAwaitingValidation": "Wacht op validatie",
+  "stageQuickScanFailed": "Snelle scan mislukt",
   "stageQueued": "Wachtrij",
   "stageOcr": "Lezen",
   "stageConceptQueue": "Conceptwachtrij",
@@ -158,14 +154,15 @@
   "stageGameFailed": "Spel mislukt",
   "stageProcessing": "Verwerking",
   "stageProcessed": "Verwerkt",
-
   "docStatusQueued": "Wachtrij",
+  "docStatusQuickScanQueued": "Snelle scan in wachtrij",
+  "docStatusQuickScanProcessing": "Snelle scan bezig",
+  "docStatusAwaitingValidation": "Wacht op validatie",
   "docStatusProcessing": "Verwerking",
   "docStatusProcessed": "Verwerkt",
   "docStatusReady": "Klaar",
   "docStatusFailed": "Mislukt",
   "docStatusUnknown": "Onbekend",
-
   "uploadTitle": "Bestand uploaden",
   "uploadSubtitle": "PDF's en afbeeldingen ondersteund.",
   "uploadDragOrBrowse": "Sleep of blader",
@@ -181,7 +178,6 @@
   "uploadSuggestMetadata": "Suggereren met AI",
   "uploadSuggestionUnavailable": "Suggestie nu niet beschikbaar.",
   "uploadChooseFile": "Bestand kiezen",
-
   "createProfileTitle": "Klaar om te beginnen!",
   "createProfileSubtitle": "Laten we samen leren.",
   "createProfileNameLabel": "Profielnaam",
@@ -189,28 +185,23 @@
   "createProfileAvatarLabel": "Kies je avatar",
   "createProfileContinue": "Doorgaan",
   "createProfileLanguageLabel": "Taal",
-
   "feedbackCorrect": "Correct!",
   "feedbackIncorrect": "Niet helemaal",
   "feedbackContinue": "Doorgaan",
-
   "resultSummaryAccuracy": "{correct} van {total} correct",
   "resultSummaryStreak": "Reeks",
   "resultSummaryStreakDays": "{count, plural, =1{1 dag} other{{count} dagen}}",
   "resultSummaryMastery": "Beheersing",
-
   "reviewScreenTitle": "Opname bekijken",
   "reviewScreenSubtitle": "Bijsnijden, draaien of opnieuw maken indien nodig.",
   "reviewAddPage": "Pagina toevoegen",
   "reviewLooksGood": "Ziet er goed uit",
   "reviewRetake": "Opnieuw maken",
-
   "libraryTitle": "Documentbibliotheek",
   "librarySubtitle": "Je geüploade werkbladen en PDF's.",
   "libraryAddNew": "Nieuw document",
   "librarySyncButton": "Synchroniseren",
   "libraryRegenerateTooltip": "Quiz opnieuw genereren",
-
   "revisionSetupTitle": "Herhaling Express",
   "revisionSetupSubtitle": "Snelle boost van 5 minuten voor een toets.",
   "revisionSetupDuration": "Duur",
@@ -222,35 +213,29 @@
   "revisionSetupAdaptivePartial": "Recente fouten + laatste uploads",
   "revisionSetupStartButton": "Sessie starten",
   "revisionSetupNoItems": "Nog geen herhalingsitems beschikbaar. Maak eerst een spel af.",
-
   "revisionSessionTitle": "Express sessie",
   "revisionSessionNoSession": "Nog geen sessie beschikbaar.\nUpload en maak een spel af om herhaling te ontgrendelen.",
   "revisionSessionLoading": "Laden...",
   "revisionSessionFinish": "Afronden",
   "revisionSessionNext": "Volgende",
-
   "revisionResultsTitle": "Herhaling voltooid!",
   "revisionResultsSubtitle": "Je hebt {correct} kernconcepten aangescherpt.",
   "revisionResultsAccuracy": "Nauwkeurigheid: {correct}/{total}",
   "revisionResultsTotalXp": "Totaal XP: {xp}",
   "revisionResultsBackHome": "Terug naar start",
   "revisionResultsSeeProgress": "Voortgang bekijken",
-
   "packDetailDefaultTitle": "Leerpakket",
   "packDetailNoPack": "Nog geen pakket geselecteerd.",
   "packDetailNoGamesTitle": "Nog geen spelletjes",
   "packDetailNoGamesMessage": "Upload of genereer dit document opnieuw om spelletjes te maken.",
   "packDetailStartSession": "Sessie starten",
-
   "packSessionDefaultTitle": "Sessieschema",
   "packSessionSubtitle": "Begeleide sessie van {minutes} minuten.",
   "packSessionNoGamesTitle": "Geen klare spelletjes",
   "packSessionNoGamesMessage": "Maak de documentverwerking af en start dan de sessie.",
   "packSessionStartNow": "Nu starten",
   "packSessionNoGamesSnackBar": "Er zijn nog geen spelletjes klaar voor dit pakket.",
-
   "packsListTitle": "Leerpakketten",
-
   "funFactBrainPowerTitle": "Hersenkracht",
   "funFactBrainPower": "Je hersenen gebruiken ongeveer 20% van de energie van je lichaam, terwijl ze maar 2% van je gewicht zijn!",
   "funFactOctopusTitle": "Slimme octopus",
@@ -281,11 +266,9 @@
   "funFactDream": "Je hersenen spelen overdag geleerde dingen opnieuw af terwijl je droomt!",
   "funFactPracticeTitle": "Oefening baart kunst",
   "funFactPractice": "Het kost ongeveer 10.000 uur oefening om ergens expert in te worden.",
-
   "languageEnglish": "English",
   "languageFrench": "Français",
   "languageDutch": "Nederlands",
-
   "noChildProfile": "Geen kindprofiel beschikbaar.",
   "noImageSelected": "Geen afbeelding geselecteerd.",
   "missingDocumentId": "Document-ID ontbreekt.",
@@ -293,14 +276,545 @@
   "documentProcessingFailed": "Documentverwerking mislukt.",
   "packMissingId": "Pakket heeft geen ID.",
   "resultSyncSkipped": "Synchronisatie overgeslagen: childId/packId/gameId ontbreekt.",
-
   "processingStepUploading": "Uploaden",
   "processingStepProcessing": "Verwerken",
   "processingStepGenerating": "Genereren",
   "processingStepCreatingGames": "Spellen maken",
-
-  "statusWithProgress": "{progress}% \u2022 {message}",
-
+  "statusWithProgress": "{progress}% • {message}",
   "switchProfile": "Wissel van profiel",
-  "switchProfileHint": "Tik op een profiel om te wisselen"
+  "switchProfileHint": "Tik op een profiel om te wisselen",
+  "accountSettingsEmailLabel": "E-mail",
+  "accountSettingsGradeRangeLabel": "Voorkeursrangbereik",
+  "accountSettingsNameLabel": "Naam",
+  "accountSettingsSaveChanges": "Wijzigingen opslaan",
+  "accountSettingsSubtitle": "Beheer bovenliggend profiel en voorkeuren.",
+  "accountSettingsTitle": "Accountinstellingen",
+  "achievementsSubtitle": "Celebrate wint groot en klein.",
+  "achievementsTitle": "Prestaties",
+  "authEmailLabel": "E-mail",
+  "authPasswordLabel": "Wachtwoord",
+  "cameraCaptureChooseMultiplePages": "Meerdere pagina's kiezen",
+  "cameraCaptureChooseSinglePhoto": "Kies enkele foto",
+  "cameraCaptureSubtitle": "Kader het werkblad in en maak een foto.",
+  "cameraCaptureTakePhoto": "Foto maken",
+  "cameraCaptureTitle": "Snap huiswerk",
+  "cameraCaptureUploadPdfInstead": "Upload in plaats daarvan PDF",
+  "childSelectorSubtitle": "Wissel tussen kinderen.",
+  "childSelectorTitle": "Kindprofielen",
+  "commonCancel": "Annuleren",
+  "commonClear": "Wissen",
+  "contactSupportFrom": "Vanaf: {email}",
+  "@contactSupportFrom": {
+    "description": "Auto-added localization for contactSupportFrom",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "contactSupportMessageLabel": "Bericht",
+  "contactSupportSendMessage": "Stuur een bericht",
+  "contactSupportSubtitle": "We komen binnen 24 uur bij je terug.",
+  "contactSupportTitle": "Neem contact op met support",
+  "contactSupportTopicLabel": "Onderwerp",
+  "createProfileAvatarDino": "Dino",
+  "createProfileAvatarFox": "Vos",
+  "createProfileAvatarFoxBuddy": "Vriend Vos",
+  "createProfileAvatarOwl": "Uil",
+  "createProfileAvatarPenguin": "Pinguïn",
+  "createProfileAvatarRobot": "Robot",
+  "deleteAccountBody": "Als je het account van {name} verwijdert, worden alle onderliggende profielen en documenten verwijderd. Dit kan niet ongedaan worden gemaakt.",
+  "@deleteAccountBody": {
+    "description": "Auto-added localization for deleteAccountBody",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountConfirmDelete": "Bevestig de verwijdering",
+  "deleteAccountSubtitle": "Deze actie is permanent.",
+  "deleteAccountTitle": "Account verwijderen",
+  "emptyStateSubtitle": "Upload een werkblad om aan de slag te gaan.",
+  "emptyStateTitle": "Niks hier",
+  "errorStateSubtitle": "Kon het document niet verwerken",
+  "errorStateTitle": "Er is iets misgegaan",
+  "errorStateTryAgain": "Probeer het opnieuw",
+  "faqSubtitle": "Antwoorden op veelgestelde vragen.",
+  "faqTitle": "FAQ",
+  "forgotPasswordEmailAddressLabel": "E-mailadres",
+  "forgotPasswordSendLink": "Stuur een link",
+  "forgotPasswordSubtitle": "We sturen een resetlink naar je e-mail.",
+  "forgotPasswordTitle": "Wachtwoord opnieuw instellen",
+  "homeTabHome": "Thuis",
+  "homeTabPacks": "Pakketten",
+  "homeTabProgress": "Voortgang",
+  "homeTabSettings": "Settings",
+  "learningTimeMinutes": "{minutes} min",
+  "@learningTimeMinutes": {
+    "description": "Auto-added localization for learningTimeMinutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "learningTimeSubtitle": "_____ minuten per dag",
+  "learningTimeTitle": "leertijd",
+  "loginButton": "Aanmelden",
+  "loginCreateAccountPrompt": "Nieuw hier? Maak een account aan",
+  "loginForgotPassword": "Wachtwoord vergeten?",
+  "loginSubtitle": "Log in om de leerreis van uw kind voort te zetten.",
+  "loginTitle": "Welkom terug",
+  "masteryDetailsEmptySubtitle": "Upload en voltooi games om conceptmeesterschap op te bouwen.",
+  "masteryDetailsNoDataSubtitle": "Voer ten minste één gegenereerd spel uit om deze weergave te vullen.",
+  "masteryDetailsNoDataTitle": "Nog geen beheersingsgegevens",
+  "masteryDetailsSubtitle": "Uitsplitsing op conceptniveau van uw geüploade studie-inhoud.",
+  "masteryDetailsTitle": "Beheersingsdetails",
+  "masteryStatusMastered": "Mastered",
+  "masteryStatusNeedsReview": "Moet worden nagekeken@option:check trans-unit state",
+  "masteryStatusPracticing": "Oefenen",
+  "masteryStatusWithPercent": "{label} • {percent}%",
+  "@masteryStatusWithPercent": {
+    "description": "Auto-added localization for masteryStatusWithPercent",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsMarkRead": "Markeer gelezen",
+  "notificationsSubtitle": "Vriendelijke duwtjes voor ouders en kinderen.",
+  "notificationsTitle": "Meldingen",
+  "offlineRetry": "Opnieuw proberen",
+  "offlineSubtitle": "Controleer uw verbinding om de voortgang van de synchronisatie te controleren.",
+  "offlineTitle": "U bent offline!",
+  "onboardingConsentAgreeButton": "Ga akkoord &amp; Ga verder",
+  "onboardingConsentCoppaSubtitle": "Toestemming van de ouder vereist voor gebruik.",
+  "onboardingConsentCoppaTitle": "COPPA-vriendelijk",
+  "onboardingConsentEducatorSubtitle": "De inhoud is afgestemd op de normen van de school.",
+  "onboardingConsentEducatorTitle": "Opvoeder ontworpen",
+  "onboardingConsentNoDataSellingSubtitle": "We delen of verkopen nooit persoonlijke informatie.",
+  "onboardingConsentNoDataSellingTitle": "Geen gegevensverkoop",
+  "onboardingConsentSubtitle": "We houden kinderen veilig, privé en reclamevrij.",
+  "onboardingConsentTitle": "Toestemming van ouder",
+  "onboardingCreateProfileButton": "Een profiel aanmaken",
+  "onboardingFoxBlurb": "Leerling de vos houdt de praktijk speels en gefocust.",
+  "onboardingGetStarted": "Aan de slag",
+  "onboardingHowItWorksSubtitle": "Van huiswerk naar meesterschap in 3 snelle stappen.",
+  "onboardingHowItWorksTitle": "Hoe werkt het",
+  "onboardingStep1Subtitle": "Maak een foto van een werkblad of pagina.",
+  "onboardingStep1Title": "Snap je huiswerk",
+  "onboardingStep2Subtitle": "Flashcards, quizzen en matching in seconden.",
+  "onboardingStep2Title": "AI creëert leerspellen",
+  "onboardingStep3Subtitle": "Korte sessies met strepen en XP-boosts.",
+  "onboardingStep3Title": "Beloningen leren en verdienen",
+  "onboardingWelcomeSubtitle": "Jouw AI learning buddy voor slimme, speelse studiesessies.",
+  "onboardingWelcomeTitle": "Welkom bij Learny!",
+  "packsItemsMinutes": "{itemCount} items • {minutes} min",
+  "@packsItemsMinutes": {
+    "description": "Auto-added localization for packsItemsMinutes",
+    "placeholders": {
+      "itemCount": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "packsMasteryProgress": "{percent}% meesterschap • {mastered}/{total} concepten",
+  "@packsMasteryProgress": {
+    "description": "Auto-added localization for packsMasteryProgress",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "mastered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "packsStartSession": "Een sessie starten",
+  "packsSubtitle": "Gepersonaliseerde pakketten op basis van huiswerk.",
+  "packsTitle": "Leerpakketten",
+  "packsViewLibrary": "Documentbibliotheek",
+  "parentDashboardActiveChild": "Actief kind",
+  "parentDashboardChildSelector": "Kinderselector",
+  "parentDashboardLearningTime": "leertijd",
+  "parentDashboardSubtitle": "Volg de voortgang en begeleid de volgende stappen.",
+  "parentDashboardTitle": "Bovenliggend dashboard",
+  "parentDashboardWeakAreas": "Zwakke gebieden",
+  "parentDashboardWeeklySummary": "Wekelijks overzicht",
+  "parentOnlyLabel": "Toon alleen oudercategorie",
+  "parentPinChangeSubtitle": "Stel een nieuwe pincode in voor toegang alleen voor ouders.",
+  "parentPinChangeTitle": "Pincode wijzigen",
+  "parentPinCodeLabel": "4-cijferige pincode",
+  "parentPinEnterSubtitle": "Voer je PINCODE in om door te gaan.",
+  "parentPinSaveButton": "Bewaar dealpin",
+  "parentPinUnlockButton": "Bovenliggende instellingen ontgrendelen",
+  "parentSettingsChildProfiles": "Kinderprofielen",
+  "parentSettingsParentProfile": "Bovenliggend profiel",
+  "parentSettingsProfilesCount": "{count} profielen",
+  "@parentSettingsProfilesCount": {
+    "description": "Auto-added localization for parentSettingsProfilesCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "parentSettingsProtectSubtitle": "Bescherm instellingen voor alleen ouders.",
+  "parentSettingsSetChangePin": "PINCODE instellen / wijzigen",
+  "parentSettingsSubscription": "Subscription",
+  "parentSettingsSubtitle": "Beheer abonnements- en gezinsbesturingselementen.",
+  "parentSettingsTitle": "Bovenliggende instellingen",
+  "planAlreadyHaveAccount": "Heeft u al een account? Log dan in",
+  "planChooseSubtitle": "Begin gratis. Upgrade op elk gewenst moment.",
+  "planChooseTitle": "Kies je abonnement",
+  "planFamilySubtitle": "Maximaal 4 kinderprofielen",
+  "planFamilyTitle": "Familie",
+  "planFreeSubtitle": "3 verpakkingen per maand",
+  "planFreeTitle": "Gratis",
+  "planProSubtitle": "Onbeperkte pakketten + games",
+  "planProTitle": "Pro",
+  "safetyPrivacyCoppaSubtitle": "Ouderlijke toestemming vereist",
+  "safetyPrivacyCoppaTitle": "COPPA COMPLIANT",
+  "safetyPrivacyEncryptedSubtitle": "Bestanden zijn beveiligd",
+  "safetyPrivacyEncryptedTitle": "Versleutelde opslag",
+  "safetyPrivacyNoAdsSubtitle": "We verdienen geen geld met gegevens",
+  "safetyPrivacyNoAdsTitle": "Geen advertenties, geen verkoop",
+  "safetyPrivacySubtitle": "Gemaakt voor kinderen, vertrouwd door ouders.",
+  "safetyPrivacyTitle": "Veiligheid &amp; privacy",
+  "settingsClearAllConfirm": "Hiermee worden alle signalen van het leergeheugen gewist. Doorgaan?",
+  "settingsClearAllLearningMemorySubtitle": "Gebeurtenissen, revisie, spelresultaten, meesterschap.",
+  "settingsClearAllLearningMemoryTitle": "Wis al het leergeheugen",
+  "settingsClearEventsOnlySubtitle": "Behoudt meesterschap en resultaten.",
+  "settingsClearEventsOnlyTitle": "Alleen gebeurtenissen wissen",
+  "settingsClearMemoryScopeTitle": "Geheugenbereik wissen",
+  "settingsClearRevisionSessionsSubtitle": "Verwijdert snelle revisiegeschiedenis.",
+  "settingsClearRevisionSessionsTitle": "Revisiesessies wissen",
+  "settingsClearScopeConfirm": "Geheugenbereik \"{scope}\" wissen?",
+  "@settingsClearScopeConfirm": {
+    "description": "Auto-added localization for settingsClearScopeConfirm",
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsConfirmClearMemoryTitle": "Bevestig geheugen wissen",
+  "settingsDeleteAccountSubtitle": "Dit is een destructieve actie.",
+  "settingsDetailLevelBrief": "Samenvatting",
+  "settingsDetailLevelDetailed": "Gedetaileerd",
+  "settingsLastReset": "Laatste reset: {scope} op {time}",
+  "@settingsLastReset": {
+    "description": "Auto-added localization for settingsLastReset",
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLearningMemoryTitle": "Leren en geheugen",
+  "settingsNoRecentMemoryReset": "Geen recente geheugenreset.",
+  "settingsNotificationsSubtitle": "Ontvang updates over nieuwe pakketten en strepen.",
+  "settingsNotificationsTitle": "Meldingen",
+  "settingsPersonalizedRecommendationsSubtitle": "Gebruik activiteitsgeschiedenis om de volgende stappen aan te passen.",
+  "settingsPersonalizedRecommendationsTitle": " voor op je lijf geschreven aanbevelingen",
+  "settingsRationaleDetailLevelTitle": "Rationale detailniveau",
+  "settingsRecommendationRationaleSubtitle": "Geef uitleg over \"waarom deze suggestie\" weer.",
+  "settingsRecommendationRationaleTitle": "Aanbevelingsreden weergeven",
+  "settingsSoundEffectsSubtitle": "Geluiden afspelen tijdens games.",
+  "settingsSoundEffectsTitle": "Geluidseffecten",
+  "settingsStudyRemindersSubtitle": "Dagelijkse herinneringen voor korte sessies.",
+  "settingsStudyRemindersTitle": "Onderzoeksherinneringen",
+  "settingsTitle": "Settings",
+  "settingsUnknownScope": "onbekend",
+  "signupCreateAccount": "Account aanmaken",
+  "signupFullNameLabel": "Volledige naam",
+  "signupLoginPrompt": "Heeft u al een account? Log dan in",
+  "signupSubtitle": "Stel een veilig ouderprofiel in om het leren te beheren.",
+  "signupTitle": "Bovenliggend account aanmaken",
+  "streaksRewardsBadges": "{count} badges",
+  "@streaksRewardsBadges": {
+    "description": "Auto-added localization for streaksRewardsBadges",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streaksRewardsCurrentStreak": "Huidig spel:NAME OF TRANSLATORS",
+  "streaksRewardsDays": "{count} dagen",
+  "@streaksRewardsDays": {
+    "description": "Auto-added localization for streaksRewardsDays",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streaksRewardsSubtitle": "Houd het momentum gaande!",
+  "streaksRewardsTitle": "Strepen en beloningen",
+  "streaksRewardsUnlocked": "Beloningen ontgrendeld",
+  "subscriptionCurrentPlan": "Huidig abonnement: {plan}",
+  "@subscriptionCurrentPlan": {
+    "description": "Auto-added localization for subscriptionCurrentPlan",
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionPlanIncluded": "Volledige toegang inbegrepen bij het gratis abonnement.",
+  "subscriptionSubtitle": "Learny is gratis te gebruiken. Ouders kunnen op elk moment upgraden.",
+  "subscriptionTitle": "Subscription",
+  "subscriptionUpgradePlan": "Lidmaatschap Upgraden",
+  "upgradePlanContinueToCheckout": "Ga door naar betalen",
+  "upgradePlanSubtitle": "Ontgrendel onbeperkte pakketten en bovenliggende inzichten.",
+  "upgradePlanTitle": "Lidmaatschap Upgraden",
+  "verifyEmailCodeLabel": "Verificatiecode",
+  "verifyEmailContinueToApp": "Doorgaan naar",
+  "verifyEmailResendCode": "Code opnieuw verzenden",
+  "verifyEmailSubtitle": "We hebben een zescijferige code gestuurd naar parent@example.com.",
+  "verifyEmailTitle": "Verifieer uw e-mail",
+  "weakAreasSubtitle": "Focuszones om de volgende keer te bekijken.",
+  "weakAreasTitle": "Zwakke gebieden",
+  "weeklySummaryAchievements": "Prestaties",
+  "weeklySummaryNewBadges": "{count} nieuwe badges",
+  "@weeklySummaryNewBadges": {
+    "description": "Auto-added localization for weeklySummaryNewBadges",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummarySessionsCompleted": "Afgeronde sessies",
+  "weeklySummarySessionsValue": "{count} sessies",
+  "@weeklySummarySessionsValue": {
+    "description": "Auto-added localization for weeklySummarySessionsValue",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummarySubtitle": "Hoogtepunten van de afgelopen zeven dagen.",
+  "weeklySummaryTimeSpent": "Bestede tijd",
+  "weeklySummaryTimeSpentValue": "{hours}h {minutes}m",
+  "@weeklySummaryTimeSpentValue": {
+    "description": "Auto-added localization for weeklySummaryTimeSpentValue",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummaryTitle": "Wekelijks overzicht",
+  "weeklySummaryTopSubject": "Toponderwerp",
+  "processingAlternativesLabel": "Alternatieven: {alternatives}",
+  "@processingAlternativesLabel": {
+    "description": "Auto-added localization for processingAlternativesLabel",
+    "placeholders": {
+      "alternatives": {
+        "type": "String"
+      }
+    }
+  },
+  "processingConfidenceLabel": "Vertrouwen: {percent}%{modelSuffix}",
+  "@processingConfidenceLabel": {
+    "description": "Auto-added localization for processingConfidenceLabel",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "modelSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "processingConfirmGenerate": "Bevestigen en genereren",
+  "processingLanguageLabel": "Taal",
+  "processingNoAlternatives": "Geen alternatieven voorgesteld.",
+  "processingRescan": "Scan opnieuw",
+  "processingStarting": "Start...",
+  "processingTopicLabel": "Onderwerp",
+  "processingTopicLanguageRequired": "Onderwerp en taal zijn vereist om door te gaan.",
+  "processingValidateScanSubtitle": "Bevestig of bewerk het onderwerp en de taal voordat de diepe generatie begint.",
+  "processingValidateScanTitle": "AI-scan valideren",
+  "progressActivitySummary": "{percent}% • {scoreLabel} • +{xp} XP",
+  "@progressActivitySummary": {
+    "description": "Auto-added localization for progressActivitySummary",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "scoreLabel": {
+        "type": "String"
+      },
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "progressCouldNotRegenerateDocument": "Kan document nu niet opnieuw genereren.",
+  "progressCouldNotReopen": "Kon dit onderwerp niet opnieuw openen: {error}",
+  "@progressCouldNotReopen": {
+    "description": "Auto-added localization for progressCouldNotReopen",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "progressCouldNotStartRegenerationFor": "Kon regeneratie voor {gameType} niet starten.",
+  "@progressCouldNotStartRegenerationFor": {
+    "description": "Auto-added localization for progressCouldNotStartRegenerationFor",
+    "placeholders": {
+      "gameType": {
+        "type": "String"
+      }
+    }
+  },
+  "progressDeltaNew": "Nieuwe",
+  "progressDocumentRegenerationStarted": "Documentregeneratie gestart.",
+  "progressGenerateNewGameTypeSubtitle": "Kies een type om te regenereren vanuit dit document",
+  "progressGenerateNewGameTypeTitle": "Genereer nieuw speltype",
+  "progressLatestCheerEmpty": "Upload een document en voltooi een spel om je momentum te starten.",
+  "progressLoadOlderActivity": "Oudere activiteit laden",
+  "progressMetricAvgScore": "nl-NL Avg Score",
+  "progressMetricRecentXp": "Recente XP",
+  "progressMetricSessions": "Sessies",
+  "progressMetricStreak": "Streak",
+  "progressMetricStreakValue": "{days}d",
+  "@progressMetricStreakValue": {
+    "description": "Auto-added localization for progressMetricStreakValue",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "progressMomentumBuilding": "Momentum opbouwen",
+  "progressMomentumExcellent": "Uitstekend momentum.",
+  "progressMomentumReady": "Klaar om te beginnen...",
+  "progressMomentumSteady": "Stabiel momentum",
+  "progressNewGameType": "Nieuw speltype",
+  "progressNoActivitySubtitle": "Speel een gegenereerd spel om hier resultaten en motivatie te zien.",
+  "progressNoActivityTitle": "Nog geen activiteit",
+  "progressNoReadyGames": "Er zijn nog geen kant-en-klare spellen gevonden voor dit onderwerp.",
+  "progressOpenOverview": "Voortgangsoverzicht",
+  "progressOverviewAreasToFocus": "Vier aandachtsgebieden",
+  "progressOverviewBadges": "Badges",
+  "progressOverviewDayStreak": "Dagreeks",
+  "progressOverviewLevelLearner": "Niveau {level} Leerling",
+  "@progressOverviewLevelLearner": {
+    "description": "Auto-added localization for progressOverviewLevelLearner",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewMastery": "Meesterschap",
+  "progressOverviewMinutes": "{minutes} min",
+  "@progressOverviewMinutes": {
+    "description": "Auto-added localization for progressOverviewMinutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewSessions": "Sessies",
+  "progressOverviewTitle": "Jouw voortgang",
+  "progressOverviewTopSubject": "Toponderwerp",
+  "progressOverviewTopicMastery": "Onderwerpmeesterschap",
+  "progressOverviewTopicMasteryEmpty": "Voltooi enkele lessen om je meesterschap te zien!",
+  "progressOverviewTotalXp": "{xp} XP totaal",
+  "@progressOverviewTotalXp": {
+    "description": "Auto-added localization for progressOverviewTotalXp",
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewXpToNextLevel": "{xpToNext} XP tot niveau {nextLevel}",
+  "@progressOverviewXpToNextLevel": {
+    "description": "Auto-added localization for progressOverviewXpToNextLevel",
+    "placeholders": {
+      "xpToNext": {
+        "type": "int"
+      },
+      "nextLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewXpToday": "XP vandaag",
+  "progressPastActivityTitle": "Eerdere activiteit",
+  "progressRedoDocument": "Document opnieuw uitvoeren",
+  "progressRedoSubject": "Onderwerp opnieuw uitvoeren",
+  "progressRefresh": "Vernieuwen",
+  "progressRegenerationStartedFor": "Regeneratie gestart voor {gameType}.",
+  "@progressRegenerationStartedFor": {
+    "description": "Auto-added localization for progressRegenerationStartedFor",
+    "placeholders": {
+      "gameType": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScoreBandImproving": "Gegroeid",
+  "progressScoreBandKeepGoing": "Doorgaan",
+  "progressScoreBandStrong": "Sterk",
+  "progressScoreLabel": "{correct}/{total} correct",
+  "@progressScoreLabel": {
+    "description": "Auto-added localization for progressScoreLabel",
+    "placeholders": {
+      "correct": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressSubtitle": "Resultaten uit het verleden, trends en wat je vervolgens opnieuw moet doen.",
+  "progressWeeklyMastery": "{percent}% meesterschap over de pakketten van deze week",
+  "@progressWeeklyMastery": {
+    "description": "Auto-added localization for progressWeeklyMastery",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "progressWeeklyProgressTitle": "Wekelijkse voortgang",
+  "docStatusQuickScanQueued": "Quick scan queue",
+  "docStatusQuickScanProcessing": "Quick Scan",
+  "docStatusAwaitingValidation": "In afwachting van bevestiging",
+  "stageQuickScanQueue": "Snelle scanwachtrij",
+  "stageQuickScanProcessing": "Quick Scan",
+  "stageAwaitingValidation": "In afwachting van bevestiging",
+  "stageQuickScanFailed": "Snelle scan mislukt",
+  "statusQuickScanQueued": "Quick scan in de wachtrij...",
+  "statusQuickScanProcessing": "Quick scan wordt uitgevoerd...",
+  "statusAwaitingValidation": "In afwachting van uw validatie...",
+  "statusQuickScanFailed": "Snelle scan mislukt. Probeer het opnieuw."
 }

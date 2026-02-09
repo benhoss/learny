@@ -1,579 +1,1751 @@
 {
   "@@locale": "en",
-
   "appTitle": "Learny",
-  "@appTitle": { "description": "App name" },
-
+  "@appTitle": {
+    "description": "App name"
+  },
   "homeGreeting": "Good morning,",
-  "@homeGreeting": { "description": "Greeting on home screen" },
+  "@homeGreeting": {
+    "description": "Greeting on home screen"
+  },
   "homeWelcomeMessage": "Ready to learn something new today? Let's turn your school lessons into fun games!",
-  "@homeWelcomeMessage": { "description": "Welcome message below greeting" },
+  "@homeWelcomeMessage": {
+    "description": "Welcome message below greeting"
+  },
   "homeStartLearningTitle": "Start Learning",
-  "@homeStartLearningTitle": { "description": "Start learning card title" },
+  "@homeStartLearningTitle": {
+    "description": "Start learning card title"
+  },
   "homeStartLearningSubtitle": "Upload your lesson and play",
-  "@homeStartLearningSubtitle": { "description": "Start learning card subtitle" },
+  "@homeStartLearningSubtitle": {
+    "description": "Start learning card subtitle"
+  },
   "homeRevisionExpressTitle": "Revision Express",
-  "@homeRevisionExpressTitle": { "description": "Revision express card title" },
+  "@homeRevisionExpressTitle": {
+    "description": "Revision express card title"
+  },
   "homeRevisionExpressSubtitle": "Quick 5-minute review",
-  "@homeRevisionExpressSubtitle": { "description": "Revision express card subtitle" },
+  "@homeRevisionExpressSubtitle": {
+    "description": "Revision express card subtitle"
+  },
   "homeSmartNextSteps": "Smart Next Steps",
-  "@homeSmartNextSteps": { "description": "Recommendations section title" },
+  "@homeSmartNextSteps": {
+    "description": "Recommendations section title"
+  },
   "homeNoRecommendations": "Upload a document to get AI recommendations based on real study data.",
-  "@homeNoRecommendations": { "description": "Message when no recommendations" },
+  "@homeNoRecommendations": {
+    "description": "Message when no recommendations"
+  },
   "homeContinueLearning": "Continue learning",
-  "@homeContinueLearning": { "description": "Default recommendation title" },
+  "@homeContinueLearning": {
+    "description": "Default recommendation title"
+  },
   "homeBasedOnActivity": "Based on your recent activity",
-  "@homeBasedOnActivity": { "description": "Default recommendation subtitle" },
+  "@homeBasedOnActivity": {
+    "description": "Default recommendation subtitle"
+  },
   "homeWhyThis": "Why this?",
-  "@homeWhyThis": { "description": "Recommendation explainability tooltip" },
+  "@homeWhyThis": {
+    "description": "Recommendation explainability tooltip"
+  },
   "homeThisWeek": "This Week",
-  "@homeThisWeek": { "description": "Weekly progress section title" },
+  "@homeThisWeek": {
+    "description": "Weekly progress section title"
+  },
   "homeProgressMessage": "You've completed {sessionsCompleted} learning sessions. Great work!",
-  "@homeProgressMessage": { "description": "Weekly progress message", "placeholders": { "sessionsCompleted": { "type": "int" } } },
+  "@homeProgressMessage": {
+    "description": "Weekly progress message",
+    "placeholders": {
+      "sessionsCompleted": {
+        "type": "int"
+      }
+    }
+  },
   "homeReviewCount": "{count, plural, =1{1 concept to review} other{{count} concepts to review}}",
-  "@homeReviewCount": { "description": "Review card title with count", "placeholders": { "count": { "type": "int" } } },
+  "@homeReviewCount": {
+    "description": "Review card title with count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "homeReviewSubtitle": "Review now to keep learning!",
-  "@homeReviewSubtitle": { "description": "Review card subtitle" },
+  "@homeReviewSubtitle": {
+    "description": "Review card subtitle"
+  },
   "homeAchievements": "Achievements",
-  "@homeAchievements": { "description": "Achievements tab label" },
+  "@homeAchievements": {
+    "description": "Achievements tab label"
+  },
   "homeProgress": "Progress",
-  "@homeProgress": { "description": "Progress tab label" },
+  "@homeProgress": {
+    "description": "Progress tab label"
+  },
   "homePackMastery": "Pack Mastery",
-  "@homePackMastery": { "description": "Pack mastery section title" },
+  "@homePackMastery": {
+    "description": "Pack mastery section title"
+  },
   "homeWhyRecommendation": "Why this recommendation?",
-  "@homeWhyRecommendation": { "description": "Recommendation dialog title" },
+  "@homeWhyRecommendation": {
+    "description": "Recommendation dialog title"
+  },
   "homeRecommendation": "Recommendation",
-  "@homeRecommendation": { "description": "Recommendation dialog default title" },
+  "@homeRecommendation": {
+    "description": "Recommendation dialog default title"
+  },
   "homeNoExplainability": "No additional rationale available for this suggestion.",
-  "@homeNoExplainability": { "description": "Fallback explainability text" },
+  "@homeNoExplainability": {
+    "description": "Fallback explainability text"
+  },
   "homeClose": "Close",
-  "@homeClose": { "description": "Close button in recommendation dialog" },
-
+  "@homeClose": {
+    "description": "Close button in recommendation dialog"
+  },
   "quizCorrectFeedback": "You're on a roll!",
-  "@quizCorrectFeedback": { "description": "Feedback when correct answer" },
+  "@quizCorrectFeedback": {
+    "description": "Feedback when correct answer"
+  },
   "quizIncorrectFeedback": "Review the explanation and keep going.",
-  "@quizIncorrectFeedback": { "description": "Feedback when incorrect answer" },
+  "@quizIncorrectFeedback": {
+    "description": "Feedback when incorrect answer"
+  },
   "quizNoQuizMessage": "No generated quiz is ready for this pack yet.",
-  "@quizNoQuizMessage": { "description": "Empty state when no quiz available" },
+  "@quizNoQuizMessage": {
+    "description": "Empty state when no quiz available"
+  },
   "quizUploadDocument": "Upload Document",
-  "@quizUploadDocument": { "description": "Button to upload document from quiz" },
+  "@quizUploadDocument": {
+    "description": "Button to upload document from quiz"
+  },
   "quizYourAnswer": "Your answer",
-  "@quizYourAnswer": { "description": "Text input label for typed answers" },
+  "@quizYourAnswer": {
+    "description": "Text input label for typed answers"
+  },
   "quizTypeAnswerHint": "Type your answer here...",
-  "@quizTypeAnswerHint": { "description": "Text input hint for typed answers" },
+  "@quizTypeAnswerHint": {
+    "description": "Text input hint for typed answers"
+  },
   "quizSelectAllThatApply": "Select all that apply",
-  "@quizSelectAllThatApply": { "description": "Multi-select hint" },
+  "@quizSelectAllThatApply": {
+    "description": "Multi-select hint"
+  },
   "quizDragIntoOrder": "Drag items into the correct order",
-  "@quizDragIntoOrder": { "description": "Ordering hint" },
+  "@quizDragIntoOrder": {
+    "description": "Ordering hint"
+  },
   "quizLoadingQuestion": "Loading question...",
-  "@quizLoadingQuestion": { "description": "Loading state for question" },
+  "@quizLoadingQuestion": {
+    "description": "Loading state for question"
+  },
   "quizCheckAnswer": "Check Answer",
-  "@quizCheckAnswer": { "description": "Submit answer button" },
+  "@quizCheckAnswer": {
+    "description": "Submit answer button"
+  },
   "quizFinish": "Finish",
-  "@quizFinish": { "description": "Finish quiz button" },
+  "@quizFinish": {
+    "description": "Finish quiz button"
+  },
   "quizProgress": "Question {current} of {total}",
-  "@quizProgress": { "description": "Question progress indicator", "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
+  "@quizProgress": {
+    "description": "Question progress indicator",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "quizEmptyProgress": "Question 0 / 0",
-  "@quizEmptyProgress": { "description": "Empty progress indicator" },
+  "@quizEmptyProgress": {
+    "description": "Empty progress indicator"
+  },
   "quizSaveAndExit": "Save & Exit",
-  "@quizSaveAndExit": { "description": "Button to save in-flight quiz and leave" },
+  "@quizSaveAndExit": {
+    "description": "Button to save in-flight quiz and leave"
+  },
   "quizSetupTitle": "Build Your Quiz",
-  "@quizSetupTitle": { "description": "Title for quiz setup screen" },
+  "@quizSetupTitle": {
+    "description": "Title for quiz setup screen"
+  },
   "quizSetupSubtitle": "Choose how many questions you want today.",
-  "@quizSetupSubtitle": { "description": "Subtitle for quiz setup screen" },
+  "@quizSetupSubtitle": {
+    "description": "Subtitle for quiz setup screen"
+  },
   "quizSetupCountValue": "{count} questions",
-  "@quizSetupCountValue": { "description": "Selected question count label", "placeholders": { "count": { "type": "int" } } },
+  "@quizSetupCountValue": {
+    "description": "Selected question count label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "quizSetupFunLineShort": "Quick sprint mode. Fast focus, big wins.",
-  "@quizSetupFunLineShort": { "description": "Fun line for short quiz length" },
+  "@quizSetupFunLineShort": {
+    "description": "Fun line for short quiz length"
+  },
   "quizSetupFunLineMedium": "Balanced challenge unlocked. You got this.",
-  "@quizSetupFunLineMedium": { "description": "Fun line for medium quiz length" },
+  "@quizSetupFunLineMedium": {
+    "description": "Fun line for medium quiz length"
+  },
   "quizSetupFunLineLong": "Legend mode activated. Deep focus time.",
-  "@quizSetupFunLineLong": { "description": "Fun line for long quiz length" },
+  "@quizSetupFunLineLong": {
+    "description": "Fun line for long quiz length"
+  },
   "quizSetupStartButton": "Start My Quiz",
-  "@quizSetupStartButton": { "description": "Start button on quiz setup screen" },
+  "@quizSetupStartButton": {
+    "description": "Start button on quiz setup screen"
+  },
   "quizSetupResumeHint": "You have {remaining} questions left in your saved quiz.",
-  "@quizSetupResumeHint": { "description": "Hint when a resumable quiz exists", "placeholders": { "remaining": { "type": "int" } } },
+  "@quizSetupResumeHint": {
+    "description": "Hint when a resumable quiz exists",
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      }
+    }
+  },
   "quizSetupResumeButton": "Resume Saved Quiz",
-  "@quizSetupResumeButton": { "description": "Resume quiz button on setup screen" },
-
+  "@quizSetupResumeButton": {
+    "description": "Resume quiz button on setup screen"
+  },
   "gameTypeTrueFalse": "True or False",
-  "@gameTypeTrueFalse": { "description": "True/false game type title" },
+  "@gameTypeTrueFalse": {
+    "description": "True/false game type title"
+  },
   "gameTypeMultiSelect": "Choose All That Apply",
-  "@gameTypeMultiSelect": { "description": "Multi-select game type title" },
+  "@gameTypeMultiSelect": {
+    "description": "Multi-select game type title"
+  },
   "gameTypeFillBlank": "Fill in the Blank",
-  "@gameTypeFillBlank": { "description": "Fill blank game type title" },
+  "@gameTypeFillBlank": {
+    "description": "Fill blank game type title"
+  },
   "gameTypeShortAnswer": "Short Answer",
-  "@gameTypeShortAnswer": { "description": "Short answer game type title" },
+  "@gameTypeShortAnswer": {
+    "description": "Short answer game type title"
+  },
   "gameTypeOrdering": "Put in Order",
-  "@gameTypeOrdering": { "description": "Ordering game type title" },
+  "@gameTypeOrdering": {
+    "description": "Ordering game type title"
+  },
   "gameTypeMatching": "Matching Pairs",
-  "@gameTypeMatching": { "description": "Matching game type title" },
+  "@gameTypeMatching": {
+    "description": "Matching game type title"
+  },
   "gameTypeFlashcards": "Flashcards",
-  "@gameTypeFlashcards": { "description": "Flashcards game type title" },
+  "@gameTypeFlashcards": {
+    "description": "Flashcards game type title"
+  },
   "gameTypeQuiz": "Quick Quiz",
-  "@gameTypeQuiz": { "description": "Quiz game type title" },
-
+  "@gameTypeQuiz": {
+    "description": "Quiz game type title"
+  },
   "gameSubtitleTrueFalse": "Quick judgments",
-  "@gameSubtitleTrueFalse": { "description": "True/false game type subtitle" },
+  "@gameSubtitleTrueFalse": {
+    "description": "True/false game type subtitle"
+  },
   "gameSubtitleMultiSelect": "Multiple correct answers",
-  "@gameSubtitleMultiSelect": { "description": "Multi-select subtitle" },
+  "@gameSubtitleMultiSelect": {
+    "description": "Multi-select subtitle"
+  },
   "gameSubtitleFillBlank": "Complete the sentence",
-  "@gameSubtitleFillBlank": { "description": "Fill blank subtitle" },
+  "@gameSubtitleFillBlank": {
+    "description": "Fill blank subtitle"
+  },
   "gameSubtitleShortAnswer": "Write a quick response",
-  "@gameSubtitleShortAnswer": { "description": "Short answer subtitle" },
+  "@gameSubtitleShortAnswer": {
+    "description": "Short answer subtitle"
+  },
   "gameSubtitleOrdering": "Drag items into order",
-  "@gameSubtitleOrdering": { "description": "Ordering subtitle" },
+  "@gameSubtitleOrdering": {
+    "description": "Ordering subtitle"
+  },
   "gameSubtitleMatching": "Match linked concepts",
-  "@gameSubtitleMatching": { "description": "Matching subtitle" },
+  "@gameSubtitleMatching": {
+    "description": "Matching subtitle"
+  },
   "gameSubtitleFlashcards": "Warm-up concepts",
-  "@gameSubtitleFlashcards": { "description": "Flashcards subtitle" },
+  "@gameSubtitleFlashcards": {
+    "description": "Flashcards subtitle"
+  },
   "gameSubtitleQuiz": "Multiple choice questions",
-  "@gameSubtitleQuiz": { "description": "Quiz subtitle" },
-
+  "@gameSubtitleQuiz": {
+    "description": "Quiz subtitle"
+  },
   "trueFalseTrue": "True",
-  "@trueFalseTrue": { "description": "True option in true/false games" },
+  "@trueFalseTrue": {
+    "description": "True option in true/false games"
+  },
   "trueFalseFalse": "False",
-  "@trueFalseFalse": { "description": "False option in true/false games" },
-
+  "@trueFalseFalse": {
+    "description": "False option in true/false games"
+  },
   "flashcardsDefaultTitle": "Flashcards",
-  "@flashcardsDefaultTitle": { "description": "Default flashcards screen title" },
+  "@flashcardsDefaultTitle": {
+    "description": "Default flashcards screen title"
+  },
   "flashcardsFront": "Front",
-  "@flashcardsFront": { "description": "Default card front label" },
+  "@flashcardsFront": {
+    "description": "Default card front label"
+  },
   "flashcardsBack": "Back",
-  "@flashcardsBack": { "description": "Default card back label" },
+  "@flashcardsBack": {
+    "description": "Default card back label"
+  },
   "flashcardsProgress": "Card {current} of {total}",
-  "@flashcardsProgress": { "description": "Flashcard progress", "placeholders": { "current": { "type": "int" }, "total": { "type": "int" } } },
+  "@flashcardsProgress": {
+    "description": "Flashcard progress",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "flashcardsEmptyProgress": "Card 0 / 0",
-  "@flashcardsEmptyProgress": { "description": "Empty flashcard progress" },
+  "@flashcardsEmptyProgress": {
+    "description": "Empty flashcard progress"
+  },
   "flashcardsFlipCard": "Flip Card",
-  "@flashcardsFlipCard": { "description": "Flip card button" },
+  "@flashcardsFlipCard": {
+    "description": "Flip card button"
+  },
   "flashcardsFinish": "Finish",
-  "@flashcardsFinish": { "description": "Finish button" },
+  "@flashcardsFinish": {
+    "description": "Finish button"
+  },
   "flashcardsGotItNext": "Got it! Next",
-  "@flashcardsGotItNext": { "description": "Next card button" },
+  "@flashcardsGotItNext": {
+    "description": "Next card button"
+  },
   "flashcardsQuestion": "Question",
-  "@flashcardsQuestion": { "description": "Question label on card" },
+  "@flashcardsQuestion": {
+    "description": "Question label on card"
+  },
   "flashcardsAnswer": "Answer",
-  "@flashcardsAnswer": { "description": "Answer label on card" },
+  "@flashcardsAnswer": {
+    "description": "Answer label on card"
+  },
   "flashcardsTapToFlip": "Tap to flip",
-  "@flashcardsTapToFlip": { "description": "Flip hint text" },
-
+  "@flashcardsTapToFlip": {
+    "description": "Flip hint text"
+  },
   "matchingDefaultTitle": "Matching Game",
-  "@matchingDefaultTitle": { "description": "Default matching screen title" },
+  "@matchingDefaultTitle": {
+    "description": "Default matching screen title"
+  },
   "matchingSubtitle": "Tap two matching items",
-  "@matchingSubtitle": { "description": "Matching game instruction" },
+  "@matchingSubtitle": {
+    "description": "Matching game instruction"
+  },
   "matchingNoItems": "No matching pairs available.",
-  "@matchingNoItems": { "description": "Empty state for matching" },
+  "@matchingNoItems": {
+    "description": "Empty state for matching"
+  },
   "matchingProgress": "{matched} of {total} pairs matched",
-  "@matchingProgress": { "description": "Matching progress", "placeholders": { "matched": { "type": "int" }, "total": { "type": "int" } } },
+  "@matchingProgress": {
+    "description": "Matching progress",
+    "placeholders": {
+      "matched": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "matchingContinue": "Continue",
-  "@matchingContinue": { "description": "Continue button after matching" },
+  "@matchingContinue": {
+    "description": "Continue button after matching"
+  },
   "matchingMismatch": "Not quite - try again!",
-  "@matchingMismatch": { "description": "Mismatch feedback" },
-
+  "@matchingMismatch": {
+    "description": "Mismatch feedback"
+  },
   "resultsGreatJob": "Great Job!",
-  "@resultsGreatJob": { "description": "Results screen title" },
+  "@resultsGreatJob": {
+    "description": "Results screen title"
+  },
   "resultsSubtitle": "You earned {xp} XP in this round and kept your streak.",
-  "@resultsSubtitle": { "description": "Results screen subtitle", "placeholders": { "xp": { "type": "int" } } },
+  "@resultsSubtitle": {
+    "description": "Results screen subtitle",
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
   "resultsSyncError": "Progress sync is delayed. We will retry automatically.",
-  "@resultsSyncError": { "description": "Sync error banner" },
+  "@resultsSyncError": {
+    "description": "Sync error banner"
+  },
   "resultsFinishSession": "Finish Session",
-  "@resultsFinishSession": { "description": "Finish session button" },
+  "@resultsFinishSession": {
+    "description": "Finish session button"
+  },
   "resultsContinue": "Continue",
-  "@resultsContinue": { "description": "Continue to next game button" },
+  "@resultsContinue": {
+    "description": "Continue to next game button"
+  },
   "resultsReviewMistakes": "Review Mistakes",
-  "@resultsReviewMistakes": { "description": "Review mistakes button" },
+  "@resultsReviewMistakes": {
+    "description": "Review mistakes button"
+  },
   "resultsSeeProgress": "See Progress",
-  "@resultsSeeProgress": { "description": "See progress button" },
+  "@resultsSeeProgress": {
+    "description": "See progress button"
+  },
   "resultsBackToHome": "Back to Home",
-  "@resultsBackToHome": { "description": "Back to home button" },
+  "@resultsBackToHome": {
+    "description": "Back to home button"
+  },
   "resultsRetryMistakes": "Retry Mistakes",
-  "@resultsRetryMistakes": { "description": "Retry mistakes game title" },
-
+  "@resultsRetryMistakes": {
+    "description": "Retry mistakes game title"
+  },
   "processingReadyTitle": "Ready to Learn!",
-  "@processingReadyTitle": { "description": "Title when processing is done" },
+  "@processingReadyTitle": {
+    "description": "Title when processing is done"
+  },
   "processingTitle": "Creating Your Quiz",
-  "@processingTitle": { "description": "Title during processing" },
+  "@processingTitle": {
+    "description": "Title during processing"
+  },
   "processingGoBack": "Go Back",
-  "@processingGoBack": { "description": "Go back button" },
+  "@processingGoBack": {
+    "description": "Go back button"
+  },
   "processingTransfer": "Transfer",
-  "@processingTransfer": { "description": "Transfer progress label" },
+  "@processingTransfer": {
+    "description": "Transfer progress label"
+  },
   "processingAI": "AI Processing",
-  "@processingAI": { "description": "AI processing progress label" },
+  "@processingAI": {
+    "description": "AI processing progress label"
+  },
   "processingSuccessTitle": "Your Quiz is Ready!",
-  "@processingSuccessTitle": { "description": "Success state title" },
+  "@processingSuccessTitle": {
+    "description": "Success state title"
+  },
   "processingSuccessMessage": "Jump in while the material is fresh.",
-  "@processingSuccessMessage": { "description": "Success state message" },
+  "@processingSuccessMessage": {
+    "description": "Success state message"
+  },
   "processingSuccessDetail": "Personalized games created from your document",
-  "@processingSuccessDetail": { "description": "Success detail message" },
+  "@processingSuccessDetail": {
+    "description": "Success detail message"
+  },
   "processingErrorTitle": "Something went wrong",
-  "@processingErrorTitle": { "description": "Error state title" },
+  "@processingErrorTitle": {
+    "description": "Error state title"
+  },
   "processingErrorHint": "Try uploading a clearer image or a different document.",
-  "@processingErrorHint": { "description": "Error hint message" },
-
+  "@processingErrorHint": {
+    "description": "Error hint message"
+  },
   "processingStartFlashcards": "Start Flashcards",
-  "@processingStartFlashcards": { "description": "Start flashcards button" },
+  "@processingStartFlashcards": {
+    "description": "Start flashcards button"
+  },
   "processingStartMatching": "Start Matching",
-  "@processingStartMatching": { "description": "Start matching button" },
+  "@processingStartMatching": {
+    "description": "Start matching button"
+  },
   "processingStartTrueFalse": "Start True/False",
-  "@processingStartTrueFalse": { "description": "Start true/false button" },
+  "@processingStartTrueFalse": {
+    "description": "Start true/false button"
+  },
   "processingStartMultiSelect": "Start Multi-Select",
-  "@processingStartMultiSelect": { "description": "Start multi-select button" },
+  "@processingStartMultiSelect": {
+    "description": "Start multi-select button"
+  },
   "processingStartFillBlank": "Start Fill-in-the-Blank",
-  "@processingStartFillBlank": { "description": "Start fill blank button" },
+  "@processingStartFillBlank": {
+    "description": "Start fill blank button"
+  },
   "processingStartShortAnswer": "Start Short Answer",
-  "@processingStartShortAnswer": { "description": "Start short answer button" },
+  "@processingStartShortAnswer": {
+    "description": "Start short answer button"
+  },
   "processingStartOrdering": "Start Ordering Game",
-  "@processingStartOrdering": { "description": "Start ordering button" },
+  "@processingStartOrdering": {
+    "description": "Start ordering button"
+  },
   "processingStartQuiz": "Start the Quiz",
-  "@processingStartQuiz": { "description": "Start quiz button" },
+  "@processingStartQuiz": {
+    "description": "Start quiz button"
+  },
   "processingStartLearning": "Start Learning",
-  "@processingStartLearning": { "description": "Generic start button" },
-
+  "@processingStartLearning": {
+    "description": "Generic start button"
+  },
   "statusQueued": "Waiting in queue...",
-  "@statusQueued": { "description": "Processing status: queued" },
+  "@statusQueued": {
+    "description": "Processing status: queued"
+  },
   "statusOcr": "Reading your document...",
-  "@statusOcr": { "description": "Processing status: OCR" },
+  "@statusOcr": {
+    "description": "Processing status: OCR"
+  },
   "statusConceptQueueing": "Preparing concepts...",
-  "@statusConceptQueueing": { "description": "Processing status: concept queue" },
+  "@statusConceptQueueing": {
+    "description": "Processing status: concept queue"
+  },
   "statusConceptExtraction": "Extracting key concepts...",
-  "@statusConceptExtraction": { "description": "Processing status: concept extraction" },
+  "@statusConceptExtraction": {
+    "description": "Processing status: concept extraction"
+  },
   "statusPackQueueing": "Preparing learning pack...",
-  "@statusPackQueueing": { "description": "Processing status: pack queue" },
+  "@statusPackQueueing": {
+    "description": "Processing status: pack queue"
+  },
   "statusPackGeneration": "Building learning pack...",
-  "@statusPackGeneration": { "description": "Processing status: pack generation" },
+  "@statusPackGeneration": {
+    "description": "Processing status: pack generation"
+  },
   "statusGameQueueing": "Preparing games...",
-  "@statusGameQueueing": { "description": "Processing status: game queue" },
+  "@statusGameQueueing": {
+    "description": "Processing status: game queue"
+  },
   "statusGameGeneration": "Generating games and quizzes...",
-  "@statusGameGeneration": { "description": "Processing status: game generation" },
+  "@statusGameGeneration": {
+    "description": "Processing status: game generation"
+  },
+  "statusQuickScanQueued": "Quick scan queued...",
+  "@statusQuickScanQueued": {
+    "description": "Processing status: quick scan queued"
+  },
+  "statusQuickScanProcessing": "Running quick scan...",
+  "@statusQuickScanProcessing": {
+    "description": "Processing status: quick scan running"
+  },
+  "statusAwaitingValidation": "Awaiting your validation...",
+  "@statusAwaitingValidation": {
+    "description": "Processing status: waiting for user validation"
+  },
+  "statusQuickScanFailed": "Quick scan failed. Please retry.",
+  "@statusQuickScanFailed": {
+    "description": "Processing status: quick scan failed"
+  },
   "statusReady": "Quiz ready!",
-  "@statusReady": { "description": "Processing status: ready" },
+  "@statusReady": {
+    "description": "Processing status: ready"
+  },
   "statusOcrFailed": "OCR failed. Please retry.",
-  "@statusOcrFailed": { "description": "Processing status: OCR failed" },
+  "@statusOcrFailed": {
+    "description": "Processing status: OCR failed"
+  },
   "statusConceptExtractionFailed": "Concept extraction failed. Please retry.",
-  "@statusConceptExtractionFailed": { "description": "Processing status: concept extraction failed" },
+  "@statusConceptExtractionFailed": {
+    "description": "Processing status: concept extraction failed"
+  },
   "statusPackGenerationFailed": "Pack generation failed. Please retry.",
-  "@statusPackGenerationFailed": { "description": "Processing status: pack failed" },
+  "@statusPackGenerationFailed": {
+    "description": "Processing status: pack failed"
+  },
   "statusGameGenerationFailed": "Game generation failed. Please retry.",
-  "@statusGameGenerationFailed": { "description": "Processing status: game failed" },
+  "@statusGameGenerationFailed": {
+    "description": "Processing status: game failed"
+  },
   "statusProcessing": "Processing document...",
-  "@statusProcessing": { "description": "Processing status: generic processing" },
+  "@statusProcessing": {
+    "description": "Processing status: generic processing"
+  },
   "statusGenerating": "Generating learning content...",
-  "@statusGenerating": { "description": "Processing status: generating content" },
+  "@statusGenerating": {
+    "description": "Processing status: generating content"
+  },
   "statusFirstGameReady": "First game is ready. Finishing remaining games...",
-  "@statusFirstGameReady": { "description": "Processing status: first game ready" },
+  "@statusFirstGameReady": {
+    "description": "Processing status: first game ready"
+  },
   "statusUploadingDocument": "Uploading document...",
-  "@statusUploadingDocument": { "description": "Upload in progress" },
+  "@statusUploadingDocument": {
+    "description": "Upload in progress"
+  },
   "statusProcessingAndGenerating": "Processing and generating quiz...",
-  "@statusProcessingAndGenerating": { "description": "Processing and generating" },
+  "@statusProcessingAndGenerating": {
+    "description": "Processing and generating"
+  },
   "statusGenerationFailed": "Generation failed",
-  "@statusGenerationFailed": { "description": "Generation failure" },
+  "@statusGenerationFailed": {
+    "description": "Generation failure"
+  },
   "statusCreatingGames": "Creating games and quizzes...",
-  "@statusCreatingGames": { "description": "Creating games status" },
+  "@statusCreatingGames": {
+    "description": "Creating games status"
+  },
   "statusGenerationTimedOut": "Quiz generation timed out. Please try again.",
-  "@statusGenerationTimedOut": { "description": "Timeout error" },
-
+  "@statusGenerationTimedOut": {
+    "description": "Timeout error"
+  },
   "stageFirstGameReady": "First Game Ready",
-  "@stageFirstGameReady": { "description": "Stage label: first game ready" },
+  "@stageFirstGameReady": {
+    "description": "Stage label: first game ready"
+  },
+  "stageQuickScanQueue": "Quick Scan Queue",
+  "@stageQuickScanQueue": {
+    "description": "Stage label: quick scan queued"
+  },
+  "stageQuickScanProcessing": "Quick Scan",
+  "@stageQuickScanProcessing": {
+    "description": "Stage label: quick scan running"
+  },
+  "stageAwaitingValidation": "Awaiting Validation",
+  "@stageAwaitingValidation": {
+    "description": "Stage label: awaiting validation"
+  },
+  "stageQuickScanFailed": "Quick Scan Failed",
+  "@stageQuickScanFailed": {
+    "description": "Stage label: quick scan failed"
+  },
   "stageQueued": "Queued",
-  "@stageQueued": { "description": "Stage label: queued" },
+  "@stageQueued": {
+    "description": "Stage label: queued"
+  },
   "stageOcr": "OCR",
-  "@stageOcr": { "description": "Stage label: OCR" },
+  "@stageOcr": {
+    "description": "Stage label: OCR"
+  },
   "stageConceptQueue": "Concept Queue",
-  "@stageConceptQueue": { "description": "Stage label: concept queue" },
+  "@stageConceptQueue": {
+    "description": "Stage label: concept queue"
+  },
   "stageConceptExtraction": "Concept Extraction",
-  "@stageConceptExtraction": { "description": "Stage label: concept extraction" },
+  "@stageConceptExtraction": {
+    "description": "Stage label: concept extraction"
+  },
   "stagePackQueue": "Pack Queue",
-  "@stagePackQueue": { "description": "Stage label: pack queue" },
+  "@stagePackQueue": {
+    "description": "Stage label: pack queue"
+  },
   "stagePackGeneration": "Pack Generation",
-  "@stagePackGeneration": { "description": "Stage label: pack generation" },
+  "@stagePackGeneration": {
+    "description": "Stage label: pack generation"
+  },
   "stageGameQueue": "Game Queue",
-  "@stageGameQueue": { "description": "Stage label: game queue" },
+  "@stageGameQueue": {
+    "description": "Stage label: game queue"
+  },
   "stageGameGeneration": "Game Generation",
-  "@stageGameGeneration": { "description": "Stage label: game generation" },
+  "@stageGameGeneration": {
+    "description": "Stage label: game generation"
+  },
   "stageReady": "Ready",
-  "@stageReady": { "description": "Stage label: ready" },
+  "@stageReady": {
+    "description": "Stage label: ready"
+  },
   "stageOcrFailed": "OCR Failed",
-  "@stageOcrFailed": { "description": "Stage label: OCR failed" },
+  "@stageOcrFailed": {
+    "description": "Stage label: OCR failed"
+  },
   "stageConceptFailed": "Concept Failed",
-  "@stageConceptFailed": { "description": "Stage label: concept failed" },
+  "@stageConceptFailed": {
+    "description": "Stage label: concept failed"
+  },
   "stagePackFailed": "Pack Failed",
-  "@stagePackFailed": { "description": "Stage label: pack failed" },
+  "@stagePackFailed": {
+    "description": "Stage label: pack failed"
+  },
   "stageGameFailed": "Game Failed",
-  "@stageGameFailed": { "description": "Stage label: game failed" },
+  "@stageGameFailed": {
+    "description": "Stage label: game failed"
+  },
   "stageProcessing": "Processing",
-  "@stageProcessing": { "description": "Stage label: processing" },
+  "@stageProcessing": {
+    "description": "Stage label: processing"
+  },
   "stageProcessed": "Processed",
-  "@stageProcessed": { "description": "Stage label: processed" },
-
+  "@stageProcessed": {
+    "description": "Stage label: processed"
+  },
   "docStatusQueued": "Queued",
-  "@docStatusQueued": { "description": "Document status: queued" },
+  "@docStatusQueued": {
+    "description": "Document status: queued"
+  },
+  "docStatusQuickScanQueued": "Quick scan queue",
+  "@docStatusQuickScanQueued": {
+    "description": "Document status: quick scan queued"
+  },
+  "docStatusQuickScanProcessing": "Quick scan",
+  "@docStatusQuickScanProcessing": {
+    "description": "Document status: quick scan processing"
+  },
+  "docStatusAwaitingValidation": "Awaiting validation",
+  "@docStatusAwaitingValidation": {
+    "description": "Document status: awaiting validation"
+  },
   "docStatusProcessing": "Processing",
-  "@docStatusProcessing": { "description": "Document status: processing" },
+  "@docStatusProcessing": {
+    "description": "Document status: processing"
+  },
   "docStatusProcessed": "Processed",
-  "@docStatusProcessed": { "description": "Document status: processed" },
+  "@docStatusProcessed": {
+    "description": "Document status: processed"
+  },
   "docStatusReady": "Ready",
-  "@docStatusReady": { "description": "Document status: ready" },
+  "@docStatusReady": {
+    "description": "Document status: ready"
+  },
   "docStatusFailed": "Failed",
-  "@docStatusFailed": { "description": "Document status: failed" },
+  "@docStatusFailed": {
+    "description": "Document status: failed"
+  },
   "docStatusUnknown": "Unknown",
-  "@docStatusUnknown": { "description": "Document status: unknown" },
-
+  "@docStatusUnknown": {
+    "description": "Document status: unknown"
+  },
   "uploadTitle": "Upload a File",
-  "@uploadTitle": { "description": "Upload screen title" },
+  "@uploadTitle": {
+    "description": "Upload screen title"
+  },
   "uploadSubtitle": "PDFs and images supported.",
-  "@uploadSubtitle": { "description": "Upload screen subtitle" },
+  "@uploadSubtitle": {
+    "description": "Upload screen subtitle"
+  },
   "uploadDragOrBrowse": "Drag & drop or browse",
-  "@uploadDragOrBrowse": { "description": "Upload placeholder text" },
+  "@uploadDragOrBrowse": {
+    "description": "Upload placeholder text"
+  },
   "uploadSubjectLabel": "Subject (optional)",
-  "@uploadSubjectLabel": { "description": "Subject field label" },
+  "@uploadSubjectLabel": {
+    "description": "Subject field label"
+  },
   "uploadSubjectHint": "e.g. French verbs",
-  "@uploadSubjectHint": { "description": "Subject field hint" },
+  "@uploadSubjectHint": {
+    "description": "Subject field hint"
+  },
   "uploadLanguageLabel": "Language (optional)",
-  "@uploadLanguageLabel": { "description": "Language field label" },
+  "@uploadLanguageLabel": {
+    "description": "Language field label"
+  },
   "uploadLanguageHint": "e.g. French",
-  "@uploadLanguageHint": { "description": "Language field hint" },
+  "@uploadLanguageHint": {
+    "description": "Language field hint"
+  },
   "uploadGoalLabel": "Learning goal (optional)",
-  "@uploadGoalLabel": { "description": "Goal field label" },
+  "@uploadGoalLabel": {
+    "description": "Goal field label"
+  },
   "uploadGoalHint": "e.g. Present tense conjugation",
-  "@uploadGoalHint": { "description": "Goal field hint" },
+  "@uploadGoalHint": {
+    "description": "Goal field hint"
+  },
   "uploadContextLabel": "Extra context (optional)",
-  "@uploadContextLabel": { "description": "Context field label" },
+  "@uploadContextLabel": {
+    "description": "Context field label"
+  },
   "uploadContextHint": "Short notes to guide quiz generation",
-  "@uploadContextHint": { "description": "Context field hint" },
+  "@uploadContextHint": {
+    "description": "Context field hint"
+  },
   "uploadAnalyzing": "Analyzing...",
-  "@uploadAnalyzing": { "description": "Analyzing button state" },
+  "@uploadAnalyzing": {
+    "description": "Analyzing button state"
+  },
   "uploadSuggestMetadata": "Suggest Metadata with AI",
-  "@uploadSuggestMetadata": { "description": "Suggest metadata button" },
+  "@uploadSuggestMetadata": {
+    "description": "Suggest metadata button"
+  },
   "uploadSuggestionUnavailable": "Suggestion unavailable right now.",
-  "@uploadSuggestionUnavailable": { "description": "AI suggestion unavailable" },
+  "@uploadSuggestionUnavailable": {
+    "description": "AI suggestion unavailable"
+  },
   "uploadChooseFile": "Choose File",
-  "@uploadChooseFile": { "description": "Choose file button" },
-
+  "@uploadChooseFile": {
+    "description": "Choose file button"
+  },
   "createProfileTitle": "You're Ready!",
-  "@createProfileTitle": { "description": "Create profile screen title" },
+  "@createProfileTitle": {
+    "description": "Create profile screen title"
+  },
   "createProfileSubtitle": "Let's learn together.",
-  "@createProfileSubtitle": { "description": "Create profile subtitle" },
+  "@createProfileSubtitle": {
+    "description": "Create profile subtitle"
+  },
   "createProfileNameLabel": "Profile name",
-  "@createProfileNameLabel": { "description": "Profile name field label" },
+  "@createProfileNameLabel": {
+    "description": "Profile name field label"
+  },
   "createProfileNameHint": "Your name",
-  "@createProfileNameHint": { "description": "Profile name hint" },
+  "@createProfileNameHint": {
+    "description": "Profile name hint"
+  },
   "createProfileAvatarLabel": "Choose your avatar",
-  "@createProfileAvatarLabel": { "description": "Avatar picker label" },
+  "@createProfileAvatarLabel": {
+    "description": "Avatar picker label"
+  },
   "createProfileContinue": "Continue",
-  "@createProfileContinue": { "description": "Continue button" },
+  "@createProfileContinue": {
+    "description": "Continue button"
+  },
   "createProfileLanguageLabel": "Language",
-  "@createProfileLanguageLabel": { "description": "Language picker label" },
-
+  "@createProfileLanguageLabel": {
+    "description": "Language picker label"
+  },
   "feedbackCorrect": "Correct!",
-  "@feedbackCorrect": { "description": "Correct answer feedback" },
+  "@feedbackCorrect": {
+    "description": "Correct answer feedback"
+  },
   "feedbackIncorrect": "Not quite",
-  "@feedbackIncorrect": { "description": "Incorrect answer feedback" },
+  "@feedbackIncorrect": {
+    "description": "Incorrect answer feedback"
+  },
   "feedbackContinue": "Continue",
-  "@feedbackContinue": { "description": "Continue button in feedback" },
-
+  "@feedbackContinue": {
+    "description": "Continue button in feedback"
+  },
   "resultSummaryAccuracy": "{correct} of {total} correct",
-  "@resultSummaryAccuracy": { "description": "Accuracy display", "placeholders": { "correct": { "type": "int" }, "total": { "type": "int" } } },
+  "@resultSummaryAccuracy": {
+    "description": "Accuracy display",
+    "placeholders": {
+      "correct": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "resultSummaryStreak": "Streak",
-  "@resultSummaryStreak": { "description": "Streak label" },
+  "@resultSummaryStreak": {
+    "description": "Streak label"
+  },
   "resultSummaryStreakDays": "{count, plural, =1{1 day} other{{count} days}}",
-  "@resultSummaryStreakDays": { "description": "Streak days display", "placeholders": { "count": { "type": "int" } } },
+  "@resultSummaryStreakDays": {
+    "description": "Streak days display",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "resultSummaryMastery": "Mastery",
-  "@resultSummaryMastery": { "description": "Mastery label" },
-
+  "@resultSummaryMastery": {
+    "description": "Mastery label"
+  },
   "reviewScreenTitle": "Review Capture",
-  "@reviewScreenTitle": { "description": "Review screen title" },
+  "@reviewScreenTitle": {
+    "description": "Review screen title"
+  },
   "reviewScreenSubtitle": "Crop, rotate, or retake if needed.",
-  "@reviewScreenSubtitle": { "description": "Review screen subtitle" },
+  "@reviewScreenSubtitle": {
+    "description": "Review screen subtitle"
+  },
   "reviewAddPage": "Add Another Page",
-  "@reviewAddPage": { "description": "Add page button" },
+  "@reviewAddPage": {
+    "description": "Add page button"
+  },
   "reviewLooksGood": "Looks Good",
-  "@reviewLooksGood": { "description": "Confirm review button" },
+  "@reviewLooksGood": {
+    "description": "Confirm review button"
+  },
   "reviewRetake": "Retake",
-  "@reviewRetake": { "description": "Retake button" },
-
+  "@reviewRetake": {
+    "description": "Retake button"
+  },
   "libraryTitle": "Document Library",
-  "@libraryTitle": { "description": "Library screen title" },
+  "@libraryTitle": {
+    "description": "Library screen title"
+  },
   "librarySubtitle": "Your uploaded worksheets and PDFs.",
-  "@librarySubtitle": { "description": "Library screen subtitle" },
+  "@librarySubtitle": {
+    "description": "Library screen subtitle"
+  },
   "libraryAddNew": "Add New Document",
-  "@libraryAddNew": { "description": "Add document button" },
+  "@libraryAddNew": {
+    "description": "Add document button"
+  },
   "librarySyncButton": "Sync Library",
-  "@librarySyncButton": { "description": "Sync button" },
+  "@librarySyncButton": {
+    "description": "Sync button"
+  },
   "libraryRegenerateTooltip": "Re-generate quiz",
-  "@libraryRegenerateTooltip": { "description": "Regenerate tooltip" },
-
+  "@libraryRegenerateTooltip": {
+    "description": "Regenerate tooltip"
+  },
   "revisionSetupTitle": "Revision Express",
-  "@revisionSetupTitle": { "description": "Revision setup title" },
+  "@revisionSetupTitle": {
+    "description": "Revision setup title"
+  },
   "revisionSetupSubtitle": "Quick 5-minute boost before a test.",
-  "@revisionSetupSubtitle": { "description": "Revision setup subtitle" },
+  "@revisionSetupSubtitle": {
+    "description": "Revision setup subtitle"
+  },
   "revisionSetupDuration": "Duration",
-  "@revisionSetupDuration": { "description": "Duration label" },
+  "@revisionSetupDuration": {
+    "description": "Duration label"
+  },
   "revisionSetupDurationValue": "5 minutes",
-  "@revisionSetupDurationValue": { "description": "Duration value" },
+  "@revisionSetupDurationValue": {
+    "description": "Duration value"
+  },
   "revisionSetupSubjectFocus": "Subject focus",
-  "@revisionSetupSubjectFocus": { "description": "Subject focus label" },
+  "@revisionSetupSubjectFocus": {
+    "description": "Subject focus label"
+  },
   "revisionSetupPickPack": "Pick a pack",
-  "@revisionSetupPickPack": { "description": "Pick a pack fallback" },
+  "@revisionSetupPickPack": {
+    "description": "Pick a pack fallback"
+  },
   "revisionSetupAdaptiveMix": "Adaptive mix",
-  "@revisionSetupAdaptiveMix": { "description": "Adaptive mix label" },
+  "@revisionSetupAdaptiveMix": {
+    "description": "Adaptive mix label"
+  },
   "revisionSetupAdaptiveFull": "Due concepts + recent mistakes + latest uploads",
-  "@revisionSetupAdaptiveFull": { "description": "Adaptive mix full description" },
+  "@revisionSetupAdaptiveFull": {
+    "description": "Adaptive mix full description"
+  },
   "revisionSetupAdaptivePartial": "Recent mistakes + latest uploads",
-  "@revisionSetupAdaptivePartial": { "description": "Adaptive mix partial description" },
+  "@revisionSetupAdaptivePartial": {
+    "description": "Adaptive mix partial description"
+  },
   "revisionSetupStartButton": "Start Express Session",
-  "@revisionSetupStartButton": { "description": "Start session button" },
+  "@revisionSetupStartButton": {
+    "description": "Start session button"
+  },
   "revisionSetupNoItems": "No revision items are ready yet. Complete a game first.",
-  "@revisionSetupNoItems": { "description": "Empty state message" },
-
+  "@revisionSetupNoItems": {
+    "description": "Empty state message"
+  },
   "revisionSessionTitle": "Express Session",
-  "@revisionSessionTitle": { "description": "Revision session app bar title" },
+  "@revisionSessionTitle": {
+    "description": "Revision session app bar title"
+  },
   "revisionSessionNoSession": "No revision session is ready yet.\nUpload and complete a game to unlock revision.",
-  "@revisionSessionNoSession": { "description": "No session available message" },
+  "@revisionSessionNoSession": {
+    "description": "No session available message"
+  },
   "revisionSessionLoading": "Loading prompt...",
-  "@revisionSessionLoading": { "description": "Loading state" },
+  "@revisionSessionLoading": {
+    "description": "Loading state"
+  },
   "revisionSessionFinish": "Finish",
-  "@revisionSessionFinish": { "description": "Finish button" },
+  "@revisionSessionFinish": {
+    "description": "Finish button"
+  },
   "revisionSessionNext": "Next",
-  "@revisionSessionNext": { "description": "Next button" },
-
+  "@revisionSessionNext": {
+    "description": "Next button"
+  },
   "revisionResultsTitle": "Express Complete!",
-  "@revisionResultsTitle": { "description": "Revision results title" },
+  "@revisionResultsTitle": {
+    "description": "Revision results title"
+  },
   "revisionResultsSubtitle": "You sharpened {correct} key concepts.",
-  "@revisionResultsSubtitle": { "description": "Revision results subtitle", "placeholders": { "correct": { "type": "int" } } },
+  "@revisionResultsSubtitle": {
+    "description": "Revision results subtitle",
+    "placeholders": {
+      "correct": {
+        "type": "int"
+      }
+    }
+  },
   "revisionResultsAccuracy": "Accuracy: {correct}/{total}",
-  "@revisionResultsAccuracy": { "description": "Accuracy display", "placeholders": { "correct": { "type": "int" }, "total": { "type": "int" } } },
+  "@revisionResultsAccuracy": {
+    "description": "Accuracy display",
+    "placeholders": {
+      "correct": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "revisionResultsTotalXp": "Total XP: {xp}",
-  "@revisionResultsTotalXp": { "description": "Total XP display", "placeholders": { "xp": { "type": "int" } } },
+  "@revisionResultsTotalXp": {
+    "description": "Total XP display",
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
   "revisionResultsBackHome": "Back to Home",
-  "@revisionResultsBackHome": { "description": "Back to home button" },
+  "@revisionResultsBackHome": {
+    "description": "Back to home button"
+  },
   "revisionResultsSeeProgress": "See Progress",
-  "@revisionResultsSeeProgress": { "description": "See progress button" },
-
+  "@revisionResultsSeeProgress": {
+    "description": "See progress button"
+  },
   "packDetailDefaultTitle": "Learning Pack",
-  "@packDetailDefaultTitle": { "description": "Default pack detail title" },
+  "@packDetailDefaultTitle": {
+    "description": "Default pack detail title"
+  },
   "packDetailNoPack": "No pack selected yet.",
-  "@packDetailNoPack": { "description": "No pack message" },
+  "@packDetailNoPack": {
+    "description": "No pack message"
+  },
   "packDetailNoGamesTitle": "No generated games yet",
-  "@packDetailNoGamesTitle": { "description": "No games title" },
+  "@packDetailNoGamesTitle": {
+    "description": "No games title"
+  },
   "packDetailNoGamesMessage": "Upload or regenerate this document to create games.",
-  "@packDetailNoGamesMessage": { "description": "No games message" },
+  "@packDetailNoGamesMessage": {
+    "description": "No games message"
+  },
   "packDetailStartSession": "Start Session",
-  "@packDetailStartSession": { "description": "Start session button" },
-
+  "@packDetailStartSession": {
+    "description": "Start session button"
+  },
   "packSessionDefaultTitle": "Session Roadmap",
-  "@packSessionDefaultTitle": { "description": "Default pack session title" },
+  "@packSessionDefaultTitle": {
+    "description": "Default pack session title"
+  },
   "packSessionSubtitle": "{minutes} minute guided flow.",
-  "@packSessionSubtitle": { "description": "Pack session subtitle", "placeholders": { "minutes": { "type": "int" } } },
+  "@packSessionSubtitle": {
+    "description": "Pack session subtitle",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "packSessionNoGamesTitle": "No ready games",
-  "@packSessionNoGamesTitle": { "description": "No games title" },
+  "@packSessionNoGamesTitle": {
+    "description": "No games title"
+  },
   "packSessionNoGamesMessage": "Finish document processing, then start the session.",
-  "@packSessionNoGamesMessage": { "description": "No games message" },
+  "@packSessionNoGamesMessage": {
+    "description": "No games message"
+  },
   "packSessionStartNow": "Start Now",
-  "@packSessionStartNow": { "description": "Start button" },
+  "@packSessionStartNow": {
+    "description": "Start button"
+  },
   "packSessionNoGamesSnackBar": "No generated games are ready for this pack yet.",
-  "@packSessionNoGamesSnackBar": { "description": "No games snack bar" },
-
+  "@packSessionNoGamesSnackBar": {
+    "description": "No games snack bar"
+  },
   "packsListTitle": "Learning Packs",
-  "@packsListTitle": { "description": "Packs list app bar title" },
-
+  "@packsListTitle": {
+    "description": "Packs list app bar title"
+  },
   "funFactBrainPowerTitle": "Brain Power",
-  "@funFactBrainPowerTitle": { "description": "Fun fact title" },
+  "@funFactBrainPowerTitle": {
+    "description": "Fun fact title"
+  },
   "funFactBrainPower": "Your brain uses about 20% of your body's energy, even though it's only 2% of your weight!",
-  "@funFactBrainPower": { "description": "Fun fact text" },
+  "@funFactBrainPower": {
+    "description": "Fun fact text"
+  },
   "funFactOctopusTitle": "Octopus Smarts",
-  "@funFactOctopusTitle": { "description": "Fun fact title" },
+  "@funFactOctopusTitle": {
+    "description": "Fun fact title"
+  },
   "funFactOctopus": "Octopuses have 9 brains! One central brain and a mini-brain in each of their 8 arms.",
-  "@funFactOctopus": { "description": "Fun fact text" },
+  "@funFactOctopus": {
+    "description": "Fun fact text"
+  },
   "funFactSchoolTitle": "School History",
-  "@funFactSchoolTitle": { "description": "Fun fact title" },
+  "@funFactSchoolTitle": {
+    "description": "Fun fact title"
+  },
   "funFactSchool": "The world's oldest school is in Morocco - it's been teaching students since 859 AD!",
-  "@funFactSchool": { "description": "Fun fact text" },
+  "@funFactSchool": {
+    "description": "Fun fact text"
+  },
   "funFactMemoryTitle": "Memory Trick",
-  "@funFactMemoryTitle": { "description": "Fun fact title" },
+  "@funFactMemoryTitle": {
+    "description": "Fun fact title"
+  },
   "funFactMemory": "You remember things better when you learn them right before sleep. Sweet dreams = smart dreams!",
-  "@funFactMemory": { "description": "Fun fact text" },
+  "@funFactMemory": {
+    "description": "Fun fact text"
+  },
   "funFactGameTitle": "Game Learning",
-  "@funFactGameTitle": { "description": "Fun fact title" },
+  "@funFactGameTitle": {
+    "description": "Fun fact title"
+  },
   "funFactGame": "Playing educational games can improve memory by up to 30%. You're doing great!",
-  "@funFactGame": { "description": "Fun fact text" },
+  "@funFactGame": {
+    "description": "Fun fact text"
+  },
   "funFactLanguageTitle": "Language Fun",
-  "@funFactLanguageTitle": { "description": "Fun fact title" },
+  "@funFactLanguageTitle": {
+    "description": "Fun fact title"
+  },
   "funFactLanguage": "Kids who learn multiple subjects together remember 40% more than studying one at a time.",
-  "@funFactLanguage": { "description": "Fun fact text" },
+  "@funFactLanguage": {
+    "description": "Fun fact text"
+  },
   "funFactSpaceTitle": "Space Fact",
-  "@funFactSpaceTitle": { "description": "Fun fact title" },
+  "@funFactSpaceTitle": {
+    "description": "Fun fact title"
+  },
   "funFactSpace": "Astronauts study for years! NASA training takes about 2 years of intense learning.",
-  "@funFactSpace": { "description": "Fun fact text" },
+  "@funFactSpace": {
+    "description": "Fun fact text"
+  },
   "funFactMusicTitle": "Music & Math",
-  "@funFactMusicTitle": { "description": "Fun fact title" },
+  "@funFactMusicTitle": {
+    "description": "Fun fact title"
+  },
   "funFactMusic": "Learning music helps with math! Both use patterns and counting in similar ways.",
-  "@funFactMusic": { "description": "Fun fact text" },
+  "@funFactMusic": {
+    "description": "Fun fact text"
+  },
   "funFactAnimalTitle": "Animal Teachers",
-  "@funFactAnimalTitle": { "description": "Fun fact title" },
+  "@funFactAnimalTitle": {
+    "description": "Fun fact title"
+  },
   "funFactAnimal": "Meerkats teach their babies how to eat scorpions by bringing them dead ones first!",
-  "@funFactAnimal": { "description": "Fun fact text" },
+  "@funFactAnimal": {
+    "description": "Fun fact text"
+  },
   "funFactPencilTitle": "Pencil Power",
-  "@funFactPencilTitle": { "description": "Fun fact title" },
+  "@funFactPencilTitle": {
+    "description": "Fun fact title"
+  },
   "funFactPencil": "The average pencil can write about 45,000 words. That's a lot of homework!",
-  "@funFactPencil": { "description": "Fun fact text" },
+  "@funFactPencil": {
+    "description": "Fun fact text"
+  },
   "funFactColorTitle": "Color Memory",
-  "@funFactColorTitle": { "description": "Fun fact title" },
+  "@funFactColorTitle": {
+    "description": "Fun fact title"
+  },
   "funFactColor": "You remember colorful things better! That's why highlighters help you study.",
-  "@funFactColor": { "description": "Fun fact text" },
+  "@funFactColor": {
+    "description": "Fun fact text"
+  },
   "funFactElephantTitle": "Elephant Memory",
-  "@funFactElephantTitle": { "description": "Fun fact title" },
+  "@funFactElephantTitle": {
+    "description": "Fun fact title"
+  },
   "funFactElephant": "Elephants really do have great memories - they can remember friends for decades!",
-  "@funFactElephant": { "description": "Fun fact text" },
+  "@funFactElephant": {
+    "description": "Fun fact text"
+  },
   "funFactQuickTitle": "Quick Learner",
-  "@funFactQuickTitle": { "description": "Fun fact title" },
+  "@funFactQuickTitle": {
+    "description": "Fun fact title"
+  },
   "funFactQuick": "Your brain can process an image in just 13 milliseconds. Faster than a blink!",
-  "@funFactQuick": { "description": "Fun fact text" },
+  "@funFactQuick": {
+    "description": "Fun fact text"
+  },
   "funFactDreamTitle": "Dream Learning",
-  "@funFactDreamTitle": { "description": "Fun fact title" },
+  "@funFactDreamTitle": {
+    "description": "Fun fact title"
+  },
   "funFactDream": "Your brain replays what you learned during the day while you dream!",
-  "@funFactDream": { "description": "Fun fact text" },
+  "@funFactDream": {
+    "description": "Fun fact text"
+  },
   "funFactPracticeTitle": "Practice Perfect",
-  "@funFactPracticeTitle": { "description": "Fun fact title" },
+  "@funFactPracticeTitle": {
+    "description": "Fun fact title"
+  },
   "funFactPractice": "It takes about 10,000 hours of practice to become an expert at something.",
-  "@funFactPractice": { "description": "Fun fact text" },
-
+  "@funFactPractice": {
+    "description": "Fun fact text"
+  },
   "languageEnglish": "English",
-  "@languageEnglish": { "description": "English language label" },
+  "@languageEnglish": {
+    "description": "English language label"
+  },
   "languageFrench": "Français",
-  "@languageFrench": { "description": "French language label" },
+  "@languageFrench": {
+    "description": "French language label"
+  },
   "languageDutch": "Nederlands",
-  "@languageDutch": { "description": "Dutch language label" },
-
+  "@languageDutch": {
+    "description": "Dutch language label"
+  },
   "noChildProfile": "No child profile available.",
-  "@noChildProfile": { "description": "Error when no child profile" },
+  "@noChildProfile": {
+    "description": "Error when no child profile"
+  },
   "noImageSelected": "No image selected.",
-  "@noImageSelected": { "description": "Error when no image" },
+  "@noImageSelected": {
+    "description": "Error when no image"
+  },
   "missingDocumentId": "Missing document ID.",
-  "@missingDocumentId": { "description": "Error when missing doc ID" },
+  "@missingDocumentId": {
+    "description": "Error when missing doc ID"
+  },
   "missingPackId": "Missing learning pack id for retry.",
-  "@missingPackId": { "description": "Error when missing pack ID" },
+  "@missingPackId": {
+    "description": "Error when missing pack ID"
+  },
   "documentProcessingFailed": "Document processing failed.",
-  "@documentProcessingFailed": { "description": "Document processing failure" },
+  "@documentProcessingFailed": {
+    "description": "Document processing failure"
+  },
   "packMissingId": "Pack missing id.",
-  "@packMissingId": { "description": "Error when pack has no id" },
+  "@packMissingId": {
+    "description": "Error when pack has no id"
+  },
   "resultSyncSkipped": "Game result sync skipped: missing childId/packId/gameId.",
-  "@resultSyncSkipped": { "description": "Result sync skip message" },
-
+  "@resultSyncSkipped": {
+    "description": "Result sync skip message"
+  },
   "processingStepUploading": "Uploading",
-  "@processingStepUploading": { "description": "Processing step: uploading" },
+  "@processingStepUploading": {
+    "description": "Processing step: uploading"
+  },
   "processingStepProcessing": "Processing",
-  "@processingStepProcessing": { "description": "Processing step: processing" },
+  "@processingStepProcessing": {
+    "description": "Processing step: processing"
+  },
   "processingStepGenerating": "Generating",
-  "@processingStepGenerating": { "description": "Processing step: generating" },
+  "@processingStepGenerating": {
+    "description": "Processing step: generating"
+  },
   "processingStepCreatingGames": "Creating games",
-  "@processingStepCreatingGames": { "description": "Processing step: creating games" },
-
-  "statusWithProgress": "{progress}% \u2022 {message}",
-  "@statusWithProgress": { "description": "Status message with progress prefix", "placeholders": { "progress": { "type": "int" }, "message": { "type": "String" } } },
-
+  "@processingStepCreatingGames": {
+    "description": "Processing step: creating games"
+  },
+  "statusWithProgress": "{progress}% • {message}",
+  "@statusWithProgress": {
+    "description": "Status message with progress prefix",
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "switchProfile": "Switch Profile",
-  "@switchProfile": { "description": "Child switcher bottom sheet title" },
+  "@switchProfile": {
+    "description": "Child switcher bottom sheet title"
+  },
   "switchProfileHint": "Tap a profile to switch",
-  "@switchProfileHint": { "description": "Child switcher bottom sheet hint" }
+  "@switchProfileHint": {
+    "description": "Child switcher bottom sheet hint"
+  },
+  "accountSettingsEmailLabel": "Email",
+  "accountSettingsGradeRangeLabel": "Preferred grade range",
+  "accountSettingsNameLabel": "Name",
+  "accountSettingsSaveChanges": "Save Changes",
+  "accountSettingsSubtitle": "Manage parent profile and preferences.",
+  "accountSettingsTitle": "Account Settings",
+  "achievementsSubtitle": "Celebrate wins big and small.",
+  "achievementsTitle": "Achievements",
+  "authEmailLabel": "Email",
+  "authPasswordLabel": "Password",
+  "cameraCaptureChooseMultiplePages": "Choose Multiple Pages",
+  "cameraCaptureChooseSinglePhoto": "Choose Single Photo",
+  "cameraCaptureSubtitle": "Frame the worksheet and snap a photo.",
+  "cameraCaptureTakePhoto": "Take Photo",
+  "cameraCaptureTitle": "Snap Homework",
+  "cameraCaptureUploadPdfInstead": "Upload PDF Instead",
+  "childSelectorSubtitle": "Switch between children.",
+  "childSelectorTitle": "Child Profiles",
+  "commonCancel": "Cancel",
+  "commonClear": "Clear",
+  "contactSupportFrom": "From: {email}",
+  "@contactSupportFrom": {
+    "description": "Auto-added localization for contactSupportFrom",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "contactSupportMessageLabel": "Message",
+  "contactSupportSendMessage": "Send Message",
+  "contactSupportSubtitle": "We usually respond within 24 hours.",
+  "contactSupportTitle": "Contact Support",
+  "contactSupportTopicLabel": "Topic",
+  "createProfileAvatarDino": "Dino",
+  "createProfileAvatarFox": "Fox",
+  "createProfileAvatarFoxBuddy": "Fox Buddy",
+  "createProfileAvatarOwl": "Owl",
+  "createProfileAvatarPenguin": "Penguin",
+  "createProfileAvatarRobot": "Robot",
+  "deleteAccountBody": "Deleting {name}'s account will remove all child profiles and documents. This cannot be undone.",
+  "@deleteAccountBody": {
+    "description": "Auto-added localization for deleteAccountBody",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountConfirmDelete": "Confirm Delete",
+  "deleteAccountSubtitle": "This action is permanent.",
+  "deleteAccountTitle": "Delete Account",
+  "emptyStateSubtitle": "Upload a worksheet to get started.",
+  "emptyStateTitle": "Nothing Here Yet",
+  "errorStateSubtitle": "We could not process the document.",
+  "errorStateTitle": "Something Went Wrong",
+  "errorStateTryAgain": "Try Again",
+  "faqSubtitle": "Answers to common questions.",
+  "faqTitle": "FAQ",
+  "forgotPasswordEmailAddressLabel": "Email address",
+  "forgotPasswordSendLink": "Send Link",
+  "forgotPasswordSubtitle": "We'll send a reset link to your email.",
+  "forgotPasswordTitle": "Reset Password",
+  "homeTabHome": "Home",
+  "homeTabPacks": "Packs",
+  "homeTabProgress": "Progress",
+  "homeTabSettings": "Settings",
+  "learningTimeMinutes": "{minutes} min",
+  "@learningTimeMinutes": {
+    "description": "Auto-added localization for learningTimeMinutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "learningTimeSubtitle": "Minutes per day",
+  "learningTimeTitle": "Learning Time",
+  "loginButton": "Log In",
+  "loginCreateAccountPrompt": "New here? Create an account",
+  "loginForgotPassword": "Forgot password?",
+  "loginSubtitle": "Log in to continue your child's learning journey.",
+  "loginTitle": "Welcome Back",
+  "masteryDetailsEmptySubtitle": "Upload and complete games to build concept mastery.",
+  "masteryDetailsNoDataSubtitle": "Run at least one generated game to populate this view.",
+  "masteryDetailsNoDataTitle": "No mastery data yet",
+  "masteryDetailsSubtitle": "Concept-level breakdown from your uploaded study content.",
+  "masteryDetailsTitle": "Mastery Details",
+  "masteryStatusMastered": "Mastered",
+  "masteryStatusNeedsReview": "Needs review",
+  "masteryStatusPracticing": "Practicing",
+  "masteryStatusWithPercent": "{label} • {percent}%",
+  "@masteryStatusWithPercent": {
+    "description": "Auto-added localization for masteryStatusWithPercent",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsMarkRead": "Mark read",
+  "notificationsSubtitle": "Friendly nudges for parents and kids.",
+  "notificationsTitle": "Notifications",
+  "offlineRetry": "Retry",
+  "offlineSubtitle": "Check your connection to sync progress.",
+  "offlineTitle": "You're Offline",
+  "onboardingConsentAgreeButton": "Agree & Continue",
+  "onboardingConsentCoppaSubtitle": "Parent consent required before use.",
+  "onboardingConsentCoppaTitle": "COPPA-friendly",
+  "onboardingConsentEducatorSubtitle": "Content aligns to school standards.",
+  "onboardingConsentEducatorTitle": "Educator designed",
+  "onboardingConsentNoDataSellingSubtitle": "We never share or sell personal info.",
+  "onboardingConsentNoDataSellingTitle": "No data selling",
+  "onboardingConsentSubtitle": "We keep kids safe, private, and ad-free.",
+  "onboardingConsentTitle": "Parent Consent",
+  "onboardingCreateProfileButton": "Create a Profile",
+  "onboardingFoxBlurb": "Learny the fox keeps practice playful and focused.",
+  "onboardingGetStarted": "Get Started",
+  "onboardingHowItWorksSubtitle": "From homework to mastery in 3 quick steps.",
+  "onboardingHowItWorksTitle": "How It Works",
+  "onboardingStep1Subtitle": "Take a photo of any worksheet or page.",
+  "onboardingStep1Title": "Snap your homework",
+  "onboardingStep2Subtitle": "Flashcards, quizzes, and matching in seconds.",
+  "onboardingStep2Title": "AI creates learning games",
+  "onboardingStep3Subtitle": "Short sessions with streaks and XP boosts.",
+  "onboardingStep3Title": "Learn & earn rewards",
+  "onboardingWelcomeSubtitle": "Your AI learning buddy for smart, playful study sessions.",
+  "onboardingWelcomeTitle": "Welcome to Learny!",
+  "packsItemsMinutes": "{itemCount} items • {minutes} min",
+  "@packsItemsMinutes": {
+    "description": "Auto-added localization for packsItemsMinutes",
+    "placeholders": {
+      "itemCount": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "packsMasteryProgress": "{percent}% mastery • {mastered}/{total} concepts",
+  "@packsMasteryProgress": {
+    "description": "Auto-added localization for packsMasteryProgress",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "mastered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "packsStartSession": "Start a Session",
+  "packsSubtitle": "Personalized packs based on homework.",
+  "packsTitle": "Learning Packs",
+  "packsViewLibrary": "View Document Library",
+  "parentDashboardActiveChild": "Active child",
+  "parentDashboardChildSelector": "Child Selector",
+  "parentDashboardLearningTime": "Learning Time",
+  "parentDashboardSubtitle": "Track progress and guide next steps.",
+  "parentDashboardTitle": "Parent Dashboard",
+  "parentDashboardWeakAreas": "Weak Areas",
+  "parentDashboardWeeklySummary": "Weekly Summary",
+  "parentOnlyLabel": "Parent only",
+  "parentPinChangeSubtitle": "Set a new PIN for parent-only access.",
+  "parentPinChangeTitle": "Change PIN",
+  "parentPinCodeLabel": "4-digit PIN",
+  "parentPinEnterSubtitle": "Enter your PIN to continue.",
+  "parentPinSaveButton": "Save PIN",
+  "parentPinUnlockButton": "Unlock Parent Settings",
+  "parentSettingsChildProfiles": "Child profiles",
+  "parentSettingsParentProfile": "Parent profile",
+  "parentSettingsProfilesCount": "{count} profiles",
+  "@parentSettingsProfilesCount": {
+    "description": "Auto-added localization for parentSettingsProfilesCount",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "parentSettingsProtectSubtitle": "Protect parent-only settings.",
+  "parentSettingsSetChangePin": "Set / Change PIN",
+  "parentSettingsSubscription": "Subscription",
+  "parentSettingsSubtitle": "Manage subscription and family controls.",
+  "parentSettingsTitle": "Parent Settings",
+  "planAlreadyHaveAccount": "Already have an account? Log in",
+  "planChooseSubtitle": "Start free. Upgrade anytime.",
+  "planChooseTitle": "Choose Your Plan",
+  "planFamilySubtitle": "Up to 4 child profiles",
+  "planFamilyTitle": "Family",
+  "planFreeSubtitle": "3 packs per month",
+  "planFreeTitle": "Free",
+  "planProSubtitle": "Unlimited packs + games",
+  "planProTitle": "Pro",
+  "safetyPrivacyCoppaSubtitle": "Parental consent required",
+  "safetyPrivacyCoppaTitle": "COPPA compliant",
+  "safetyPrivacyEncryptedSubtitle": "Files are protected",
+  "safetyPrivacyEncryptedTitle": "Encrypted storage",
+  "safetyPrivacyNoAdsSubtitle": "We do not monetize data",
+  "safetyPrivacyNoAdsTitle": "No ads, no selling",
+  "safetyPrivacySubtitle": "Built for kids, trusted by parents.",
+  "safetyPrivacyTitle": "Safety & Privacy",
+  "settingsClearAllConfirm": "This clears all learning memory signals. Continue?",
+  "settingsClearAllLearningMemorySubtitle": "Events, revision, game results, mastery.",
+  "settingsClearAllLearningMemoryTitle": "Clear all learning memory",
+  "settingsClearEventsOnlySubtitle": "Keeps mastery and results.",
+  "settingsClearEventsOnlyTitle": "Clear events only",
+  "settingsClearMemoryScopeTitle": "Clear Memory Scope",
+  "settingsClearRevisionSessionsSubtitle": "Removes quick revision history.",
+  "settingsClearRevisionSessionsTitle": "Clear revision sessions",
+  "settingsClearScopeConfirm": "Clear memory scope \"{scope}\"?",
+  "@settingsClearScopeConfirm": {
+    "description": "Auto-added localization for settingsClearScopeConfirm",
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsConfirmClearMemoryTitle": "Confirm clear memory",
+  "settingsDeleteAccountSubtitle": "This is a destructive action.",
+  "settingsDetailLevelBrief": "Brief",
+  "settingsDetailLevelDetailed": "Detailed",
+  "settingsLastReset": "Last reset: {scope} at {time}",
+  "@settingsLastReset": {
+    "description": "Auto-added localization for settingsLastReset",
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLearningMemoryTitle": "Learning Memory",
+  "settingsNoRecentMemoryReset": "No recent memory reset.",
+  "settingsNotificationsSubtitle": "Get updates about new packs and streaks.",
+  "settingsNotificationsTitle": "Notifications",
+  "settingsPersonalizedRecommendationsSubtitle": "Use activity history to adapt next steps.",
+  "settingsPersonalizedRecommendationsTitle": "Personalized Recommendations",
+  "settingsRationaleDetailLevelTitle": "Rationale Detail Level",
+  "settingsRecommendationRationaleSubtitle": "Display \"why this suggestion\" explanations.",
+  "settingsRecommendationRationaleTitle": "Show Recommendation Rationale",
+  "settingsSoundEffectsSubtitle": "Play sounds during games.",
+  "settingsSoundEffectsTitle": "Sound Effects",
+  "settingsStudyRemindersSubtitle": "Daily reminders for short sessions.",
+  "settingsStudyRemindersTitle": "Study Reminders",
+  "settingsTitle": "Settings",
+  "settingsUnknownScope": "unknown",
+  "signupCreateAccount": "Create Account",
+  "signupFullNameLabel": "Full name",
+  "signupLoginPrompt": "Already have an account? Log in",
+  "signupSubtitle": "Set up a secure parent profile to manage learning.",
+  "signupTitle": "Create Parent Account",
+  "streaksRewardsBadges": "{count} badges",
+  "@streaksRewardsBadges": {
+    "description": "Auto-added localization for streaksRewardsBadges",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streaksRewardsCurrentStreak": "Current streak",
+  "streaksRewardsDays": "{count} days",
+  "@streaksRewardsDays": {
+    "description": "Auto-added localization for streaksRewardsDays",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streaksRewardsSubtitle": "Keep the momentum going!",
+  "streaksRewardsTitle": "Streaks & Rewards",
+  "streaksRewardsUnlocked": "Rewards unlocked",
+  "subscriptionCurrentPlan": "Current plan: {plan}",
+  "@subscriptionCurrentPlan": {
+    "description": "Auto-added localization for subscriptionCurrentPlan",
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionPlanIncluded": "Full access included with the free plan.",
+  "subscriptionSubtitle": "Learny is free to use. Parents can upgrade anytime.",
+  "subscriptionTitle": "Subscription",
+  "subscriptionUpgradePlan": "Upgrade Plan",
+  "upgradePlanContinueToCheckout": "Continue to Checkout",
+  "upgradePlanSubtitle": "Unlock unlimited packs and parent insights.",
+  "upgradePlanTitle": "Upgrade Plan",
+  "verifyEmailCodeLabel": "Verification code",
+  "verifyEmailContinueToApp": "Continue to App",
+  "verifyEmailResendCode": "Resend code",
+  "verifyEmailSubtitle": "We've sent a 6-digit code to parent@example.com.",
+  "verifyEmailTitle": "Verify Your Email",
+  "weakAreasSubtitle": "Focus zones to review next.",
+  "weakAreasTitle": "Weak Areas",
+  "weeklySummaryAchievements": "Achievements",
+  "weeklySummaryNewBadges": "{count} new badges",
+  "@weeklySummaryNewBadges": {
+    "description": "Auto-added localization for weeklySummaryNewBadges",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummarySessionsCompleted": "Sessions completed",
+  "weeklySummarySessionsValue": "{count} sessions",
+  "@weeklySummarySessionsValue": {
+    "description": "Auto-added localization for weeklySummarySessionsValue",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummarySubtitle": "Highlights from the past 7 days.",
+  "weeklySummaryTimeSpent": "Time spent",
+  "weeklySummaryTimeSpentValue": "{hours}h {minutes}m",
+  "@weeklySummaryTimeSpentValue": {
+    "description": "Auto-added localization for weeklySummaryTimeSpentValue",
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklySummaryTitle": "Weekly Summary",
+  "weeklySummaryTopSubject": "Top subject",
+  "processingAlternativesLabel": "Alternatives: {alternatives}",
+  "@processingAlternativesLabel": {
+    "description": "Auto-added localization for processingAlternativesLabel",
+    "placeholders": {
+      "alternatives": {
+        "type": "String"
+      }
+    }
+  },
+  "processingConfidenceLabel": "Confidence: {percent}%{modelSuffix}",
+  "@processingConfidenceLabel": {
+    "description": "Auto-added localization for processingConfidenceLabel",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "modelSuffix": {
+        "type": "String"
+      }
+    }
+  },
+  "processingConfirmGenerate": "Confirm & Generate",
+  "processingLanguageLabel": "Language",
+  "processingNoAlternatives": "No alternatives suggested.",
+  "processingRescan": "Rescan",
+  "processingStarting": "Starting...",
+  "processingTopicLabel": "Topic",
+  "processingTopicLanguageRequired": "Topic and language are required to continue.",
+  "processingValidateScanSubtitle": "Confirm or edit the topic and language before deep generation starts.",
+  "processingValidateScanTitle": "Validate AI scan",
+  "progressActivitySummary": "{percent}% • {scoreLabel} • +{xp} XP",
+  "@progressActivitySummary": {
+    "description": "Auto-added localization for progressActivitySummary",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "scoreLabel": {
+        "type": "String"
+      },
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "progressCouldNotRegenerateDocument": "Could not regenerate document right now.",
+  "progressCouldNotReopen": "Could not reopen this subject: {error}",
+  "@progressCouldNotReopen": {
+    "description": "Auto-added localization for progressCouldNotReopen",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "progressCouldNotStartRegenerationFor": "Could not start regeneration for {gameType}.",
+  "@progressCouldNotStartRegenerationFor": {
+    "description": "Auto-added localization for progressCouldNotStartRegenerationFor",
+    "placeholders": {
+      "gameType": {
+        "type": "String"
+      }
+    }
+  },
+  "progressDeltaNew": "New",
+  "progressDocumentRegenerationStarted": "Document regeneration started.",
+  "progressGenerateNewGameTypeSubtitle": "Choose a type to regenerate from this document",
+  "progressGenerateNewGameTypeTitle": "Generate New Game Type",
+  "progressLatestCheerEmpty": "Upload a document and complete a game to start your momentum.",
+  "progressLoadOlderActivity": "Load older activity",
+  "progressMetricAvgScore": "Avg score",
+  "progressMetricRecentXp": "Recent XP",
+  "progressMetricSessions": "Sessions",
+  "progressMetricStreak": "Streak",
+  "progressMetricStreakValue": "{days}d",
+  "@progressMetricStreakValue": {
+    "description": "Auto-added localization for progressMetricStreakValue",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "progressMomentumBuilding": "Building momentum",
+  "progressMomentumExcellent": "Excellent momentum",
+  "progressMomentumReady": "Ready to start",
+  "progressMomentumSteady": "Steady momentum",
+  "progressNewGameType": "New Game Type",
+  "progressNoActivitySubtitle": "Play a generated game to see results and motivation here.",
+  "progressNoActivityTitle": "No activity yet",
+  "progressNoReadyGames": "No ready games found for this subject yet.",
+  "progressOpenOverview": "Open Progress Overview",
+  "progressOverviewAreasToFocus": "Areas to Focus",
+  "progressOverviewBadges": "Badges",
+  "progressOverviewDayStreak": "Day Streak",
+  "progressOverviewLevelLearner": "Level {level} Learner",
+  "@progressOverviewLevelLearner": {
+    "description": "Auto-added localization for progressOverviewLevelLearner",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewMastery": "Mastery",
+  "progressOverviewMinutes": "{minutes} min",
+  "@progressOverviewMinutes": {
+    "description": "Auto-added localization for progressOverviewMinutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewSessions": "Sessions",
+  "progressOverviewTitle": "Your Progress",
+  "progressOverviewTopSubject": "Top Subject",
+  "progressOverviewTopicMastery": "Topic Mastery",
+  "progressOverviewTopicMasteryEmpty": "Complete some lessons to see your mastery!",
+  "progressOverviewTotalXp": "{xp} XP total",
+  "@progressOverviewTotalXp": {
+    "description": "Auto-added localization for progressOverviewTotalXp",
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewXpToNextLevel": "{xpToNext} XP to Level {nextLevel}",
+  "@progressOverviewXpToNextLevel": {
+    "description": "Auto-added localization for progressOverviewXpToNextLevel",
+    "placeholders": {
+      "xpToNext": {
+        "type": "int"
+      },
+      "nextLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "progressOverviewXpToday": "XP Today",
+  "progressPastActivityTitle": "Past Activity",
+  "progressRedoDocument": "Redo Document",
+  "progressRedoSubject": "Redo Subject",
+  "progressRefresh": "Refresh",
+  "progressRegenerationStartedFor": "Regeneration started for {gameType}.",
+  "@progressRegenerationStartedFor": {
+    "description": "Auto-added localization for progressRegenerationStartedFor",
+    "placeholders": {
+      "gameType": {
+        "type": "String"
+      }
+    }
+  },
+  "progressScoreBandImproving": "Improving",
+  "progressScoreBandKeepGoing": "Keep Going",
+  "progressScoreBandStrong": "Strong",
+  "progressScoreLabel": "{correct}/{total} correct",
+  "@progressScoreLabel": {
+    "description": "Auto-added localization for progressScoreLabel",
+    "placeholders": {
+      "correct": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressSubtitle": "Past results, trends, and what to redo next.",
+  "progressWeeklyMastery": "{percent}% mastery across this week's packs",
+  "@progressWeeklyMastery": {
+    "description": "Auto-added localization for progressWeeklyMastery",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "progressWeeklyProgressTitle": "Weekly Progress"
 }

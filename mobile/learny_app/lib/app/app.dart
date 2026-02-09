@@ -77,7 +77,7 @@ class LearnyApp extends StatelessWidget {
         builder: (context) {
           final state = AppStateScope.of(context);
           return MaterialApp(
-            title: 'Learny',
+            onGenerateTitle: (context) => L10n.of(context).appTitle,
             theme: LearnyTheme.light(),
             locale: state.locale,
             localizationsDelegates: L10n.localizationsDelegates,

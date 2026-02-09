@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../shared/placeholder_screen.dart';
 
@@ -7,26 +8,27 @@ class SafetyPrivacyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Safety & Privacy',
-      subtitle: 'Built for kids, trusted by parents.',
+      title: l.safetyPrivacyTitle,
+      subtitle: l.safetyPrivacySubtitle,
       gradient: LearnyGradients.trust,
       body: Column(
-        children: const [
+        children: [
           ListTile(
-            leading: Icon(Icons.shield_rounded, color: LearnyColors.coral),
-            title: Text('COPPA compliant'),
-            subtitle: Text('Parental consent required'),
+            leading: const Icon(Icons.shield_rounded, color: LearnyColors.coral),
+            title: Text(l.safetyPrivacyCoppaTitle),
+            subtitle: Text(l.safetyPrivacyCoppaSubtitle),
           ),
           ListTile(
-            leading: Icon(Icons.lock_rounded, color: LearnyColors.teal),
-            title: Text('Encrypted storage'),
-            subtitle: Text('Files are protected'),
+            leading: const Icon(Icons.lock_rounded, color: LearnyColors.teal),
+            title: Text(l.safetyPrivacyEncryptedTitle),
+            subtitle: Text(l.safetyPrivacyEncryptedSubtitle),
           ),
           ListTile(
-            leading: Icon(Icons.visibility_off_rounded, color: LearnyColors.purple),
-            title: Text('No ads, no selling'),
-            subtitle: Text('We do not monetize data'),
+            leading: const Icon(Icons.visibility_off_rounded, color: LearnyColors.purple),
+            title: Text(l.safetyPrivacyNoAdsTitle),
+            subtitle: Text(l.safetyPrivacyNoAdsSubtitle),
           ),
         ],
       ),

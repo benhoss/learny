@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
@@ -9,11 +10,12 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
         Text(
-          'Settings',
+          l.settingsTitle,
           style: Theme.of(
             context,
           ).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -21,31 +23,31 @@ class SettingsScreen extends StatelessWidget {
         const SizedBox(height: 16),
         Card(
           child: SwitchListTile(
-            title: const Text('Notifications'),
-            subtitle: const Text('Get updates about new packs and streaks.'),
+            title: Text(l.settingsNotificationsTitle),
+            subtitle: Text(l.settingsNotificationsSubtitle),
             value: state.notificationsEnabled,
             onChanged: state.toggleNotifications,
           ),
         ),
         Card(
           child: SwitchListTile(
-            title: const Text('Sound Effects'),
-            subtitle: const Text('Play sounds during games.'),
+            title: Text(l.settingsSoundEffectsTitle),
+            subtitle: Text(l.settingsSoundEffectsSubtitle),
             value: state.soundEnabled,
             onChanged: state.toggleSound,
           ),
         ),
         Card(
           child: SwitchListTile(
-            title: const Text('Study Reminders'),
-            subtitle: const Text('Daily reminders for short sessions.'),
+            title: Text(l.settingsStudyRemindersTitle),
+            subtitle: Text(l.settingsStudyRemindersSubtitle),
             value: state.remindersEnabled,
             onChanged: state.toggleReminders,
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          'Learning Memory',
+          l.settingsLearningMemoryTitle,
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
@@ -53,8 +55,8 @@ class SettingsScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Card(
           child: SwitchListTile(
-            title: const Text('Personalized Recommendations'),
-            subtitle: const Text('Use activity history to adapt next steps.'),
+            title: Text(l.settingsPersonalizedRecommendationsTitle),
+            subtitle: Text(l.settingsPersonalizedRecommendationsSubtitle),
             value: state.memoryPersonalizationEnabled,
             onChanged: state.memorySettingsBusy
                 ? null
@@ -65,8 +67,8 @@ class SettingsScreen extends StatelessWidget {
         ),
         Card(
           child: SwitchListTile(
-            title: const Text('Show Recommendation Rationale'),
-            subtitle: const Text('Display “why this suggestion” explanations.'),
+            title: Text(l.settingsRecommendationRationaleTitle),
+            subtitle: Text(l.settingsRecommendationRationaleSubtitle),
             value: state.recommendationWhyEnabled,
             onChanged: state.memorySettingsBusy
                 ? null
@@ -77,9 +79,11 @@ class SettingsScreen extends StatelessWidget {
         ),
         Card(
           child: ListTile(
-            title: const Text('Rationale Detail Level'),
+            title: Text(l.settingsRationaleDetailLevelTitle),
             subtitle: Text(
-              state.recommendationWhyLevel == 'brief' ? 'Brief' : 'Detailed',
+              state.recommendationWhyLevel == 'brief'
+                  ? l.settingsDetailLevelBrief
+                  : l.settingsDetailLevelDetailed,
             ),
             trailing: DropdownButton<String>(
               value: state.recommendationWhyLevel,
@@ -93,9 +97,9 @@ class SettingsScreen extends StatelessWidget {
                         recommendationWhyLevel: value,
                       );
                     },
-              items: const [
-                DropdownMenuItem(value: 'brief', child: Text('Brief')),
-                DropdownMenuItem(value: 'detailed', child: Text('Detailed')),
+              items: [
+                DropdownMenuItem(value: 'brief', child: Text(l.settingsDetailLevelBrief)),
+                DropdownMenuItem(value: 'detailed', child: Text(l.settingsDetailLevelDetailed)),
               ],
             ),
           ),
@@ -104,18 +108,21 @@ class SettingsScreen extends StatelessWidget {
           child: Column(
             children: [
               ListTile(
-                title: const Text('Clear Memory Scope'),
+                title: Text(l.settingsClearMemoryScopeTitle),
                 subtitle: Text(
                   state.lastMemoryResetAt == null
-                      ? 'No recent memory reset.'
-                      : 'Last reset: ${state.lastMemoryResetScope ?? 'unknown'} at ${state.lastMemoryResetAt!.toLocal().toIso8601String()}',
+                      ? l.settingsNoRecentMemoryReset
+                      : l.settingsLastReset(
+                          state.lastMemoryResetScope ?? l.settingsUnknownScope,
+                          state.lastMemoryResetAt!.toLocal().toIso8601String(),
+                        ),
                 ),
               ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.auto_awesome_rounded),
-                title: const Text('Clear events only'),
-                subtitle: const Text('Keeps mastery and results.'),
+                title: Text(l.settingsClearEventsOnlyTitle),
+                subtitle: Text(l.settingsClearEventsOnlySubtitle),
                 enabled: !state.memorySettingsBusy,
                 onTap: state.memorySettingsBusy
                     ? null
@@ -123,8 +130,8 @@ class SettingsScreen extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.history_rounded),
-                title: const Text('Clear revision sessions'),
-                subtitle: const Text('Removes quick revision history.'),
+                title: Text(l.settingsClearRevisionSessionsTitle),
+                subtitle: Text(l.settingsClearRevisionSessionsSubtitle),
                 enabled: !state.memorySettingsBusy,
                 onTap: state.memorySettingsBusy
                     ? null
@@ -133,10 +140,8 @@ class SettingsScreen extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.cleaning_services_rounded),
-                title: const Text('Clear all learning memory'),
-                subtitle: const Text(
-                  'Events, revision, game results, mastery.',
-                ),
+                title: Text(l.settingsClearAllLearningMemoryTitle),
+                subtitle: Text(l.settingsClearAllLearningMemorySubtitle),
                 enabled: !state.memorySettingsBusy,
                 onTap: state.memorySettingsBusy
                     ? null
@@ -160,23 +165,23 @@ class SettingsScreen extends StatelessWidget {
           ),
         const SizedBox(height: 16),
         _SettingsTile(
-          title: 'Parent Settings',
+          title: l.parentSettingsTitle,
           icon: Icons.lock_rounded,
           route: AppRoutes.parentPin,
           parentOnly: true,
         ),
         _SettingsTile(
-          title: 'Safety & Privacy',
+          title: l.safetyPrivacyTitle,
           icon: Icons.shield_rounded,
           route: AppRoutes.safetyPrivacy,
         ),
         _SettingsTile(
-          title: 'FAQ',
+          title: l.faqTitle,
           icon: Icons.help_rounded,
           route: AppRoutes.faq,
         ),
         _SettingsTile(
-          title: 'Contact Support',
+          title: l.contactSupportTitle,
           icon: Icons.mail_rounded,
           route: AppRoutes.contactSupport,
         ),
@@ -188,8 +193,8 @@ class SettingsScreen extends StatelessWidget {
               Icons.delete_forever_rounded,
               color: LearnyColors.coral,
             ),
-            title: const Text('Delete Account'),
-            subtitle: const Text('This is a destructive action.'),
+            title: Text(l.deleteAccountTitle),
+            subtitle: Text(l.settingsDeleteAccountSubtitle),
             onTap: () => Navigator.pushNamed(context, AppRoutes.deleteAccount),
           ),
         ),
@@ -201,23 +206,24 @@ class SettingsScreen extends StatelessWidget {
     BuildContext context,
     String scope,
   ) async {
+    final l = L10n.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Confirm clear memory'),
+        title: Text(l.settingsConfirmClearMemoryTitle),
         content: Text(
           scope == 'all'
-              ? 'This clears all learning memory signals. Continue?'
-              : 'Clear memory scope "$scope"?',
+              ? l.settingsClearAllConfirm
+              : l.settingsClearScopeConfirm(scope),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Clear'),
+            child: Text(l.commonClear),
           ),
         ],
       ),
@@ -254,7 +260,7 @@ class _SettingsTile extends StatelessWidget {
           child: Icon(icon, color: LearnyColors.coral),
         ),
         title: Text(title),
-        subtitle: parentOnly ? const Text('Parent only') : null,
+        subtitle: parentOnly ? Text(L10n.of(context).parentOnlyLabel) : null,
         trailing: const Icon(Icons.chevron_right_rounded),
         onTap: () => Navigator.pushNamed(context, route),
       ),

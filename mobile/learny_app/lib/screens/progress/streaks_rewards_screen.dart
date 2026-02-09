@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
 import '../shared/placeholder_screen.dart';
@@ -9,21 +10,26 @@ class StreaksRewardsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Streaks & Rewards',
-      subtitle: 'Keep the momentum going!',
+      title: l.streaksRewardsTitle,
+      subtitle: l.streaksRewardsSubtitle,
       gradient: LearnyGradients.hero,
       body: Column(
         children: [
           ListTile(
             leading: const Icon(Icons.local_fire_department_rounded, color: LearnyColors.coral),
-            title: const Text('Current streak'),
-            subtitle: Text('${state.streakDays} days'),
+            title: Text(l.streaksRewardsCurrentStreak),
+            subtitle: Text(l.streaksRewardsDays(state.streakDays)),
           ),
           ListTile(
             leading: const Icon(Icons.star_rounded, color: LearnyColors.teal),
-            title: const Text('Rewards unlocked'),
-            subtitle: Text('${state.achievements.where((a) => a.isUnlocked).length} badges'),
+            title: Text(l.streaksRewardsUnlocked),
+            subtitle: Text(
+              l.streaksRewardsBadges(
+                state.achievements.where((a) => a.isUnlocked).length,
+              ),
+            ),
           ),
         ],
       ),

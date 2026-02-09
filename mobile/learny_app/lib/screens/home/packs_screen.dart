@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
@@ -9,12 +10,13 @@ class PacksScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     final packs = state.packs;
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
         Text(
-          'Learning Packs',
+          l.packsTitle,
           style: Theme.of(context)
               .textTheme
               .headlineLarge
@@ -22,7 +24,7 @@ class PacksScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Personalized packs based on homework.',
+          l.packsSubtitle,
           style: Theme.of(context)
               .textTheme
               .bodyLarge
@@ -41,7 +43,7 @@ class PacksScreen extends StatelessWidget {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${pack.itemCount} items • ${pack.minutes} min'),
+                  Text(l.packsItemsMinutes(pack.itemCount, pack.minutes)),
                   if (pack.conceptsTotal > 0) ...[
                     const SizedBox(height: 6),
                     ClipRRect(
@@ -61,7 +63,11 @@ class PacksScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${(pack.progress * 100).round()}% mastery • ${pack.conceptsMastered}/${pack.conceptsTotal} concepts',
+                      l.packsMasteryProgress(
+                        (pack.progress * 100).round(),
+                        pack.conceptsMastered,
+                        pack.conceptsTotal,
+                      ),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: LearnyColors.slateMedium,
                           ),
@@ -80,12 +86,12 @@ class PacksScreen extends StatelessWidget {
         const SizedBox(height: 12),
         ElevatedButton(
           onPressed: () => Navigator.pushNamed(context, AppRoutes.packSession),
-          child: const Text('Start a Session'),
+          child: Text(l.packsStartSession),
         ),
         const SizedBox(height: 8),
         OutlinedButton(
           onPressed: () => Navigator.pushNamed(context, AppRoutes.library),
-          child: const Text('View Document Library'),
+          child: Text(l.packsViewLibrary),
         ),
       ],
     );

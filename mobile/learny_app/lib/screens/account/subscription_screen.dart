@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
@@ -10,18 +11,19 @@ class SubscriptionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Subscription',
-      subtitle: 'Learny is free to use. Parents can upgrade anytime.',
+      title: l.subscriptionTitle,
+      subtitle: l.subscriptionSubtitle,
       gradient: LearnyGradients.hero,
       body: ListTile(
         leading: const Icon(Icons.workspace_premium_rounded, color: LearnyColors.coral),
-        title: Text('Current plan: ${state.currentPlan}'),
-        subtitle: const Text('Full access included with the free plan.'),
+        title: Text(l.subscriptionCurrentPlan(state.currentPlan)),
+        subtitle: Text(l.subscriptionPlanIncluded),
       ),
       primaryAction: ElevatedButton(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.upgradePlan),
-        child: const Text('Upgrade Plan'),
+        child: Text(l.subscriptionUpgradePlan),
       ),
     );
   }

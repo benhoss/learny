@@ -86,13 +86,19 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
             Wrap(
               spacing: 12,
               runSpacing: 12,
-              children: const [
-                _AvatarChip(image: AppImages.foxMascot, label: 'Fox'),
-                _AvatarChip(image: AppImages.foxStudying, label: 'Fox Buddy'),
-                _AvatarChip(icon: Icons.bug_report_rounded, label: 'Robot'),
-                _AvatarChip(icon: Icons.emoji_nature_rounded, label: 'Owl'),
-                _AvatarChip(icon: Icons.sports_soccer_rounded, label: 'Penguin'),
-                _AvatarChip(icon: Icons.park_rounded, label: 'Dino'),
+              children: [
+                _AvatarChip(image: AppImages.foxMascot, label: l.createProfileAvatarFox),
+                _AvatarChip(
+                  image: AppImages.foxStudying,
+                  label: l.createProfileAvatarFoxBuddy,
+                ),
+                _AvatarChip(icon: Icons.bug_report_rounded, label: l.createProfileAvatarRobot),
+                _AvatarChip(icon: Icons.emoji_nature_rounded, label: l.createProfileAvatarOwl),
+                _AvatarChip(
+                  icon: Icons.sports_soccer_rounded,
+                  label: l.createProfileAvatarPenguin,
+                ),
+                _AvatarChip(icon: Icons.park_rounded, label: l.createProfileAvatarDino),
               ],
             ),
             const SizedBox(height: 24),

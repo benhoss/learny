@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../state/app_state.dart';
 import '../../state/app_state_scope.dart';
@@ -22,6 +23,7 @@ class ProgressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     final masteryValues = state.mastery.values.toList();
     final masteryAverage = masteryValues.isEmpty
         ? 0.0
@@ -40,28 +42,28 @@ class ProgressScreen extends StatelessWidget {
       (sum, activity) => sum + activity.xpEarned,
     );
     final latestCheer = recentActivities.isEmpty
-        ? 'Upload a document and complete a game to start your momentum.'
+        ? l.progressLatestCheerEmpty
         : recentActivities.first.cheerMessage;
     final momentumLabel = averageScore >= 85
-        ? 'Excellent momentum'
+        ? l.progressMomentumExcellent
         : averageScore >= 65
-        ? 'Steady momentum'
+        ? l.progressMomentumSteady
         : recentCount == 0
-        ? 'Ready to start'
-        : 'Building momentum';
+        ? l.progressMomentumReady
+        : l.progressMomentumBuilding;
 
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
         Text(
-          'Progress',
+          l.homeProgress,
           style: Theme.of(
             context,
           ).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         Text(
-          'Past results, trends, and what to redo next.',
+          l.progressSubtitle,
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(color: LearnyColors.slateMedium),
@@ -86,10 +88,10 @@ class ProgressScreen extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  _MetricChip(label: 'Sessions', value: '$recentCount'),
-                  _MetricChip(label: 'Avg score', value: '$averageScore%'),
-                  _MetricChip(label: 'Recent XP', value: '+$recentXp'),
-                  _MetricChip(label: 'Streak', value: '${state.streakDays}d'),
+                  _MetricChip(label: l.progressMetricSessions, value: '$recentCount'),
+                  _MetricChip(label: l.progressMetricAvgScore, value: '$averageScore%'),
+                  _MetricChip(label: l.progressMetricRecentXp, value: '+$recentXp'),
+                  _MetricChip(label: l.progressMetricStreak, value: l.progressMetricStreakValue(state.streakDays)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -108,12 +110,12 @@ class ProgressScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Weekly Progress'),
+              Text(l.progressWeeklyProgressTitle),
               const SizedBox(height: 12),
               LinearProgressIndicator(value: masteryAverage),
               const SizedBox(height: 8),
               Text(
-                '${(masteryAverage * 100).round()}% mastery across this week\'s packs',
+                l.progressWeeklyMastery((masteryAverage * 100).round()),
               ),
             ],
           ),
@@ -127,19 +129,19 @@ class ProgressScreen extends StatelessWidget {
         Wrap(
           spacing: 12,
           runSpacing: 12,
-          children: const [
+          children: [
             _ActionCard(
-              label: 'Mastery Details',
+              label: l.masteryDetailsTitle,
               route: AppRoutes.masteryDetail,
               icon: Icons.track_changes_rounded,
             ),
             _ActionCard(
-              label: 'Streaks & Rewards',
+              label: l.streaksRewardsTitle,
               route: AppRoutes.streaksRewards,
               icon: Icons.local_fire_department_rounded,
             ),
             _ActionCard(
-              label: 'Achievements',
+              label: l.achievementsTitle,
               route: AppRoutes.achievements,
               icon: Icons.emoji_events_rounded,
             ),
@@ -149,7 +151,7 @@ class ProgressScreen extends StatelessWidget {
         ElevatedButton(
           onPressed: () =>
               Navigator.pushNamed(context, AppRoutes.progressOverview),
-          child: const Text('Open Progress Overview'),
+          child: Text(l.progressOpenOverview),
         ),
       ],
     );
@@ -173,15 +175,15 @@ class _PastActivitySection extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Past Activity',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                  L10n.of(context).progressPastActivityTitle,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
               TextButton(
                 onPressed: () => state.refreshActivitiesFromBackend(),
-                child: const Text('Refresh'),
+                child: Text(L10n.of(context).progressRefresh),
               ),
             ],
           ),
@@ -199,11 +201,11 @@ class _PastActivitySection extends StatelessWidget {
               ),
             ),
           if (state.activities.isEmpty)
-            const ListTile(
-              leading: Icon(Icons.history_rounded),
-              title: Text('No activity yet'),
+            ListTile(
+              leading: const Icon(Icons.history_rounded),
+              title: Text(L10n.of(context).progressNoActivityTitle),
               subtitle: Text(
-                'Play a generated game to see results and motivation here.',
+                L10n.of(context).progressNoActivitySubtitle,
               ),
             )
           else
@@ -211,10 +213,10 @@ class _PastActivitySection extends StatelessWidget {
               (activity) => _ActivityCard(
                 title: activity.subject,
                 subtitle:
-                    '${_formatDate(activity.completedAt)} • ${_labelForGameType(activity.gameType)}',
+                    '${_formatDate(activity.completedAt)} • ${_labelForGameType(context, activity.gameType)}',
                 scorePercent: activity.scorePercent,
                 scoreLabel:
-                    '${activity.correctAnswers}/${activity.totalQuestions} correct',
+                    L10n.of(context).progressScoreLabel(activity.correctAnswers, activity.totalQuestions),
                 progressionDelta: activity.progressionDelta,
                 cheerMessage: activity.cheerMessage,
                 xpEarned: activity.xpEarned,
@@ -243,7 +245,7 @@ class _PastActivitySection extends StatelessWidget {
                 onPressed: state.isSyncingActivities
                     ? null
                     : () => state.loadMoreActivitiesFromBackend(),
-                child: const Text('Load older activity'),
+                child: Text(L10n.of(context).progressLoadOlderActivity),
               ),
             ),
         ],
@@ -264,8 +266,8 @@ class _PastActivitySection extends StatelessWidget {
       final firstType = state.currentPackGameType;
       if (firstType == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No ready games found for this subject yet.'),
+          SnackBar(
+            content: Text(L10n.of(context).progressNoReadyGames),
           ),
         );
         return;
@@ -277,7 +279,7 @@ class _PastActivitySection extends StatelessWidget {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not reopen this subject: $error')),
+        SnackBar(content: Text(L10n.of(context).progressCouldNotReopen(error.toString()))),
       );
     }
   }
@@ -295,8 +297,8 @@ class _PastActivitySection extends StatelessWidget {
       SnackBar(
         content: Text(
           ok
-              ? 'Document regeneration started.'
-              : 'Could not regenerate document right now.',
+              ? L10n.of(context).progressDocumentRegenerationStarted
+              : L10n.of(context).progressCouldNotRegenerateDocument,
         ),
       ),
     );
@@ -315,15 +317,15 @@ class _PastActivitySection extends StatelessWidget {
           child: ListView(
             shrinkWrap: true,
             children: [
-              const ListTile(
-                title: Text('Generate New Game Type'),
+              ListTile(
+                title: Text(L10n.of(context).progressGenerateNewGameTypeTitle),
                 subtitle: Text(
-                  'Choose a type to regenerate from this document',
+                  L10n.of(context).progressGenerateNewGameTypeSubtitle,
                 ),
               ),
               ...gameTypes.map(
                 (type) => ListTile(
-                  title: Text(_labelForGameType(type)),
+                  title: Text(_labelForGameType(context, type)),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => Navigator.pop(context, type),
                 ),
@@ -349,32 +351,32 @@ class _PastActivitySection extends StatelessWidget {
       SnackBar(
         content: Text(
           ok
-              ? 'Regeneration started for ${_labelForGameType(selected)}.'
-              : 'Could not start regeneration for ${_labelForGameType(selected)}.',
+              ? L10n.of(context).progressRegenerationStartedFor(_labelForGameType(context, selected))
+              : L10n.of(context).progressCouldNotStartRegenerationFor(_labelForGameType(context, selected)),
         ),
       ),
     );
   }
 
-  static String _labelForGameType(String type) {
+  static String _labelForGameType(BuildContext context, String type) {
     switch (type) {
       case 'true_false':
-        return 'True or False';
+        return L10n.of(context).gameTypeTrueFalse;
       case 'multiple_select':
-        return 'Multiple Select';
+        return L10n.of(context).gameTypeMultiSelect;
       case 'fill_blank':
-        return 'Fill in the Blank';
+        return L10n.of(context).gameTypeFillBlank;
       case 'short_answer':
-        return 'Short Answer';
+        return L10n.of(context).gameTypeShortAnswer;
       case 'ordering':
-        return 'Ordering';
+        return L10n.of(context).gameTypeOrdering;
       case 'flashcards':
-        return 'Flashcards';
+        return L10n.of(context).gameTypeFlashcards;
       case 'matching':
-        return 'Matching';
+        return L10n.of(context).gameTypeMatching;
       case 'quiz':
       default:
-        return 'Quiz';
+        return L10n.of(context).gameTypeQuiz;
     }
   }
 
@@ -437,15 +439,16 @@ class _ActivityCardState extends State<_ActivityCard> {
   @override
   Widget build(BuildContext context) {
     final delta = widget.progressionDelta;
+    final l = L10n.of(context);
     final deltaColor = (delta ?? 0) >= 0
         ? LearnyColors.teal
         : LearnyColors.coral;
     final deltaLabel = delta == null
-        ? 'New'
+        ? l.progressDeltaNew
         : delta >= 0
         ? '+$delta%'
         : '$delta%';
-    final scoreBand = _scoreBand(widget.scorePercent);
+    final scoreBand = _scoreBand(context, widget.scorePercent);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -517,7 +520,11 @@ class _ActivityCardState extends State<_ActivityCard> {
             ),
             const SizedBox(height: 6),
             Text(
-              '${widget.scorePercent}% • ${widget.scoreLabel} • +${widget.xpEarned} XP',
+              l.progressActivitySummary(
+                widget.scorePercent,
+                widget.scoreLabel,
+                widget.xpEarned,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
@@ -536,19 +543,19 @@ class _ActivityCardState extends State<_ActivityCard> {
                   onPressed: _isBusy || widget.onRedoSubject == null
                       ? null
                       : () => _runAction(widget.onRedoSubject),
-                  child: const Text('Redo Subject'),
+                  child: Text(l.progressRedoSubject),
                 ),
                 OutlinedButton(
                   onPressed: _isBusy || widget.onRedoDocument == null
                       ? null
                       : () => _runAction(widget.onRedoDocument),
-                  child: const Text('Redo Document'),
+                  child: Text(l.progressRedoDocument),
                 ),
                 OutlinedButton(
                   onPressed: _isBusy || widget.onGenerateNewType == null
                       ? null
                       : () => _runAction(widget.onGenerateNewType),
-                  child: const Text('New Game Type'),
+                  child: Text(l.progressNewGameType),
                 ),
               ],
             ),
@@ -558,17 +565,17 @@ class _ActivityCardState extends State<_ActivityCard> {
     );
   }
 
-  _ScoreBand _scoreBand(int scorePercent) {
+  _ScoreBand _scoreBand(BuildContext context, int scorePercent) {
     if (scorePercent >= 85) {
-      return const _ScoreBand(label: 'Strong', color: LearnyColors.teal);
+      return _ScoreBand(label: L10n.of(context).progressScoreBandStrong, color: LearnyColors.teal);
     }
     if (scorePercent >= 65) {
-      return const _ScoreBand(
-        label: 'Improving',
+      return _ScoreBand(
+        label: L10n.of(context).progressScoreBandImproving,
         color: LearnyColors.skyPrimary,
       );
     }
-    return const _ScoreBand(label: 'Keep Going', color: LearnyColors.sunshine);
+    return _ScoreBand(label: L10n.of(context).progressScoreBandKeepGoing, color: LearnyColors.sunshine);
   }
 }
 

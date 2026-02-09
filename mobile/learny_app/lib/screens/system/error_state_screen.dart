@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../shared/placeholder_screen.dart';
 
@@ -7,14 +8,15 @@ class ErrorStateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Something Went Wrong',
-      subtitle: 'We could not process the document.',
+      title: l.errorStateTitle,
+      subtitle: l.errorStateSubtitle,
       gradient: LearnyGradients.trust,
       body: const Icon(Icons.error_outline_rounded, size: 80, color: LearnyColors.coral),
       primaryAction: ElevatedButton(
         onPressed: () {},
-        child: const Text('Try Again'),
+        child: Text(l.errorStateTryAgain),
       ),
     );
   }

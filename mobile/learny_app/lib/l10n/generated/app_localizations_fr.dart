@@ -390,6 +390,19 @@ class L10nFr extends L10n {
   String get statusGameGeneration => 'Génération des jeux et quiz...';
 
   @override
+  String get statusQuickScanQueued => 'Analyse rapide en file d\'attente...';
+
+  @override
+  String get statusQuickScanProcessing => 'Exécution de l\'analyse rapide...';
+
+  @override
+  String get statusAwaitingValidation => 'En attente de votre validation...';
+
+  @override
+  String get statusQuickScanFailed =>
+      'Échec de l\'analyse rapide. Veuillez réessayer.';
+
+  @override
   String get statusReady => 'Quiz prêt !';
 
   @override
@@ -435,6 +448,18 @@ class L10nFr extends L10n {
 
   @override
   String get stageFirstGameReady => 'Premier jeu prêt';
+
+  @override
+  String get stageQuickScanQueue => 'File d\'attente d\'analyse rapide';
+
+  @override
+  String get stageQuickScanProcessing => 'Scan rapide';
+
+  @override
+  String get stageAwaitingValidation => 'En attente de validation';
+
+  @override
+  String get stageQuickScanFailed => 'Échec de l\'analyse rapide';
 
   @override
   String get stageQueued => 'En attente';
@@ -483,6 +508,15 @@ class L10nFr extends L10n {
 
   @override
   String get docStatusQueued => 'En attente';
+
+  @override
+  String get docStatusQuickScanQueued => 'File d\'attente d\'analyse rapide';
+
+  @override
+  String get docStatusQuickScanProcessing => 'anayse rapide';
+
+  @override
+  String get docStatusAwaitingValidation => 'En attente de validation';
 
   @override
   String get docStatusProcessing => 'Traitement';
@@ -904,4 +938,921 @@ class L10nFr extends L10n {
 
   @override
   String get switchProfileHint => 'Appuie sur un profil pour changer';
+
+  @override
+  String get accountSettingsEmailLabel => 'E-mail';
+
+  @override
+  String get accountSettingsGradeRangeLabel => 'Plage de notes préférée';
+
+  @override
+  String get accountSettingsNameLabel => 'Nom';
+
+  @override
+  String get accountSettingsSaveChanges => 'Enregistrer les modifications';
+
+  @override
+  String get accountSettingsSubtitle =>
+      'Gérer le profil et les préférences des parents.';
+
+  @override
+  String get accountSettingsTitle => 'Paramètres du compte';
+
+  @override
+  String get achievementsSubtitle =>
+      'Je célèbre les victoires, qu’elles soient grandes ou petites.';
+
+  @override
+  String get achievementsTitle => 'Réussites';
+
+  @override
+  String get authEmailLabel => 'E-mail';
+
+  @override
+  String get authPasswordLabel => 'Mot de passe';
+
+  @override
+  String get cameraCaptureChooseMultiplePages => 'Choisir plusieurs pages';
+
+  @override
+  String get cameraCaptureChooseSinglePhoto => 'Choisir une seule photo';
+
+  @override
+  String get cameraCaptureSubtitle =>
+      'Encadrez la feuille de calcul et prenez une photo.';
+
+  @override
+  String get cameraCaptureTakePhoto => 'Prendre une photo';
+
+  @override
+  String get cameraCaptureTitle => 'Snap Homework';
+
+  @override
+  String get cameraCaptureUploadPdfInstead => 'Télécharger le PDF à la place';
+
+  @override
+  String get childSelectorSubtitle => 'Basculer entre les enfants.';
+
+  @override
+  String get childSelectorTitle => 'Profils enfants';
+
+  @override
+  String get commonCancel => 'Annuler';
+
+  @override
+  String get commonClear => 'Vide';
+
+  @override
+  String contactSupportFrom(String email) {
+    return 'De : $email';
+  }
+
+  @override
+  String get contactSupportMessageLabel => 'Message';
+
+  @override
+  String get contactSupportSendMessage => 'Envoyer un message';
+
+  @override
+  String get contactSupportSubtitle =>
+      'NOUS VOUS RÉPONDRONS DANS LES 24 HEURES';
+
+  @override
+  String get contactSupportTitle => 'Contacter le support';
+
+  @override
+  String get contactSupportTopicLabel => 'Thème';
+
+  @override
+  String get createProfileAvatarDino => 'Dino';
+
+  @override
+  String get createProfileAvatarFox => 'Renard';
+
+  @override
+  String get createProfileAvatarFoxBuddy => 'Ami Renard';
+
+  @override
+  String get createProfileAvatarOwl => 'Hibou';
+
+  @override
+  String get createProfileAvatarPenguin => 'Pingouin';
+
+  @override
+  String get createProfileAvatarRobot => 'Robot';
+
+  @override
+  String deleteAccountBody(String name) {
+    return 'La suppression du compte de $name supprimera tous les profils et documents enfants. Cela ne peut pas être annulé.';
+  }
+
+  @override
+  String get deleteAccountConfirmDelete => 'Confirmer la suppression';
+
+  @override
+  String get deleteAccountSubtitle => 'Cette action est permanente.';
+
+  @override
+  String get deleteAccountTitle => 'Supprimer le compte';
+
+  @override
+  String get emptyStateSubtitle =>
+      'Téléchargez une feuille de calcul pour commencer.';
+
+  @override
+  String get emptyStateTitle => 'Rien ici pour l\'instant.';
+
+  @override
+  String get errorStateSubtitle => 'Nous n\'avons pas pu traiter le document.';
+
+  @override
+  String get errorStateTitle => 'Quelque chose a mal tournée';
+
+  @override
+  String get errorStateTryAgain => 'Réessayez';
+
+  @override
+  String get faqSubtitle => '• des réponses à des questions courantes';
+
+  @override
+  String get faqTitle => 'FAQ';
+
+  @override
+  String get forgotPasswordEmailAddressLabel => 'Adresse e-mail';
+
+  @override
+  String get forgotPasswordSendLink => 'Ajouter un lien';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'Nous enverrons un lien de réinitialisation à votre adresse e-mail.';
+
+  @override
+  String get forgotPasswordTitle => 'Réinit mot de passe';
+
+  @override
+  String get homeTabHome => 'Accueil';
+
+  @override
+  String get homeTabPacks => 'Packs';
+
+  @override
+  String get homeTabProgress => 'Avancement';
+
+  @override
+  String get homeTabSettings => 'Réglages';
+
+  @override
+  String learningTimeMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get learningTimeSubtitle =>
+      'Une comparaison des données canadiennes et néerlandaises sur l&apos;emploi du temps montre que les adolescents néerlandais consacrent 20 minutes par jour de plus que les adolescents canadiens à l&apos;école et aux travaux scolaires, mais environ 20 minutes de moins au travail rémunéré et 10 minutes de moins aux tâches domestiques.';
+
+  @override
+  String get learningTimeTitle => 'Durée du cours';
+
+  @override
+  String get loginButton => 'Se connecter';
+
+  @override
+  String get loginCreateAccountPrompt =>
+      'Vous êtes nouveau ici ? Créez un compte.';
+
+  @override
+  String get loginForgotPassword => 'Mot de passe oublié ?';
+
+  @override
+  String get loginSubtitle =>
+      'Connectez-vous pour poursuivre le parcours d\'apprentissage de votre enfant.';
+
+  @override
+  String get loginTitle => 'Bienvenu à nouveau';
+
+  @override
+  String get masteryDetailsEmptySubtitle =>
+      'Téléchargez et terminez des jeux pour développer la maîtrise du concept.';
+
+  @override
+  String get masteryDetailsNoDataSubtitle =>
+      'Exécutez au moins un jeu généré pour remplir cette vue.';
+
+  @override
+  String get masteryDetailsNoDataTitle => 'Pas encore de données de maîtrise';
+
+  @override
+  String get masteryDetailsSubtitle =>
+      'Répartition au niveau du concept à partir du contenu de votre étude téléchargé.';
+
+  @override
+  String get masteryDetailsTitle => 'Maîtrise du détail';
+
+  @override
+  String get masteryStatusMastered => 'Maitrise';
+
+  @override
+  String get masteryStatusNeedsReview =>
+      'Nécessite une révision@option: check trans-unit state';
+
+  @override
+  String get masteryStatusPracticing => 'Entraînement';
+
+  @override
+  String masteryStatusWithPercent(String label, int percent) {
+    return '$label • $percent%';
+  }
+
+  @override
+  String get notificationsMarkRead => 'Marquer comme lu';
+
+  @override
+  String get notificationsSubtitle =>
+      'Nudges amicaux pour les parents et les enfants.';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get offlineRetry => 'Réessayer';
+
+  @override
+  String get offlineSubtitle =>
+      'Vérifiez votre connexion pour synchroniser la progression.';
+
+  @override
+  String get offlineTitle => 'Vous êtes déconnecté(e)';
+
+  @override
+  String get onboardingConsentAgreeButton => 'accepter et poursuivre';
+
+  @override
+  String get onboardingConsentCoppaSubtitle =>
+      'Consentement des parents requis avant utilisation.';
+
+  @override
+  String get onboardingConsentCoppaTitle => 'COPPA-friendly';
+
+  @override
+  String get onboardingConsentEducatorSubtitle =>
+      'Le contenu est conforme aux normes de l\'école.';
+
+  @override
+  String get onboardingConsentEducatorTitle => 'Conçu par un éducateur';
+
+  @override
+  String get onboardingConsentNoDataSellingSubtitle =>
+      'Nous ne partageons ni ne vendons jamais d\'informations personnelles.';
+
+  @override
+  String get onboardingConsentNoDataSellingTitle => 'Aucune vente de données';
+
+  @override
+  String get onboardingConsentSubtitle =>
+      'Nous gardons les enfants en sécurité, privés et sans publicité.';
+
+  @override
+  String get onboardingConsentTitle => 'Formulaire de consentement des parents';
+
+  @override
+  String get onboardingCreateProfileButton => 'Créez un profil';
+
+  @override
+  String get onboardingFoxBlurb =>
+      'Apprendre le renard permet de pratiquer de manière ludique et concentrée.';
+
+  @override
+  String get onboardingGetStarted => 'Démarrez';
+
+  @override
+  String get onboardingHowItWorksSubtitle =>
+      'Des devoirs à la maîtrise en 3 étapes rapides.';
+
+  @override
+  String get onboardingHowItWorksTitle => 'Comment ça marche';
+
+  @override
+  String get onboardingStep1Subtitle =>
+      'Prenez une photo de n\'importe quelle feuille de calcul ou page.';
+
+  @override
+  String get onboardingStep1Title => 'Vos devoirs';
+
+  @override
+  String get onboardingStep2Subtitle =>
+      'Cartes-éclair, quiz et correspondance en quelques secondes.';
+
+  @override
+  String get onboardingStep2Title => 'L\'IA crée des jeux d\'apprentissage';
+
+  @override
+  String get onboardingStep3Subtitle =>
+      'Sessions courtes avec des stries et des boosters d\'XP.';
+
+  @override
+  String get onboardingStep3Title => 'Apprendre et gagner des récompenses';
+
+  @override
+  String get onboardingWelcomeSubtitle =>
+      'Votre compagnon d\'apprentissage IA pour des sessions d\'étude intelligentes et ludiques.';
+
+  @override
+  String get onboardingWelcomeTitle => 'Bienvenue dans Learny !';
+
+  @override
+  String packsItemsMinutes(int itemCount, int minutes) {
+    return '$itemCount articles • $minutes min';
+  }
+
+  @override
+  String packsMasteryProgress(int percent, int mastered, int total) {
+    return '$percent% Maîtrise • Concepts $mastered/$total';
+  }
+
+  @override
+  String get packsStartSession => 'Débuter une séance';
+
+  @override
+  String get packsSubtitle => 'Packs personnalisés basés sur les devoirs.';
+
+  @override
+  String get packsTitle => 'Packs d\'apprentissage';
+
+  @override
+  String get packsViewLibrary => 'Bibliothèque de documents';
+
+  @override
+  String get parentDashboardActiveChild => 'Enfant actif';
+
+  @override
+  String get parentDashboardChildSelector => 'Sélecteur enfant';
+
+  @override
+  String get parentDashboardLearningTime => 'Durée du cours';
+
+  @override
+  String get parentDashboardSubtitle =>
+      'Suivez les progrès et guidez les prochaines étapes.';
+
+  @override
+  String get parentDashboardTitle => 'Tableau de bord parent';
+
+  @override
+  String get parentDashboardWeakAreas => 'Points faibles';
+
+  @override
+  String get parentDashboardWeeklySummary => 'Résumé hebdomadaire';
+
+  @override
+  String get parentOnlyLabel => 'Parent seulement';
+
+  @override
+  String get parentPinChangeSubtitle =>
+      'Définissez un nouveau code PIN pour l\'accès réservé aux parents.';
+
+  @override
+  String get parentPinChangeTitle => 'Modifier le code NIP';
+
+  @override
+  String get parentPinCodeLabel => 'Code à 4 chiffres';
+
+  @override
+  String get parentPinEnterSubtitle =>
+      'Saisissez votre code PIN de travail pour continuer.';
+
+  @override
+  String get parentPinSaveButton => 'Enregistrer le CODE PIN';
+
+  @override
+  String get parentPinUnlockButton => 'Déverrouiller les paramètres parents';
+
+  @override
+  String get parentSettingsChildProfiles => 'Profils enfants';
+
+  @override
+  String get parentSettingsParentProfile => 'Profil parent';
+
+  @override
+  String parentSettingsProfilesCount(int count) {
+    return 'Profils $count';
+  }
+
+  @override
+  String get parentSettingsProtectSubtitle =>
+      'Protéger les paramètres réservés aux parents.';
+
+  @override
+  String get parentSettingsSetChangePin => 'Définir / Changer le CODE PIN';
+
+  @override
+  String get parentSettingsSubscription => 'Inscription';
+
+  @override
+  String get parentSettingsSubtitle =>
+      'Gérez les contrôles d\'abonnement et de famille.';
+
+  @override
+  String get parentSettingsTitle => 'paramètres parentaux';
+
+  @override
+  String get planAlreadyHaveAccount =>
+      'Vous avez déjà un compte? Connectez vous';
+
+  @override
+  String get planChooseSubtitle =>
+      'Commencez gratuitement. Mettez à niveau à tout moment.';
+
+  @override
+  String get planChooseTitle => 'Choisissez votre abonnement';
+
+  @override
+  String get planFamilySubtitle => 'Jusqu\'à 4 profils enfants';
+
+  @override
+  String get planFamilyTitle => 'Famille';
+
+  @override
+  String get planFreeSubtitle => '3 paquets par mois';
+
+  @override
+  String get planFreeTitle => 'Libre';
+
+  @override
+  String get planProSubtitle => 'Packs illimités + jeux';
+
+  @override
+  String get planProTitle => 'Pro';
+
+  @override
+  String get safetyPrivacyCoppaSubtitle => 'Il faut un consentement parental.';
+
+  @override
+  String get safetyPrivacyCoppaTitle => 'Conforme COPPA';
+
+  @override
+  String get safetyPrivacyEncryptedSubtitle => 'Les fichiers sont protégés';
+
+  @override
+  String get safetyPrivacyEncryptedTitle => 'Stockage chiffré';
+
+  @override
+  String get safetyPrivacyNoAdsSubtitle => 'Nous ne monétisons pas les données';
+
+  @override
+  String get safetyPrivacyNoAdsTitle => 'Aucune publicité, aucune vente';
+
+  @override
+  String get safetyPrivacySubtitle =>
+      'Construit pour les enfants, approuvé par les parents.';
+
+  @override
+  String get safetyPrivacyTitle => 'Sécurité / confidentialité';
+
+  @override
+  String get settingsClearAllConfirm =>
+      'Cela efface tous les signaux de mémoire d\'apprentissage. Continuer ?';
+
+  @override
+  String get settingsClearAllLearningMemorySubtitle =>
+      'Événements, révision, résultats du jeu, maîtrise.';
+
+  @override
+  String get settingsClearAllLearningMemoryTitle =>
+      'Effacer toute la mémoire d\'apprentissage';
+
+  @override
+  String get settingsClearEventsOnlySubtitle =>
+      'Maintient la maîtrise et les résultats.';
+
+  @override
+  String get settingsClearEventsOnlyTitle => 'Supprimer les événements';
+
+  @override
+  String get settingsClearMemoryScopeTitle => 'Effacer la portée de la mémoire';
+
+  @override
+  String get settingsClearRevisionSessionsSubtitle =>
+      'Supprime l\'historique des révisions rapides.';
+
+  @override
+  String get settingsClearRevisionSessionsTitle =>
+      'Séances de révision claires';
+
+  @override
+  String settingsClearScopeConfirm(String scope) {
+    return 'Effacer l\'étendue de mémoire « $scope » ?';
+  }
+
+  @override
+  String get settingsConfirmClearMemoryTitle => 'Confirmer la mémoire claire';
+
+  @override
+  String get settingsDeleteAccountSubtitle => 'C\'est une action destructrice.';
+
+  @override
+  String get settingsDetailLevelBrief => 'Résumé';
+
+  @override
+  String get settingsDetailLevelDetailed => 'Détaillé';
+
+  @override
+  String settingsLastReset(String scope, String time) {
+    return 'Dernière réinitialisation : $scope à $time';
+  }
+
+  @override
+  String get settingsLearningMemoryTitle => 'Apprentissage/mémoire';
+
+  @override
+  String get settingsNoRecentMemoryReset =>
+      'Aucune réinitialisation récente de la mémoire.';
+
+  @override
+  String get settingsNotificationsSubtitle =>
+      'Obtenez des mises à jour sur les nouveaux packs et les nouvelles séries.';
+
+  @override
+  String get settingsNotificationsTitle => 'Notifications';
+
+  @override
+  String get settingsPersonalizedRecommendationsSubtitle =>
+      'Utilisez l\'historique des activités pour adapter les prochaines étapes.';
+
+  @override
+  String get settingsPersonalizedRecommendationsTitle =>
+      'Personalized Recommendations:';
+
+  @override
+  String get settingsRationaleDetailLevelTitle =>
+      'Niveau de détail de la justification';
+
+  @override
+  String get settingsRecommendationRationaleSubtitle =>
+      'Afficher les explications « pourquoi cette suggestion ».';
+
+  @override
+  String get settingsRecommendationRationaleTitle =>
+      '<g id=\"1\">Recommandation/Justification </g>';
+
+  @override
+  String get settingsSoundEffectsSubtitle => 'Jouer des sons pendant les jeux.';
+
+  @override
+  String get settingsSoundEffectsTitle => 'Effets Sonores';
+
+  @override
+  String get settingsStudyRemindersSubtitle =>
+      'Rappels quotidiens pour les courtes sessions.';
+
+  @override
+  String get settingsStudyRemindersTitle => 'Rappels de l\'étude';
+
+  @override
+  String get settingsTitle => 'Réglages';
+
+  @override
+  String get settingsUnknownScope => 'inconnu';
+
+  @override
+  String get signupCreateAccount => 'Créer compte';
+
+  @override
+  String get signupFullNameLabel => 'Nom complet';
+
+  @override
+  String get signupLoginPrompt => 'Vous avez déjà un compte? Connectez vous';
+
+  @override
+  String get signupSubtitle =>
+      'Configurez un profil parent sécurisé pour gérer l\'apprentissage.';
+
+  @override
+  String get signupTitle => 'Créez votre compte parent';
+
+  @override
+  String streaksRewardsBadges(int count) {
+    return 'Badges $count';
+  }
+
+  @override
+  String get streaksRewardsCurrentStreak => 'Série actuelle';
+
+  @override
+  String streaksRewardsDays(int count) {
+    return '$count jours';
+  }
+
+  @override
+  String get streaksRewardsSubtitle => 'Continuez sur votre lancée. ';
+
+  @override
+  String get streaksRewardsTitle => 'Streaks et récompenses';
+
+  @override
+  String get streaksRewardsUnlocked => 'Récompenses débloquées';
+
+  @override
+  String subscriptionCurrentPlan(String plan) {
+    return 'Formule actuelle : $plan';
+  }
+
+  @override
+  String get subscriptionPlanIncluded =>
+      'Accès complet inclus avec le plan gratuit.';
+
+  @override
+  String get subscriptionSubtitle =>
+      'Learny est gratuit à utiliser. Les parents peuvent mettre à niveau à tout moment.';
+
+  @override
+  String get subscriptionTitle => 'Inscription';
+
+  @override
+  String get subscriptionUpgradePlan => 'Mettre à niveau l\'abonnement';
+
+  @override
+  String get upgradePlanContinueToCheckout => 'Continuer à la caisse';
+
+  @override
+  String get upgradePlanSubtitle =>
+      'Débloquez des packs illimités et des informations sur les parents.';
+
+  @override
+  String get upgradePlanTitle => 'Mettre à niveau l\'abonnement';
+
+  @override
+  String get verifyEmailCodeLabel => 'Code de vérification';
+
+  @override
+  String get verifyEmailContinueToApp => 'Continuer vers l\'application';
+
+  @override
+  String get verifyEmailResendCode => 'Renvoyer le code';
+
+  @override
+  String get verifyEmailSubtitle =>
+      'Nous avons envoyé un code à 6 chiffres à parent@example.com.';
+
+  @override
+  String get verifyEmailTitle => 'Vérifier votre courriel';
+
+  @override
+  String get weakAreasSubtitle => 'Zones de concentration à examiner ensuite.';
+
+  @override
+  String get weakAreasTitle => 'Points faibles';
+
+  @override
+  String get weeklySummaryAchievements => 'Réussites';
+
+  @override
+  String weeklySummaryNewBadges(int count) {
+    return '$count nouveaux badges';
+  }
+
+  @override
+  String get weeklySummarySessionsCompleted => 'Sessions terminées :';
+
+  @override
+  String weeklySummarySessionsValue(int count) {
+    return '$count sessions';
+  }
+
+  @override
+  String get weeklySummarySubtitle => 'Faits marquants des 7 derniers jours.';
+
+  @override
+  String get weeklySummaryTimeSpent => 'Temps utilisé';
+
+  @override
+  String weeklySummaryTimeSpentValue(int hours, int minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String get weeklySummaryTitle => 'Résumé hebdomadaire';
+
+  @override
+  String get weeklySummaryTopSubject => 'Sujet principal';
+
+  @override
+  String processingAlternativesLabel(String alternatives) {
+    return 'Alternatives : $alternatives';
+  }
+
+  @override
+  String processingConfidenceLabel(int percent, String modelSuffix) {
+    return 'Confiance : $percent%$modelSuffix';
+  }
+
+  @override
+  String get processingConfirmGenerate => 'Confirmer et générer';
+
+  @override
+  String get processingLanguageLabel => 'Langue';
+
+  @override
+  String get processingNoAlternatives => 'Aucune alternative suggérée.';
+
+  @override
+  String get processingRescan => 'Balayer à nouveau';
+
+  @override
+  String get processingStarting => 'Démarrage...';
+
+  @override
+  String get processingTopicLabel => 'Thème';
+
+  @override
+  String get processingTopicLanguageRequired =>
+      'Le sujet et la langue sont requis pour continuer.';
+
+  @override
+  String get processingValidateScanSubtitle =>
+      'Confirmez ou modifiez le sujet et la langue avant le début de la génération approfondie.';
+
+  @override
+  String get processingValidateScanTitle => 'Valider l\'analyse de l\'IA';
+
+  @override
+  String progressActivitySummary(int percent, String scoreLabel, int xp) {
+    return '$percent% • $scoreLabel • +$xp XP';
+  }
+
+  @override
+  String get progressCouldNotRegenerateDocument =>
+      'Impossible de régénérer le document pour le moment.';
+
+  @override
+  String progressCouldNotReopen(String error) {
+    return 'Impossible de rouvrir ce sujet : $error';
+  }
+
+  @override
+  String progressCouldNotStartRegenerationFor(String gameType) {
+    return 'Impossible de démarrer la régénération pour $gameType.';
+  }
+
+  @override
+  String get progressDeltaNew => 'Nouveau';
+
+  @override
+  String get progressDocumentRegenerationStarted =>
+      'La régénération du document a commencé.';
+
+  @override
+  String get progressGenerateNewGameTypeSubtitle =>
+      'Choisissez un type à régénérer à partir de ce document';
+
+  @override
+  String get progressGenerateNewGameTypeTitle =>
+      'Générer un nouveau type de jeu';
+
+  @override
+  String get progressLatestCheerEmpty =>
+      'Téléchargez un document et terminez un jeu pour démarrer votre dynamique.';
+
+  @override
+  String get progressLoadOlderActivity => 'Charger une activité plus ancienne';
+
+  @override
+  String get progressMetricAvgScore => 'Score moy.';
+
+  @override
+  String get progressMetricRecentXp => 'XP récente';
+
+  @override
+  String get progressMetricSessions => 'Sessions';
+
+  @override
+  String get progressMetricStreak => 'Série';
+
+  @override
+  String progressMetricStreakValue(int days) {
+    return '${days}d';
+  }
+
+  @override
+  String get progressMomentumBuilding => 'Avancer plus vite et mieux';
+
+  @override
+  String get progressMomentumExcellent => 'Excellente dynamique';
+
+  @override
+  String get progressMomentumReady => 'Prêtes au démarrage';
+
+  @override
+  String get progressMomentumSteady => 'Un élan constant';
+
+  @override
+  String get progressNewGameType => 'Nouveau type de jeu';
+
+  @override
+  String get progressNoActivitySubtitle =>
+      'Jouez à un jeu généré pour voir les résultats et la motivation ici.';
+
+  @override
+  String get progressNoActivityTitle => 'Aucune activité pour l\'instant';
+
+  @override
+  String get progressNoReadyGames =>
+      'Aucun jeu prêt trouvé pour ce sujet pour le moment.';
+
+  @override
+  String get progressOpenOverview => 'Aperçu de la progression';
+
+  @override
+  String get progressOverviewAreasToFocus => 'Domaines prioritaires';
+
+  @override
+  String get progressOverviewBadges => 'Badges';
+
+  @override
+  String get progressOverviewDayStreak => 'Day Streak';
+
+  @override
+  String progressOverviewLevelLearner(int level) {
+    return 'Niveau $level Étudiant';
+  }
+
+  @override
+  String get progressOverviewMastery => 'Maîtrise';
+
+  @override
+  String progressOverviewMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get progressOverviewSessions => 'Sessions';
+
+  @override
+  String get progressOverviewTitle => 'Votre progression';
+
+  @override
+  String get progressOverviewTopSubject => 'Sujet principal';
+
+  @override
+  String get progressOverviewTopicMastery => 'Maîtrise du sujet';
+
+  @override
+  String get progressOverviewTopicMasteryEmpty =>
+      'Complétez quelques leçons pour voir votre maîtrise !';
+
+  @override
+  String progressOverviewTotalXp(int xp) {
+    return '$xp XP total';
+  }
+
+  @override
+  String progressOverviewXpToNextLevel(int xpToNext, int nextLevel) {
+    return '$xpToNext XP au niveau $nextLevel';
+  }
+
+  @override
+  String get progressOverviewXpToday => 'XP aujourd\'hui';
+
+  @override
+  String get progressPastActivityTitle => 'Activité passée';
+
+  @override
+  String get progressRedoDocument => 'Refaire le document';
+
+  @override
+  String get progressRedoSubject => 'Refaire le sujet';
+
+  @override
+  String get progressRefresh => 'Actualiser';
+
+  @override
+  String progressRegenerationStartedFor(String gameType) {
+    return 'La régénération a commencé pour $gameType.';
+  }
+
+  @override
+  String get progressScoreBandImproving => 'En amélioration';
+
+  @override
+  String get progressScoreBandKeepGoing => 'Continue';
+
+  @override
+  String get progressScoreBandStrong => 'Fort';
+
+  @override
+  String progressScoreLabel(int correct, int total) {
+    return '$correct/$total correct';
+  }
+
+  @override
+  String get progressSubtitle =>
+      'Résultats passés, tendances et quoi refaire ensuite.';
+
+  @override
+  String progressWeeklyMastery(int percent) {
+    return '$percent% maîtrise des packs de cette semaine';
+  }
+
+  @override
+  String get progressWeeklyProgressTitle => 'Progrès hebdomadaire';
 }

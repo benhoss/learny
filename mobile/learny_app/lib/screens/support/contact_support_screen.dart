@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
 import '../shared/placeholder_screen.dart';
@@ -9,16 +10,17 @@ class ContactSupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Contact Support',
-      subtitle: 'We usually respond within 24 hours.',
+      title: l.contactSupportTitle,
+      subtitle: l.contactSupportSubtitle,
       gradient: LearnyGradients.trust,
       body: Column(
         children: [
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'From: ${state.parentProfile.email}',
+              l.contactSupportFrom(state.parentProfile.email),
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium
@@ -35,18 +37,18 @@ class ContactSupportScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: const InputDecoration(labelText: 'Topic'),
+            decoration: InputDecoration(labelText: l.contactSupportTopicLabel),
           ),
           const SizedBox(height: 12),
-          const TextField(
+          TextField(
             maxLines: 4,
-            decoration: InputDecoration(labelText: 'Message'),
+            decoration: InputDecoration(labelText: l.contactSupportMessageLabel),
           ),
         ],
       ),
       primaryAction: ElevatedButton(
         onPressed: () {},
-        child: const Text('Send Message'),
+        child: Text(l.contactSupportSendMessage),
       ),
     );
   }

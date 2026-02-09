@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../shared/placeholder_screen.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
@@ -9,9 +10,10 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Notifications',
-      subtitle: 'Friendly nudges for parents and kids.',
+      title: l.notificationsTitle,
+      subtitle: l.notificationsSubtitle,
       gradient: LearnyGradients.trust,
       body: Column(
         children: state.notifications
@@ -32,7 +34,7 @@ class NotificationsScreen extends StatelessWidget {
                       ? null
                       : TextButton(
                           onPressed: () => state.markNotificationRead(item.id),
-                          child: const Text('Mark read'),
+                          child: Text(l.notificationsMarkRead),
                         ),
                 ),
               ),

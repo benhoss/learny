@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_assets.dart';
 import '../../theme/app_theme.dart';
@@ -9,6 +10,7 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L10n.of(context);
     return GradientScaffold(
       gradient: LearnyGradients.hero,
       child: Stack(
@@ -33,7 +35,7 @@ class WelcomeScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 16),
                 Text(
-                  'Welcome to Learny!',
+                  l.onboardingWelcomeTitle,
                   style: Theme.of(context)
                       .textTheme
                       .headlineLarge
@@ -41,7 +43,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Your AI learning buddy for smart, playful study sessions.',
+                  l.onboardingWelcomeSubtitle,
                   style: Theme.of(context)
                       .textTheme
                       .bodyLarge
@@ -95,7 +97,7 @@ class WelcomeScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () => Navigator.pushNamed(context, AppRoutes.howItWorks),
-                    child: const Text('Get Started'),
+                    child: Text(l.onboardingGetStarted),
                   ),
                 ),
               ],

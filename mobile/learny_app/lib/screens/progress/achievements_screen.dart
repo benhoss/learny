@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
 import '../shared/placeholder_screen.dart';
@@ -10,8 +11,8 @@ class AchievementsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     return PlaceholderScreen(
-      title: 'Achievements',
-      subtitle: 'Celebrate wins big and small.',
+      title: L10n.of(context).achievementsTitle,
+      subtitle: L10n.of(context).achievementsSubtitle,
       gradient: LearnyGradients.hero,
       body: Wrap(
         spacing: 12,

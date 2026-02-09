@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../state/app_state_scope.dart';
 import '../shared/placeholder_screen.dart';
@@ -9,31 +10,34 @@ class AccountSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final l = L10n.of(context);
     return PlaceholderScreen(
-      title: 'Account Settings',
-      subtitle: 'Manage parent profile and preferences.',
+      title: l.accountSettingsTitle,
+      subtitle: l.accountSettingsSubtitle,
       gradient: LearnyGradients.trust,
       body: Column(
         children: [
           TextFormField(
             initialValue: state.parentProfile.name,
-            decoration: const InputDecoration(labelText: 'Name'),
+            decoration: InputDecoration(labelText: l.accountSettingsNameLabel),
           ),
           const SizedBox(height: 12),
           TextFormField(
             initialValue: state.parentProfile.email,
-            decoration: const InputDecoration(labelText: 'Email'),
+            decoration: InputDecoration(labelText: l.accountSettingsEmailLabel),
           ),
           const SizedBox(height: 12),
           TextFormField(
             initialValue: state.profile.gradeLabel,
-            decoration: const InputDecoration(labelText: 'Preferred grade range'),
+            decoration: InputDecoration(
+              labelText: l.accountSettingsGradeRangeLabel,
+            ),
           ),
         ],
       ),
       primaryAction: ElevatedButton(
         onPressed: () {},
-        child: const Text('Save Changes'),
+        child: Text(l.accountSettingsSaveChanges),
       ),
     );
   }

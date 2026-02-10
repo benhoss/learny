@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class QuickScanDocumentMetadata implements ShouldQueue
@@ -23,6 +24,7 @@ class QuickScanDocumentMetadata implements ShouldQueue
 
     public function handle(QuickScanService $service): void
     {
+        $jobStart = microtime(true);
         $document = Document::find($this->documentId);
 
         if (! $document || $this->shouldAbortScanMutation($document)) {
@@ -64,6 +66,17 @@ class QuickScanDocumentMetadata implements ShouldQueue
             $document->ocr_error = $e->getMessage();
             $document->save();
             throw $e;
+        } finally {
+            $durationMs = (int) round((microtime(true) - $jobStart) * 1000);
+            $document = Document::find($this->documentId);
+            if ($document) {
+                PipelineTelemetry::recordRuntime($document, 'quick_scan_runtime_ms', $durationMs);
+                $document->save();
+                Log::info('quick_scan_runtime_ms', [
+                    'document_id' => (string) $document->_id,
+                    'duration_ms' => $durationMs,
+                ]);
+            }
         }
     }
 

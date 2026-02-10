@@ -12,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class ExtractConceptsFromDocument implements ShouldQueue
@@ -25,6 +26,7 @@ class ExtractConceptsFromDocument implements ShouldQueue
 
     public function handle(ConceptExtractorInterface $extractor): void
     {
+        $jobStart = microtime(true);
         $document = Document::find($this->documentId);
 
         if (! $document) {
@@ -38,38 +40,51 @@ class ExtractConceptsFromDocument implements ShouldQueue
             return;
         }
 
-        PipelineTelemetry::transition($document, 'concept_extraction', 45);
-        $document->save();
-
         try {
-            if ($hasText) {
-                $concepts = $extractor->extract($document->extracted_text, $document->language);
-                $childId = (string) $document->child_profile_id;
+            PipelineTelemetry::transition($document, 'concept_extraction', 45);
+            $document->save();
 
-                foreach ($concepts as $concept) {
-                    Concept::updateOrCreate(
-                        [
-                            'child_profile_id' => $childId,
-                            'document_id' => (string) $document->_id,
-                            'concept_key' => $concept['key'],
-                        ],
-                        [
-                            'concept_label' => $concept['label'],
-                            'difficulty' => $concept['difficulty'],
-                        ]
-                    );
+            try {
+                if ($hasText) {
+                    $concepts = $extractor->extract($document->extracted_text, $document->language);
+                    $childId = (string) $document->child_profile_id;
+
+                    foreach ($concepts as $concept) {
+                        Concept::updateOrCreate(
+                            [
+                                'child_profile_id' => $childId,
+                                'document_id' => (string) $document->_id,
+                                'concept_key' => $concept['key'],
+                            ],
+                            [
+                                'concept_label' => $concept['label'],
+                                'difficulty' => $concept['difficulty'],
+                            ]
+                        );
+                    }
                 }
+
+                PipelineTelemetry::transition($document, 'learning_pack_queued', 60);
+                $document->save();
+
+                GenerateLearningPackFromDocument::dispatch((string) $document->_id);
+            } catch (Throwable $e) {
+                PipelineTelemetry::complete($document, 'failed', 'concept_extraction_failed');
+                $document->ocr_error = $e->getMessage();
+                $document->save();
+                throw $e;
             }
-
-            PipelineTelemetry::transition($document, 'learning_pack_queued', 60);
-            $document->save();
-
-            GenerateLearningPackFromDocument::dispatch((string) $document->_id);
-        } catch (Throwable $e) {
-            PipelineTelemetry::complete($document, 'failed', 'concept_extraction_failed');
-            $document->ocr_error = $e->getMessage();
-            $document->save();
-            throw $e;
+        } finally {
+            $durationMs = (int) round((microtime(true) - $jobStart) * 1000);
+            $document = Document::find($this->documentId);
+            if ($document) {
+                PipelineTelemetry::recordRuntime($document, 'concept_extraction_runtime_ms', $durationMs);
+                $document->save();
+                Log::info('concept_extraction_runtime_ms', [
+                    'document_id' => (string) $document->_id,
+                    'duration_ms' => $durationMs,
+                ]);
+            }
         }
     }
 

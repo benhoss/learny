@@ -45,6 +45,13 @@ class PipelineTelemetry
         $document->stage_completed_at = $now;
     }
 
+    public static function recordRuntime(Document $document, string $key, int $durationMs): void
+    {
+        $timings = is_array($document->stage_timings ?? null) ? $document->stage_timings : [];
+        $timings[$key] = ((int) ($timings[$key] ?? 0)) + $durationMs;
+        $document->stage_timings = $timings;
+    }
+
     private static function recordPreviousStageDuration(Document $document, Carbon $now): void
     {
         $stage = is_string($document->pipeline_stage ?? null) ? $document->pipeline_stage : null;
@@ -73,4 +80,3 @@ class PipelineTelemetry
         return $history;
     }
 }
-

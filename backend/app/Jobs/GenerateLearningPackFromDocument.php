@@ -13,6 +13,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class GenerateLearningPackFromDocument implements ShouldQueue
@@ -28,6 +29,7 @@ class GenerateLearningPackFromDocument implements ShouldQueue
         LearningPackGeneratorInterface $generator,
         JsonSchemaValidator $validator
     ): void {
+        $jobStart = microtime(true);
         $document = Document::find($this->documentId);
 
         if (! $document) {
@@ -41,35 +43,48 @@ class GenerateLearningPackFromDocument implements ShouldQueue
             return;
         }
 
-        PipelineTelemetry::transition($document, 'learning_pack_generation', 65);
-        $document->save();
-
-        $concepts = Concept::where('document_id', (string) $document->_id)->get()->toArray();
-
         try {
-            $content = $generator->generate($document, $concepts);
-            $validator->validate($content, resource_path('schemas/learning_pack.json'));
-
-            $pack = LearningPack::create([
-                'user_id' => (string) $document->user_id,
-                'child_profile_id' => (string) $document->child_profile_id,
-                'document_id' => (string) $document->_id,
-                'title' => $document->original_filename ?? 'Learning Pack',
-                'summary' => $content['summary'] ?? null,
-                'status' => 'ready',
-                'schema_version' => 'v1',
-                'content' => $content,
-            ]);
-
-            PipelineTelemetry::transition($document, 'game_generation_queued', 80);
+            PipelineTelemetry::transition($document, 'learning_pack_generation', 65);
             $document->save();
 
-            GenerateGamesFromLearningPack::dispatch((string) $pack->_id);
-        } catch (Throwable $e) {
-            PipelineTelemetry::complete($document, 'failed', 'learning_pack_failed');
-            $document->ocr_error = $e->getMessage();
-            $document->save();
-            throw $e;
+            $concepts = Concept::where('document_id', (string) $document->_id)->get()->toArray();
+
+            try {
+                $content = $generator->generate($document, $concepts);
+                $validator->validate($content, resource_path('schemas/learning_pack.json'));
+
+                $pack = LearningPack::create([
+                    'user_id' => (string) $document->user_id,
+                    'child_profile_id' => (string) $document->child_profile_id,
+                    'document_id' => (string) $document->_id,
+                    'title' => $document->original_filename ?? 'Learning Pack',
+                    'summary' => $content['summary'] ?? null,
+                    'status' => 'ready',
+                    'schema_version' => 'v1',
+                    'content' => $content,
+                ]);
+
+                PipelineTelemetry::transition($document, 'game_generation_queued', 80);
+                $document->save();
+
+                GenerateGamesFromLearningPack::dispatch((string) $pack->_id);
+            } catch (Throwable $e) {
+                PipelineTelemetry::complete($document, 'failed', 'learning_pack_failed');
+                $document->ocr_error = $e->getMessage();
+                $document->save();
+                throw $e;
+            }
+        } finally {
+            $durationMs = (int) round((microtime(true) - $jobStart) * 1000);
+            $document = Document::find($this->documentId);
+            if ($document) {
+                PipelineTelemetry::recordRuntime($document, 'learning_pack_runtime_ms', $durationMs);
+                $document->save();
+                Log::info('learning_pack_runtime_ms', [
+                    'document_id' => (string) $document->_id,
+                    'duration_ms' => $durationMs,
+                ]);
+            }
         }
     }
 

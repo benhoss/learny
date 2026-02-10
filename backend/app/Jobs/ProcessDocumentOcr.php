@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class ProcessDocumentOcr implements ShouldQueue
@@ -24,43 +25,57 @@ class ProcessDocumentOcr implements ShouldQueue
 
     public function handle(OcrClientInterface $ocrClient): void
     {
+        $jobStart = microtime(true);
         $document = Document::find($this->documentId);
 
         if (! $document) {
             return;
         }
 
-        PipelineTelemetry::transition($document, 'ocr', 20, 'processing');
-        $document->ocr_error = null;
-        $document->save();
-
-        if ($this->shouldSkipOcr($document)) {
-            PipelineTelemetry::transition($document, 'concept_extraction_queued', 40, 'processed');
-            $document->processed_at = now();
-            $document->save();
-
-            ExtractConceptsFromDocument::dispatch((string) $document->_id);
-
-            return;
-        }
-
         try {
-            $document->extracted_text = $ocrClient->extractText(
-                $document->storage_disk,
-                $document->storage_path,
-                $document->mime_type
-            );
-            PipelineTelemetry::transition($document, 'concept_extraction_queued', 40, 'processed');
-            $document->processed_at = now();
+            PipelineTelemetry::transition($document, 'ocr', 20, 'processing');
+            $document->ocr_error = null;
             $document->save();
 
-            ExtractConceptsFromDocument::dispatch((string) $document->_id);
-        } catch (Throwable $e) {
-            PipelineTelemetry::complete($document, 'failed', 'ocr_failed');
-            $document->ocr_error = $e->getMessage();
-            $document->save();
+            if ($this->shouldSkipOcr($document)) {
+                PipelineTelemetry::transition($document, 'concept_extraction_queued', 40, 'processed');
+                $document->processed_at = now();
+                $document->save();
 
-            throw $e;
+                ExtractConceptsFromDocument::dispatch((string) $document->_id);
+
+                return;
+            }
+
+            try {
+                $document->extracted_text = $ocrClient->extractText(
+                    $document->storage_disk,
+                    $document->storage_path,
+                    $document->mime_type
+                );
+                PipelineTelemetry::transition($document, 'concept_extraction_queued', 40, 'processed');
+                $document->processed_at = now();
+                $document->save();
+
+                ExtractConceptsFromDocument::dispatch((string) $document->_id);
+            } catch (Throwable $e) {
+                PipelineTelemetry::complete($document, 'failed', 'ocr_failed');
+                $document->ocr_error = $e->getMessage();
+                $document->save();
+
+                throw $e;
+            }
+        } finally {
+            $durationMs = (int) round((microtime(true) - $jobStart) * 1000);
+            $document = Document::find($this->documentId);
+            if ($document) {
+                PipelineTelemetry::recordRuntime($document, 'ocr_runtime_ms', $durationMs);
+                $document->save();
+                Log::info('ocr_runtime_ms', [
+                    'document_id' => (string) $document->_id,
+                    'duration_ms' => $durationMs,
+                ]);
+            }
         }
     }
 

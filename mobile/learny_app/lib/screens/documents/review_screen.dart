@@ -72,6 +72,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     final hasContext =
         _subjectController.text.trim().isNotEmpty ||
         _goalController.text.trim().isNotEmpty;
+    final hasImages = state.pendingImages.isNotEmpty;
     return PlaceholderScreen(
       title: L10n.of(context).reviewScreenTitle,
       subtitle: L10n.of(context).reviewScreenSubtitle,
@@ -167,7 +168,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         ],
       ),
       primaryAction: ElevatedButton(
-        onPressed: hasContext
+        onPressed: (hasContext && hasImages)
             ? () {
                 state.setPendingContext(
                   title: _titleController.text.trim(),

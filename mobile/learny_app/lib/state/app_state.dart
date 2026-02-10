@@ -781,7 +781,10 @@ class AppState extends ChangeNotifier {
 
   Future<void> generateQuizFromPendingImage() async {
     if (pendingImages.isEmpty) {
-      throw BackendException('No image selected.');
+      generationError = 'No image selected.';
+      generationStatus = 'Generation failed';
+      notifyListeners();
+      return;
     }
     await generateQuizFromImages(
       images: List<Uint8List>.from(pendingImages),

@@ -208,6 +208,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
         bytes: bytes,
         filename: file.name.isEmpty ? 'capture.jpg' : file.name,
       );
+      _didAutoSuggest = false;
+      _autoSuggestIfNeeded();
       return;
     }
 
@@ -227,6 +229,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
       bytes: bytes,
       filename: file.name.isEmpty ? 'capture.jpg' : file.name,
     );
+    _didAutoSuggest = false;
+    _autoSuggestIfNeeded();
   }
 
   Future<void> _suggestMetadata(AppState state) async {

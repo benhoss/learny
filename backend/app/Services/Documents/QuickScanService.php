@@ -7,6 +7,7 @@ use App\Models\Document;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Facades\Prism;
 use Prism\Prism\ValueObjects\Media\Image;
+use Illuminate\Support\Facades\Log;
 
 class QuickScanService
 {
@@ -28,11 +29,25 @@ class QuickScanService
     public function scan(Document $document): array
     {
         $imageContent = $this->imageContentForDocument($document);
+        $hasImage = $imageContent !== [];
+        $hasOpenRouter = (bool) config('prism.providers.openrouter.api_key');
         if ($imageContent !== [] && config('prism.providers.openrouter.api_key')) {
             $vision = $this->scanWithVision($document, $imageContent);
             if (is_array($vision)) {
+                Log::info('quick_scan.vision', [
+                    'document_id' => (string) $document->_id,
+                    'topic' => $vision['topic'],
+                    'language' => $vision['language'],
+                    'confidence' => $vision['confidence'],
+                    'model' => $vision['model'],
+                ]);
                 return $vision;
             }
+            Log::warning('quick_scan.vision_failed', [
+                'document_id' => (string) $document->_id,
+                'has_image' => $hasImage,
+                'has_openrouter' => $hasOpenRouter,
+            ]);
         }
 
         $suggestion = $this->metadataSuggestion->suggest([
@@ -49,13 +64,24 @@ class QuickScanService
         $language = $this->normalizeLanguage($suggestion['language'] ?? null, $document);
         $alternatives = $suggestion['alternatives'] ?? [];
 
-        return [
+        $result = [
             'topic' => $topic,
             'language' => $language,
             'confidence' => (float) ($suggestion['confidence'] ?? 0.5),
             'alternatives' => is_array($alternatives) ? array_values($alternatives) : [],
             'model' => (string) config('prism.openrouter.fast_scan_model', 'heuristic-fast-v1'),
         ];
+        Log::info('quick_scan.heuristic', [
+            'document_id' => (string) $document->_id,
+            'topic' => $result['topic'],
+            'language' => $result['language'],
+            'confidence' => $result['confidence'],
+            'model' => $result['model'],
+            'has_image' => $hasImage,
+            'has_openrouter' => $hasOpenRouter,
+        ]);
+
+        return $result;
     }
 
     /**

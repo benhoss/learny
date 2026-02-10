@@ -547,6 +547,12 @@ class L10nEn extends L10n {
   String get uploadDragOrBrowse => 'Drag & drop or browse';
 
   @override
+  String get uploadTitleLabel => 'Title (optional)';
+
+  @override
+  String get uploadTitleHint => 'e.g. Observation and interpretation';
+
+  @override
   String get uploadSubjectLabel => 'Subject (optional)';
 
   @override

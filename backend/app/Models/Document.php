@@ -14,6 +14,7 @@ class Document extends Model
         'user_id',
         'child_profile_id',
         'status',
+        'title',
         'original_filename',
         'storage_disk',
         'storage_path',

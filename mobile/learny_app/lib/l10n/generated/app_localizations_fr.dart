@@ -546,6 +546,12 @@ class L10nFr extends L10n {
   String get uploadDragOrBrowse => 'Glisse ou parcours';
 
   @override
+  String get uploadTitleLabel => 'Titre (optionnel)';
+
+  @override
+  String get uploadTitleHint => 'ex. Observation et interprétation';
+
+  @override
   String get uploadSubjectLabel => 'Matière (optionnel)';
 
   @override

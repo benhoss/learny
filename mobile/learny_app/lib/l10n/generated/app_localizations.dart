@@ -1101,6 +1101,18 @@ abstract class L10n {
   /// **'Drag & drop or browse'**
   String get uploadDragOrBrowse;
 
+  /// Title field label
+  ///
+  /// In en, this message translates to:
+  /// **'Title (optional)'**
+  String get uploadTitleLabel;
+
+  /// Title field hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Observation and interpretation'**
+  String get uploadTitleHint;
+
   /// Subject field label
   ///
   /// In en, this message translates to:

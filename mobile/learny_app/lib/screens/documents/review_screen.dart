@@ -18,6 +18,7 @@ class ReviewScreen extends StatefulWidget {
 }
 
 class _ReviewScreenState extends State<ReviewScreen> {
+  final _titleController = TextEditingController();
   final _subjectController = TextEditingController();
   final _languageController = TextEditingController();
   final _goalController = TextEditingController();
@@ -39,6 +40,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   @override
   void dispose() {
+    _titleController.dispose();
     _subjectController.dispose();
     _languageController.dispose();
     _goalController.dispose();
@@ -144,6 +146,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ),
           ],
           _ReviewContextFields(
+            titleController: _titleController,
             subjectController: _subjectController,
             languageController: _languageController,
             goalController: _goalController,
@@ -167,6 +170,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         onPressed: hasContext
             ? () {
                 state.setPendingContext(
+                  title: _titleController.text.trim(),
                   subject: _subjectController.text.trim(),
                   language: _languageController.text.trim(),
                   learningGoal: _goalController.text.trim(),
@@ -267,8 +271,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
       final subject = suggestion['subject']?.toString() ?? '';
       final language = suggestion['language']?.toString() ?? '';
       final learningGoal = suggestion['learning_goal']?.toString() ?? '';
+      final title = suggestion['title']?.toString() ?? '';
       final confidence = (suggestion['confidence'] as num?)?.toDouble() ?? 0.0;
 
+      if (_titleController.text.trim().isEmpty && title.isNotEmpty) {
+        _titleController.text = title;
+      }
       if (_subjectController.text.trim().isEmpty && subject.isNotEmpty) {
         _subjectController.text = subject;
       }
@@ -288,6 +296,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
 class _ReviewContextFields extends StatelessWidget {
   const _ReviewContextFields({
+    required this.titleController,
     required this.subjectController,
     required this.languageController,
     required this.goalController,
@@ -295,6 +304,7 @@ class _ReviewContextFields extends StatelessWidget {
     required this.onContextChanged,
   });
 
+  final TextEditingController titleController;
   final TextEditingController subjectController;
   final TextEditingController languageController;
   final TextEditingController goalController;
@@ -306,6 +316,14 @@ class _ReviewContextFields extends StatelessWidget {
     return Column(
       children: [
         const SizedBox(height: 12),
+        TextField(
+          controller: titleController,
+          decoration: InputDecoration(
+            labelText: L10n.of(context).uploadTitleLabel,
+            hintText: L10n.of(context).uploadTitleHint,
+          ),
+        ),
+        const SizedBox(height: 8),
         TextField(
           controller: subjectController,
           onChanged: (_) => onContextChanged(),

@@ -14,7 +14,7 @@ class MetadataSuggestionService
 
     /**
      * @param  array{filename?: string|null, context_text?: string|null, ocr_snippet?: string|null, language_hint?: string|null}  $input
-     * @return array{subject: string, language: string, learning_goal: string, confidence: float, alternatives: array<int, string>}
+     * @return array{subject: string, language: string, learning_goal: string, title: string, confidence: float, alternatives: array<int, string>}
      */
     public function suggest(array $input): array
     {
@@ -54,6 +54,7 @@ class MetadataSuggestionService
             'subject' => $subject,
             'language' => $language,
             'learning_goal' => $learningGoal,
+            'title' => $this->titleForSuggestion($subject, $learningGoal, $language),
             'confidence' => round($confidence, 2),
             'alternatives' => $alternatives,
         ];
@@ -61,7 +62,7 @@ class MetadataSuggestionService
 
     /**
      * @param  array{filename?: string|null, context_text?: string|null, ocr_snippet?: string|null, language_hint?: string|null}  $input
-     * @return array{subject: string, language: string, learning_goal: string, confidence: float, alternatives: array<int, string>, model?: string}
+     * @return array{subject: string, language: string, learning_goal: string, title: string, confidence: float, alternatives: array<int, string>, model?: string}
      */
     public function suggestWithImage(array $input, UploadedFile $image): array
     {
@@ -98,10 +99,16 @@ class MetadataSuggestionService
             $learningGoal = $this->goalForSubject($subject, $language);
         }
 
+        $title = $decoded['title'] ?? null;
+        if (! is_string($title) || trim($title) === '') {
+            $title = $this->titleForSuggestion($subject, $learningGoal, $language);
+        }
+
         return [
             'subject' => $subject,
             'language' => $language,
             'learning_goal' => $learningGoal,
+            'title' => $title,
             'confidence' => round(max(0.0, min(1.0, $confidence)), 2),
             'alternatives' => is_array($alternatives) ? array_values($alternatives) : [],
             'model' => (string) $model,
@@ -204,6 +211,7 @@ Return JSON only, no markdown:
   "subject": string,       // one of: Math, Science, History, Geography, Language, General
   "language": string,      // English, French, Spanish, Dutch, or General if unknown
   "learning_goal": string,
+  "title": string,
   "confidence": number,    // 0.0 to 1.0
   "alternatives": [string]
 }
@@ -247,5 +255,51 @@ PROMPT;
         ]))));
 
         return $this->detectLanguage($fallbackText, (string) ($input['language_hint'] ?? ''));
+    }
+
+    private function titleForSuggestion(string $subject, string $learningGoal, string $language): string
+    {
+        $subjectLabel = $subject;
+        $lang = strtolower($language);
+        if ($lang === 'french') {
+            $subjectLabel = match ($subject) {
+                'Math' => 'Maths',
+                'Science' => 'Sciences',
+                'History' => 'Histoire',
+                'Geography' => 'Géographie',
+                'Language' => 'Langue',
+                default => 'Activité',
+            };
+        } elseif ($lang === 'dutch') {
+            $subjectLabel = match ($subject) {
+                'Math' => 'Wiskunde',
+                'Science' => 'Wetenschappen',
+                'History' => 'Geschiedenis',
+                'Geography' => 'Aardrijkskunde',
+                'Language' => 'Taal',
+                default => 'Activiteit',
+            };
+        } elseif ($lang === 'spanish') {
+            $subjectLabel = match ($subject) {
+                'Math' => 'Matemáticas',
+                'Science' => 'Ciencias',
+                'History' => 'Historia',
+                'Geography' => 'Geografía',
+                'Language' => 'Lengua',
+                default => 'Actividad',
+            };
+        }
+
+        $goal = trim($learningGoal);
+        if ($goal === '') {
+            return $subjectLabel;
+        }
+
+        $title = "{$subjectLabel} — {$goal}";
+        if (mb_strlen($title) > 80) {
+            return mb_substr($title, 0, 77).'...';
+        }
+
+        return $title;
     }
 }

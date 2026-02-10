@@ -544,6 +544,12 @@ class L10nNl extends L10n {
   String get uploadDragOrBrowse => 'Sleep of blader';
 
   @override
+  String get uploadTitleLabel => 'Titel (optioneel)';
+
+  @override
+  String get uploadTitleHint => 'bijv. Observatie en interpretatie';
+
+  @override
   String get uploadSubjectLabel => 'Vak (optioneel)';
 
   @override

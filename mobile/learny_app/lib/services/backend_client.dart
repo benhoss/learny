@@ -121,6 +121,7 @@ class BackendClient {
     required String childId,
     required Uint8List bytes,
     required String filename,
+    String? title,
     String? subject,
     String? language,
     String? gradeLevel,
@@ -136,6 +137,9 @@ class BackendClient {
     request.files.add(
       http.MultipartFile.fromBytes('file', bytes, filename: filename),
     );
+    if (title != null && title.isNotEmpty) {
+      request.fields['title'] = title;
+    }
     if (subject != null && subject.isNotEmpty) {
       request.fields['subject'] = subject;
     }
@@ -173,6 +177,7 @@ class BackendClient {
     required String childId,
     required List<Uint8List> files,
     required List<String> filenames,
+    String? title,
     String? subject,
     String? language,
     String? gradeLevel,
@@ -196,6 +201,9 @@ class BackendClient {
           filename: filename,
         ),
       );
+    }
+    if (title != null && title.isNotEmpty) {
+      request.fields['title'] = title;
     }
     if (subject != null && subject.isNotEmpty) {
       request.fields['subject'] = subject;

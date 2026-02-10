@@ -155,6 +155,8 @@
   "uploadTitle": "Importer un fichier",
   "uploadSubtitle": "PDF et images acceptés.",
   "uploadDragOrBrowse": "Glisse ou parcours",
+  "uploadTitleLabel": "Titre (optionnel)",
+  "uploadTitleHint": "ex. Observation et interprétation",
   "uploadSubjectLabel": "Matière (optionnel)",
   "uploadSubjectHint": "ex. Verbes français",
   "uploadLanguageLabel": "Langue (optionnel)",

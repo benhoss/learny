@@ -717,6 +717,14 @@
   "@uploadDragOrBrowse": {
     "description": "Upload placeholder text"
   },
+  "uploadTitleLabel": "Title (optional)",
+  "@uploadTitleLabel": {
+    "description": "Title field label"
+  },
+  "uploadTitleHint": "e.g. Observation and interpretation",
+  "@uploadTitleHint": {
+    "description": "Title field hint"
+  },
   "uploadSubjectLabel": "Subject (optional)",
   "@uploadSubjectLabel": {
     "description": "Subject field label"

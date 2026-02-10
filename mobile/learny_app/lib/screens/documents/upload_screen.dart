@@ -16,6 +16,7 @@ class UploadScreen extends StatefulWidget {
 }
 
 class _UploadScreenState extends State<UploadScreen> {
+  final _titleController = TextEditingController();
   final _subjectController = TextEditingController();
   final _languageController = TextEditingController();
   final _goalController = TextEditingController();
@@ -35,6 +36,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
   @override
   void dispose() {
+    _titleController.dispose();
     _subjectController.dispose();
     _languageController.dispose();
     _goalController.dispose();
@@ -76,6 +78,14 @@ class _UploadScreenState extends State<UploadScreen> {
             ),
           ),
           const SizedBox(height: 16),
+          TextField(
+            controller: _titleController,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadTitleLabel,
+              hintText: L10n.of(context).uploadTitleHint,
+            ),
+          ),
+          const SizedBox(height: 8),
           TextField(
             controller: _subjectController,
             onChanged: (_) => setState(() {}),
@@ -167,6 +177,7 @@ class _UploadScreenState extends State<UploadScreen> {
                   return;
                 }
                 state.setPendingContext(
+                  title: _titleController.text.trim(),
                   subject: _subjectController.text.trim(),
                   language: _languageController.text.trim(),
                   learningGoal: _goalController.text.trim(),
@@ -213,8 +224,12 @@ class _UploadScreenState extends State<UploadScreen> {
       final subject = suggestion['subject']?.toString() ?? '';
       final language = suggestion['language']?.toString() ?? '';
       final learningGoal = suggestion['learning_goal']?.toString() ?? '';
+      final title = suggestion['title']?.toString() ?? '';
       final confidence = (suggestion['confidence'] as num?)?.toDouble() ?? 0.0;
 
+      if (_titleController.text.trim().isEmpty && title.isNotEmpty) {
+        _titleController.text = title;
+      }
       if (_subjectController.text.trim().isEmpty && subject.isNotEmpty) {
         _subjectController.text = subject;
       }

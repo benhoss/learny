@@ -98,6 +98,7 @@ class AppState extends ChangeNotifier {
   List<Uint8List> pendingImages = [];
   List<String> pendingImageNames = [];
   String? pendingSubject;
+  String? pendingTitle;
   String? pendingLanguage;
   String? pendingLearningGoal;
   String? pendingContextText;
@@ -809,11 +810,13 @@ class AppState extends ChangeNotifier {
   }
 
   void setPendingContext({
+    String? title,
     String? subject,
     String? language,
     String? learningGoal,
     String? contextText,
   }) {
+    pendingTitle = title;
     pendingSubject = subject;
     pendingLanguage = language;
     pendingLearningGoal = learningGoal;
@@ -881,6 +884,7 @@ class AppState extends ChangeNotifier {
         childId: session.childId,
         bytes: bytes,
         filename: filename,
+        title: pendingTitle,
         subject: pendingSubject,
         language: pendingLanguage,
         gradeLevel: BackendConfig.childGrade,
@@ -946,6 +950,7 @@ class AppState extends ChangeNotifier {
         childId: session.childId,
         files: images,
         filenames: filenames,
+        title: pendingTitle,
         subject: pendingSubject,
         language: pendingLanguage,
         gradeLevel: BackendConfig.childGrade,
@@ -977,6 +982,7 @@ class AppState extends ChangeNotifier {
     } finally {
       isGeneratingQuiz = false;
       pendingSubject = null;
+      pendingTitle = null;
       pendingLanguage = null;
       pendingLearningGoal = null;
       pendingContextText = null;
@@ -1268,7 +1274,7 @@ class AppState extends ChangeNotifier {
 
   DocumentItem _mapDocumentItem(Map<String, dynamic> doc) {
     final id = _extractId(doc) ?? '';
-    final title = doc['original_filename']?.toString() ?? 'Document';
+    final title = doc['title']?.toString() ?? doc['original_filename']?.toString() ?? 'Document';
     final subject = doc['subject']?.toString() ?? 'General';
     final status = doc['status']?.toString() ?? 'unknown';
     final stage = doc['pipeline_stage']?.toString();

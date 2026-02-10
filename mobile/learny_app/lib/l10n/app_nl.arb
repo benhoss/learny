@@ -155,6 +155,8 @@
   "uploadTitle": "Bestand uploaden",
   "uploadSubtitle": "PDF's en afbeeldingen ondersteund.",
   "uploadDragOrBrowse": "Sleep of blader",
+  "uploadTitleLabel": "Titel (optioneel)",
+  "uploadTitleHint": "bijv. Observatie en interpretatie",
   "uploadSubjectLabel": "Vak (optioneel)",
   "uploadSubjectHint": "bijv. Franse werkwoorden",
   "uploadLanguageLabel": "Taal (optioneel)",

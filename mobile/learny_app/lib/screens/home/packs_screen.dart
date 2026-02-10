@@ -106,21 +106,34 @@ class PacksScreen extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         if (topicEntries.isNotEmpty) ...[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 360;
+              final title = Text(
                 l.packsLibraryByTopicTitle,
                 style: Theme.of(context)
                     .textTheme
                     .titleMedium
                     ?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              TextButton(
+              );
+              final action = TextButton(
                 onPressed: () => Navigator.pushNamed(context, AppRoutes.library),
                 child: Text(l.packsViewLibrary),
-              ),
-            ],
+              );
+              if (isCompact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    title,
+                    Align(alignment: Alignment.centerRight, child: action),
+                  ],
+                );
+              }
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [Expanded(child: title), action],
+              );
+            },
           ),
           Text(
             l.packsLibraryByTopicSubtitle,

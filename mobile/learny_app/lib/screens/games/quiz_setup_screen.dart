@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
@@ -16,7 +18,7 @@ class QuizSetupScreen extends StatefulWidget {
 }
 
 class _QuizSetupScreenState extends State<QuizSetupScreen> {
-  static const int _minQuestions = 5;
+  static const int _minQuestions = 10;
   static const int _maxQuestions = 20;
   int _questionCount = 10;
   bool _loading = true;
@@ -39,6 +41,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
     if (!mounted) {
       return;
     }
+    _questionCount = _randomQuestionCount();
     setState(() => _loading = false);
   }
 
@@ -190,32 +193,6 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
               ),
             ),
           ),
-          SizedBox(height: tokens.spaceMd),
-          FadeInSlide(
-            delay: const Duration(milliseconds: 200),
-            child: Slider(
-              value: _questionCount.toDouble(),
-              min: _minQuestions.toDouble(),
-              max: _maxQuestions.toDouble(),
-              divisions: _maxQuestions - _minQuestions,
-              label: _questionCount.toString(),
-              onChanged: _submitting
-                  ? null
-                  : (value) => setState(() => _questionCount = value.round()),
-            ),
-          ),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: const [5, 10, 15, 20].map((count) {
-              return _CountChip(
-                count: count,
-                selected: count == _questionCount,
-                enabled: !_submitting,
-                onSelected: () => setState(() => _questionCount = count),
-              );
-            }).toList(),
-          ),
           SizedBox(height: tokens.spaceLg),
           if (state.hasActiveQuizSession) ...[
             FadeInSlide(
@@ -281,28 +258,9 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
       ),
     );
   }
-}
 
-class _CountChip extends StatelessWidget {
-  const _CountChip({
-    required this.count,
-    required this.selected,
-    required this.enabled,
-    required this.onSelected,
-  });
-
-  final int count;
-  final bool selected;
-  final bool enabled;
-  final VoidCallback onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text('$count'),
-      selected: selected,
-      selectedColor: LearnyColors.teal.withValues(alpha: 0.2),
-      onSelected: enabled ? (_) => onSelected() : null,
-    );
+  int _randomQuestionCount() {
+    return _minQuestions +
+        Random().nextInt(_maxQuestions - _minQuestions + 1);
   }
 }

@@ -1416,6 +1416,14 @@
   "packsStartSession": "Start a Session",
   "packsSubtitle": "Personalized packs based on homework.",
   "packsTitle": "Learning Packs",
+  "packsLibraryByTopicTitle": "Library by Topic",
+  "@packsLibraryByTopicTitle": {
+    "description": "Packs screen document library section title"
+  },
+  "packsLibraryByTopicSubtitle": "Browse recent documents grouped by subject.",
+  "@packsLibraryByTopicSubtitle": {
+    "description": "Packs screen document library section subtitle"
+  },
   "packsViewLibrary": "View Document Library",
   "parentDashboardActiveChild": "Active child",
   "parentDashboardChildSelector": "Child Selector",

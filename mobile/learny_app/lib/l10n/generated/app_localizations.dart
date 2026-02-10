@@ -2433,6 +2433,18 @@ abstract class L10n {
   /// **'Learning Packs'**
   String get packsTitle;
 
+  /// Packs screen document library section title
+  ///
+  /// In en, this message translates to:
+  /// **'Library by Topic'**
+  String get packsLibraryByTopicTitle;
+
+  /// Packs screen document library section subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Browse recent documents grouped by subject.'**
+  String get packsLibraryByTopicSubtitle;
+
   /// No description provided for @packsViewLibrary.
   ///
   /// In en, this message translates to:

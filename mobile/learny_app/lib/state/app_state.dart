@@ -1279,6 +1279,7 @@ class AppState extends ChangeNotifier {
     final id = _extractId(doc) ?? '';
     final title = doc['title']?.toString() ?? doc['original_filename']?.toString() ?? 'Document';
     final subject = doc['subject']?.toString() ?? 'General';
+    final language = doc['language']?.toString();
     final status = doc['status']?.toString() ?? 'unknown';
     final stage = doc['pipeline_stage']?.toString();
     final createdAt =
@@ -1288,6 +1289,7 @@ class AppState extends ChangeNotifier {
       id: id,
       title: title,
       subject: subject,
+      language: language,
       createdAt: createdAt,
       statusLabel: _statusLabelForDocument(status, stage: stage),
     );

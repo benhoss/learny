@@ -1287,6 +1287,13 @@ class L10nEn extends L10n {
   String get packsTitle => 'Learning Packs';
 
   @override
+  String get packsLibraryByTopicTitle => 'Library by Topic';
+
+  @override
+  String get packsLibraryByTopicSubtitle =>
+      'Browse recent documents grouped by subject.';
+
+  @override
   String get packsViewLibrary => 'View Document Library';
 
   @override

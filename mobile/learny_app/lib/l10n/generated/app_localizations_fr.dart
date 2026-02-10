@@ -1299,6 +1299,13 @@ class L10nFr extends L10n {
   String get packsTitle => 'Packs d\'apprentissage';
 
   @override
+  String get packsLibraryByTopicTitle => 'Bibliothèque par matière';
+
+  @override
+  String get packsLibraryByTopicSubtitle =>
+      'Parcourez les documents récents par sujet.';
+
+  @override
   String get packsViewLibrary => 'Bibliothèque de documents';
 
   @override

@@ -437,6 +437,8 @@
   "packsStartSession": "Een sessie starten",
   "packsSubtitle": "Gepersonaliseerde pakketten op basis van huiswerk.",
   "packsTitle": "Leerpakketten",
+  "packsLibraryByTopicTitle": "Bibliotheek per onderwerp",
+  "packsLibraryByTopicSubtitle": "Bekijk recente documenten per vak.",
   "packsViewLibrary": "Documentbibliotheek",
   "parentDashboardActiveChild": "Actief kind",
   "parentDashboardChildSelector": "Kinderselector",

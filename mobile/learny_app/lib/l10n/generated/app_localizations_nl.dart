@@ -1291,6 +1291,13 @@ class L10nNl extends L10n {
   String get packsTitle => 'Leerpakketten';
 
   @override
+  String get packsLibraryByTopicTitle => 'Bibliotheek per onderwerp';
+
+  @override
+  String get packsLibraryByTopicSubtitle =>
+      'Bekijk recente documenten per vak.';
+
+  @override
   String get packsViewLibrary => 'Documentbibliotheek';
 
   @override

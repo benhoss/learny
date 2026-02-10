@@ -437,6 +437,8 @@
   "packsStartSession": "Débuter une séance",
   "packsSubtitle": "Packs personnalisés basés sur les devoirs.",
   "packsTitle": "Packs d'apprentissage",
+  "packsLibraryByTopicTitle": "Bibliothèque par matière",
+  "packsLibraryByTopicSubtitle": "Parcourez les documents récents par sujet.",
   "packsViewLibrary": "Bibliothèque de documents",
   "parentDashboardActiveChild": "Enfant actif",
   "parentDashboardChildSelector": "Sélecteur enfant",

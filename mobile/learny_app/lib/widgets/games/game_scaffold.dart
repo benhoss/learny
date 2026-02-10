@@ -42,8 +42,16 @@ class GameScaffold extends StatelessWidget {
                   ),
                 ),
               ],
-              Padding(
-                padding: EdgeInsets.all(tokens.spaceLg),
+              AnimatedPadding(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                padding: EdgeInsets.only(
+                  left: tokens.spaceLg,
+                  right: tokens.spaceLg,
+                  top: tokens.spaceLg,
+                  bottom:
+                      tokens.spaceLg + MediaQuery.of(context).viewInsets.bottom,
+                ),
                 child: child,
               ),
             ],

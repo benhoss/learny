@@ -281,7 +281,8 @@ class _QuizScreenState extends State<QuizScreen> {
               SizedBox(height: tokens.spaceSm),
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton.icon(
+                child: IconButton(
+                  tooltip: L10n.of(context).quizSaveAndExit,
                   onPressed: _isSubmitting
                       ? null
                       : () async {
@@ -295,11 +296,7 @@ class _QuizScreenState extends State<QuizScreen> {
                             (route) => false,
                           );
                         },
-                  icon: const Icon(
-                    Icons.pause_circle_outline_rounded,
-                    size: 18,
-                  ),
-                  label: Text(L10n.of(context).quizSaveAndExit),
+                  icon: const Icon(Icons.pause_circle_outline_rounded),
                 ),
               ),
 

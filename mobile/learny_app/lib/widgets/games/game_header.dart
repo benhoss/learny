@@ -65,16 +65,16 @@ class GameHeader extends StatelessWidget {
         SizedBox(height: tokens.spaceMd),
         ProgressBar(progress: progress),
         SizedBox(height: tokens.spaceSm),
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
           children: [
             if (timerSeconds != null)
               TimerBadge(
                 key: timerSeed == null ? null : ValueKey(timerSeed),
                 seconds: timerSeconds!,
               ),
-            if (timerSeconds != null) const SizedBox(width: 8),
             StreakPill(count: streakCount),
-            const SizedBox(width: 8),
             MasteryMeter(percent: masteryPercent),
           ],
         ),

@@ -222,6 +222,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
           : 'capture.jpg',
       contextText: _contextController.text.trim(),
       languageHint: _languageController.text.trim(),
+      imageBytes: state.pendingImages.isNotEmpty
+          ? state.pendingImages.first
+          : null,
+      imageFilename: state.pendingImageNames.isNotEmpty
+          ? state.pendingImageNames.first
+          : null,
     );
 
     if (!mounted) {

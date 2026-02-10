@@ -2,8 +2,16 @@
 
 namespace App\Services\Documents;
 
+use App\Concerns\RetriesLlmCalls;
+use Illuminate\Http\UploadedFile;
+use Prism\Prism\Enums\Provider;
+use Prism\Prism\Facades\Prism;
+use Prism\Prism\ValueObjects\Media\Image;
+
 class MetadataSuggestionService
 {
+    use RetriesLlmCalls;
+
     /**
      * @param  array{filename?: string|null, context_text?: string|null, ocr_snippet?: string|null, language_hint?: string|null}  $input
      * @return array{subject: string, language: string, learning_goal: string, confidence: float, alternatives: array<int, string>}
@@ -52,6 +60,55 @@ class MetadataSuggestionService
     }
 
     /**
+     * @param  array{filename?: string|null, context_text?: string|null, ocr_snippet?: string|null, language_hint?: string|null}  $input
+     * @return array{subject: string, language: string, learning_goal: string, confidence: float, alternatives: array<int, string>, model?: string}
+     */
+    public function suggestWithImage(array $input, UploadedFile $image): array
+    {
+        $model = config('prism.openrouter.fast_scan_model', 'google/gemini-2.0-flash-lite-001');
+        $prompt = $this->buildVisionPrompt($input);
+        $media = Image::fromRawContent($image->get(), $image->getMimeType());
+
+        $response = $this->callWithRetry(function () use ($model, $prompt, $media) {
+            return Prism::text()
+                ->using(Provider::OpenRouter, $model)
+                ->withSystemPrompt('Return only valid JSON. Do not include any other text.')
+                ->withPrompt($prompt, [$media])
+                ->withMaxTokens(300)
+                ->usingTemperature(0.2)
+                ->asText();
+        });
+
+        $decoded = json_decode($response->text, true);
+        if (! is_array($decoded)) {
+            $decoded = $this->extractJson($response->text);
+        }
+
+        if (! is_array($decoded)) {
+            return $this->suggest($input);
+        }
+
+        $subject = $this->normalizeSubject($decoded['subject'] ?? null);
+        $language = $this->normalizeLanguage($decoded['language'] ?? null, $input);
+        $alternatives = $decoded['alternatives'] ?? [];
+        $confidence = (float) ($decoded['confidence'] ?? 0.5);
+
+        $learningGoal = $decoded['learning_goal'] ?? null;
+        if (! is_string($learningGoal) || trim($learningGoal) === '') {
+            $learningGoal = $this->goalForSubject($subject);
+        }
+
+        return [
+            'subject' => $subject,
+            'language' => $language,
+            'learning_goal' => $learningGoal,
+            'confidence' => round(max(0.0, min(1.0, $confidence)), 2),
+            'alternatives' => is_array($alternatives) ? array_values($alternatives) : [],
+            'model' => (string) $model,
+        ];
+    }
+
+    /**
      * @param  list<string>  $keywords
      */
     protected function score(string $text, array $keywords): int
@@ -93,5 +150,69 @@ class MetadataSuggestionService
             'Language' => 'Practice vocabulary and sentence construction.',
             default => 'Build confidence on the main concepts.',
         };
+    }
+
+    /**
+     * @param  array{filename?: string|null, context_text?: string|null, ocr_snippet?: string|null, language_hint?: string|null}  $input
+     */
+    private function buildVisionPrompt(array $input): string
+    {
+        $context = trim(implode(' ', array_filter([
+            $input['filename'] ?? null,
+            $input['context_text'] ?? null,
+            $input['ocr_snippet'] ?? null,
+        ])));
+
+        $languageHint = (string) ($input['language_hint'] ?? '');
+
+        return <<<PROMPT
+You are classifying a school document image.
+Return JSON only, no markdown:
+{
+  "subject": string,       // one of: Math, Science, History, Geography, Language, General
+  "language": string,      // English, French, Spanish, Dutch, or General if unknown
+  "learning_goal": string,
+  "confidence": number,    // 0.0 to 1.0
+  "alternatives": [string]
+}
+
+Rules:
+- Prefer the document's actual language over English if the text is clearly non-English.
+- If unsure, set subject "General" and confidence <= 0.5.
+- Use the image content as the main source of truth.
+
+Context text (may be empty): {$context}
+Language hint (may be empty): {$languageHint}
+PROMPT;
+    }
+
+    private function normalizeSubject(mixed $subject): string
+    {
+        $candidate = trim((string) $subject);
+        $allowed = ['Math', 'Science', 'History', 'Geography', 'Language', 'General'];
+        if (in_array($candidate, $allowed, true)) {
+            return $candidate;
+        }
+
+        return 'General';
+    }
+
+    /**
+     * @param  array{filename?: string|null, context_text?: string|null, ocr_snippet?: string|null, language_hint?: string|null}  $input
+     */
+    private function normalizeLanguage(mixed $language, array $input): string
+    {
+        $candidate = trim((string) $language);
+        if ($candidate !== '') {
+            return $candidate;
+        }
+
+        $fallbackText = strtolower(trim(implode(' ', array_filter([
+            $input['filename'] ?? null,
+            $input['context_text'] ?? null,
+            $input['ocr_snippet'] ?? null,
+        ]))));
+
+        return $this->detectLanguage($fallbackText, (string) ($input['language_hint'] ?? ''));
     }
 }

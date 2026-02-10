@@ -830,6 +830,9 @@ class AppState extends ChangeNotifier {
     String? filename,
     String? contextText,
     String? languageHint,
+    Uint8List? imageBytes,
+    String? imageFilename,
+    String? imageMimeType,
   }) async {
     try {
       final session = await _ensureBackendSession();
@@ -838,6 +841,9 @@ class AppState extends ChangeNotifier {
         filename: filename,
         contextText: contextText,
         languageHint: languageHint,
+        imageBytes: imageBytes,
+        imageFilename: imageFilename,
+        imageMimeType: imageMimeType,
       );
       final data = payload['data'];
       if (data is Map<String, dynamic>) {

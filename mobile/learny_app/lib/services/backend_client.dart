@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 class BackendClient {
   BackendClient({required this.baseUrl, http.Client? client})
@@ -691,7 +692,51 @@ class BackendClient {
     String? contextText,
     String? ocrSnippet,
     String? languageHint,
+    Uint8List? imageBytes,
+    String? imageFilename,
+    String? imageMimeType,
   }) async {
+    if (imageBytes != null) {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse(
+          '$baseUrl/api/v1/children/$childId/documents/metadata-suggestions',
+        ),
+      );
+      request.headers.addAll(_authHeaders());
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'image',
+          imageBytes,
+          filename: imageFilename ?? filename ?? 'capture.jpg',
+          contentType: imageMimeType == null
+              ? null
+              : MediaType.parse(imageMimeType),
+        ),
+      );
+      if (filename != null && filename.isNotEmpty) {
+        request.fields['filename'] = filename;
+      }
+      if (contextText != null && contextText.isNotEmpty) {
+        request.fields['context_text'] = contextText;
+      }
+      if (ocrSnippet != null && ocrSnippet.isNotEmpty) {
+        request.fields['ocr_snippet'] = ocrSnippet;
+      }
+      if (languageHint != null && languageHint.isNotEmpty) {
+        request.fields['language_hint'] = languageHint;
+      }
+
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+
+      if (response.statusCode != 200) {
+        throw BackendException('Metadata suggestion failed: ${response.body}');
+      }
+
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
     final response = await _client.post(
       Uri.parse(
         '$baseUrl/api/v1/children/$childId/documents/metadata-suggestions',

@@ -24,9 +24,15 @@ class DocumentMetadataSuggestionController extends Controller
             'context_text' => ['nullable', 'string', 'max:500'],
             'ocr_snippet' => ['nullable', 'string', 'max:1000'],
             'language_hint' => ['nullable', 'string', 'max:64'],
+            'image' => ['nullable', 'file', 'max:10240', 'mimes:jpg,jpeg,png,webp,heic'],
         ]);
 
-        $suggestions = $service->suggest($data);
+        $image = $request->file('image');
+        if ($image && config('prism.providers.openrouter.api_key')) {
+            $suggestions = $service->suggestWithImage($data, $image);
+        } else {
+            $suggestions = $service->suggest($data);
+        }
 
         return response()->json([
             'data' => $suggestions,

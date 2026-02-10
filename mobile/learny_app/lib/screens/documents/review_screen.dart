@@ -35,6 +35,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   ];
   bool _isSuggestingMetadata = false;
   String? _suggestionFeedback;
+  bool _didAutoSuggest = false;
 
   @override
   void dispose() {
@@ -43,6 +44,24 @@ class _ReviewScreenState extends State<ReviewScreen> {
     _goalController.dispose();
     _contextController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _autoSuggestIfNeeded());
+  }
+
+  void _autoSuggestIfNeeded() {
+    if (!mounted || _didAutoSuggest || _isSuggestingMetadata) {
+      return;
+    }
+    final state = AppStateScope.of(context);
+    if (state.pendingImages.isEmpty) {
+      return;
+    }
+    _didAutoSuggest = true;
+    _suggestMetadata(state);
   }
 
   @override

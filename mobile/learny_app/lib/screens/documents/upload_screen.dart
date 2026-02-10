@@ -225,9 +225,9 @@ class _UploadScreenState extends State<UploadScreen> {
         _goalController.text = learningGoal;
       }
 
-      _suggestionFeedback =
-          'Suggested from current context (confidence ${(confidence * 100).round()}%). '
-          'Edit any field before continuing.';
+      _suggestionFeedback = L10n.of(context).uploadSuggestionFeedback(
+        (confidence * 100).round(),
+      );
     });
   }
 }

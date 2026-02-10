@@ -571,6 +571,11 @@ class L10nNl extends L10n {
   String get uploadAnalyzing => 'Analyseren...';
 
   @override
+  String uploadSuggestionFeedback(int percent) {
+    return 'Suggestie op basis van de huidige context (betrouwbaarheid $percent%). Pas velden aan voordat je verdergaat.';
+  }
+
+  @override
   String get uploadSuggestMetadata => 'Suggereren met AI';
 
   @override
@@ -643,6 +648,11 @@ class L10nNl extends L10n {
 
   @override
   String get reviewLooksGood => 'Ziet er goed uit';
+
+  @override
+  String reviewSuggestionFeedback(int percent) {
+    return 'Suggestie op basis van de opname (betrouwbaarheid $percent%). Pas velden aan voordat je verdergaat.';
+  }
 
   @override
   String get reviewRetake => 'Opnieuw maken';

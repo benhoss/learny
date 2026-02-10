@@ -753,6 +753,15 @@
   "@uploadAnalyzing": {
     "description": "Analyzing button state"
   },
+  "uploadSuggestionFeedback": "Suggested from current context (confidence {percent}%). Edit any field before continuing.",
+  "@uploadSuggestionFeedback": {
+    "description": "Feedback shown after metadata suggestion in upload flow",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "uploadSuggestMetadata": "Suggest Metadata with AI",
   "@uploadSuggestMetadata": {
     "description": "Suggest metadata button"
@@ -849,6 +858,15 @@
   "reviewLooksGood": "Looks Good",
   "@reviewLooksGood": {
     "description": "Confirm review button"
+  },
+  "reviewSuggestionFeedback": "Suggested from capture context (confidence {percent}%). Edit any field before continuing.",
+  "@reviewSuggestionFeedback": {
+    "description": "Feedback shown after metadata suggestion in review flow",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
   },
   "reviewRetake": "Retake",
   "@reviewRetake": {

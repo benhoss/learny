@@ -573,6 +573,11 @@ class L10nFr extends L10n {
   String get uploadAnalyzing => 'Analyse...';
 
   @override
+  String uploadSuggestionFeedback(int percent) {
+    return 'Suggestion basée sur le contexte actuel (confiance $percent%). Modifie les champs avant de continuer.';
+  }
+
+  @override
   String get uploadSuggestMetadata => 'Suggérer avec l\'IA';
 
   @override
@@ -646,6 +651,11 @@ class L10nFr extends L10n {
 
   @override
   String get reviewLooksGood => 'C\'est bon';
+
+  @override
+  String reviewSuggestionFeedback(int percent) {
+    return 'Suggestion basée sur la capture (confiance $percent%). Modifie les champs avant de continuer.';
+  }
 
   @override
   String get reviewRetake => 'Reprendre';

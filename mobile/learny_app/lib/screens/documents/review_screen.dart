@@ -256,9 +256,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
         _goalController.text = learningGoal;
       }
 
-      _suggestionFeedback =
-          'Suggested from capture context (confidence ${(confidence * 100).round()}%). '
-          'Edit any field before continuing.';
+      _suggestionFeedback = L10n.of(context).reviewSuggestionFeedback(
+        (confidence * 100).round(),
+      );
     });
   }
 }

@@ -1155,6 +1155,12 @@ abstract class L10n {
   /// **'Analyzing...'**
   String get uploadAnalyzing;
 
+  /// Feedback shown after metadata suggestion in upload flow
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested from current context (confidence {percent}%). Edit any field before continuing.'**
+  String uploadSuggestionFeedback(int percent);
+
   /// Suggest metadata button
   ///
   /// In en, this message translates to:
@@ -1280,6 +1286,12 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Looks Good'**
   String get reviewLooksGood;
+
+  /// Feedback shown after metadata suggestion in review flow
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested from capture context (confidence {percent}%). Edit any field before continuing.'**
+  String reviewSuggestionFeedback(int percent);
 
   /// Retake button
   ///

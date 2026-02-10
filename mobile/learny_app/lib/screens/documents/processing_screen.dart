@@ -119,13 +119,20 @@ class ProcessingScreen extends StatelessWidget {
     );
     final ctaLabel = _startLabelForType(context, readyGameType);
 
-    return Container(
-      decoration: BoxDecoration(gradient: tokens.gradientWelcome),
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(tokens.spaceLg),
-          child: Column(
-            children: [
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(gradient: tokens.gradientWelcome),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: EdgeInsets.all(tokens.spaceLg),
+                    child: Column(
+                      children: [
               // Header
               FadeInSlide(
                 child: Row(
@@ -277,8 +284,13 @@ class ProcessingScreen extends StatelessWidget {
                 ),
               ],
 
-              SizedBox(height: tokens.spaceLg),
-            ],
+                        SizedBox(height: tokens.spaceLg),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),

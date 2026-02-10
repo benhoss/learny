@@ -401,20 +401,50 @@ class BackendClient {
     required String topic,
     required String language,
   }) async {
-    final response = await _client.post(
-      Uri.parse(
-        '$baseUrl/api/v1/children/$childId/documents/$documentId/confirm-scan',
-      ),
-      headers: _authHeaders(includeContentType: true),
-      body: jsonEncode({'topic': topic, 'language': language}),
-    );
+    const maxAttempts = 3;
+    var delay = const Duration(milliseconds: 400);
 
-    if (response.statusCode != 202 && response.statusCode != 200) {
-      throw BackendException('Confirm document scan failed: ${response.body}');
+    for (var attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      final response = await _client.post(
+        Uri.parse(
+          '$baseUrl/api/v1/children/$childId/documents/$documentId/confirm-scan',
+        ),
+        headers: _authHeaders(includeContentType: true),
+        body: jsonEncode({'topic': topic, 'language': language}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 202) {
+        try {
+          final payload = jsonDecode(response.body) as Map<String, dynamic>;
+          return payload['data'] as Map<String, dynamic>;
+        } catch (_) {
+          if (attempt < maxAttempts) {
+            await Future.delayed(delay);
+            delay *= 2;
+            continue;
+          }
+          throw BackendException(
+            'Confirm document scan failed. Please retry.',
+            statusCode: response.statusCode,
+          );
+        }
+      }
+
+      if (_shouldRetry(response.statusCode, response.body) &&
+          attempt < maxAttempts) {
+        await Future.delayed(delay);
+        delay *= 2;
+        continue;
+      }
+
+      throw BackendException.fromResponse(
+        'Confirm document scan',
+        response.statusCode,
+        response.body,
+      );
     }
 
-    final payload = jsonDecode(response.body) as Map<String, dynamic>;
-    return payload['data'] as Map<String, dynamic>;
+    throw BackendException('Confirm document scan failed. Please retry.');
   }
 
   Future<Map<String, dynamic>> rescanDocument({
@@ -888,6 +918,22 @@ class BackendClient {
       ..._jsonHeaders(includeContentType: includeContentType),
       if (token != null) 'Authorization': 'Bearer $token',
     };
+  }
+
+  bool _shouldRetry(int statusCode, String body) {
+    if (statusCode >= 500 && statusCode <= 599) {
+      return true;
+    }
+    if (statusCode == 404) {
+      return true;
+    }
+    return _looksLikeHtml(body);
+  }
+
+  bool _looksLikeHtml(String body) {
+    final trimmed = body.trimLeft();
+    return trimmed.startsWith('<!DOCTYPE html') ||
+        trimmed.startsWith('<html');
   }
 }
 

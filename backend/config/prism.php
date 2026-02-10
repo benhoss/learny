@@ -13,6 +13,7 @@ return [
     ],
     'openrouter' => [
         'text_model' => env('OPENROUTER_TEXT_MODEL', 'google/gemini-3-flash-preview'),
+        'fast_scan_model' => env('OPENROUTER_FAST_SCAN_MODEL', 'google/gemini-2.0-flash-lite-001'),
     ],
     'providers' => [
         'openai' => [

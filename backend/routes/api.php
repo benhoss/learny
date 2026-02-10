@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChildProfileController;
 use App\Http\Controllers\Api\ChildProgressController;
 use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\DocumentScanController;
 use App\Http\Controllers\Api\DocumentMetadataSuggestionController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\GameResultController;
@@ -39,6 +40,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('children/{child}/documents', [DocumentController::class, 'index']);
         Route::get('children/{child}/documents/{document}', [DocumentController::class, 'show']);
+        Route::get('children/{child}/documents/{document}/scan', [DocumentScanController::class, 'show']);
         Route::post('children/{child}/documents/metadata-suggestions', [DocumentMetadataSuggestionController::class, 'suggest']);
 
         Route::get('children/{child}/learning-packs', [LearningPackController::class, 'index']);
@@ -67,6 +69,8 @@ Route::prefix('v1')->group(function () {
 
             Route::post('children/{child}/documents', [DocumentController::class, 'store']);
             Route::post('children/{child}/documents/{document}/regenerate', [DocumentController::class, 'regenerate']);
+            Route::post('children/{child}/documents/{document}/confirm-scan', [DocumentScanController::class, 'confirm']);
+            Route::post('children/{child}/documents/{document}/rescan', [DocumentScanController::class, 'rescan']);
 
             Route::post('children/{child}/learning-packs', [LearningPackController::class, 'store']);
 

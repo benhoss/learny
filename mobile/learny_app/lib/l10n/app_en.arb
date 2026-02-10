@@ -677,6 +677,10 @@
   "@docStatusQuickScanProcessing": {
     "description": "Document status: quick scan processing"
   },
+  "docStatusQuickScanFailed": "Quick scan failed",
+  "@docStatusQuickScanFailed": {
+    "description": "Document status: quick scan failed"
+  },
   "docStatusAwaitingValidation": "Awaiting validation",
   "@docStatusAwaitingValidation": {
     "description": "Document status: awaiting validation"

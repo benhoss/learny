@@ -28,6 +28,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
   String _localizedDocStatus(BuildContext context, String status) {
     final l = L10n.of(context);
     return switch (status) {
+      'quick_scan_queued' => l.docStatusQuickScanQueued,
+      'quick_scan_processing' => l.docStatusQuickScanProcessing,
+      'quick_scan_failed' => l.docStatusQuickScanFailed,
+      'awaiting_validation' => l.docStatusAwaitingValidation,
       'queued' => l.docStatusQueued,
       'processing' => l.docStatusProcessing,
       'processed' => l.docStatusProcessed,
@@ -56,16 +60,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
                 state.documentSyncError!,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: LearnyColors.coral),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: LearnyColors.coral),
               ),
             ),
           ...state.documents.map(
             (doc) => _LibraryItem(
               title: doc.title,
-              subtitle: '${doc.subject} • ${_localizedDocStatus(context, doc.statusLabel)}',
+              subtitle:
+                  '${doc.subject} • ${_localizedDocStatus(context, doc.statusLabel)}',
               onRegenerate: () => state.regenerateDocument(doc.id),
             ),
           ),
@@ -101,7 +105,10 @@ class _LibraryItem extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: LearnyColors.sky,
-          child: Icon(Icons.insert_drive_file_rounded, color: LearnyColors.teal),
+          child: Icon(
+            Icons.insert_drive_file_rounded,
+            color: LearnyColors.teal,
+          ),
         ),
         title: Text(title),
         subtitle: Text(subtitle),

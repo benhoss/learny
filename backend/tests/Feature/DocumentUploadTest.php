@@ -162,6 +162,40 @@ class DocumentUploadTest extends TestCase
         Queue::assertPushed(ProcessDocumentOcr::class, 1);
     }
 
+    public function test_confirm_scan_rejects_documents_outside_validation_stage(): void
+    {
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $child = ChildProfile::factory()->create([
+            'user_id' => (string) $user->_id,
+        ]);
+        $token = Auth::guard('api')->login($user);
+
+        $document = Document::factory()->create([
+            'user_id' => (string) $user->_id,
+            'child_profile_id' => (string) $child->_id,
+            'status' => 'processing',
+            'scan_status' => 'ready',
+            'validation_status' => 'pending',
+            'pipeline_stage' => 'learning_pack_generation',
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/children/'.$child->_id.'/documents/'.$document->_id.'/confirm-scan', [
+                'topic' => 'Science',
+                'language' => 'English',
+            ]);
+
+        $response->assertStatus(409);
+        $response->assertJsonPath(
+            'message',
+            'Document cannot be confirmed in its current state.'
+        );
+
+        Queue::assertNotPushed(ProcessDocumentOcr::class);
+    }
+
     public function test_quick_scan_job_does_not_override_confirmed_document_state(): void
     {
         $user = User::factory()->create();
@@ -268,6 +302,43 @@ class DocumentUploadTest extends TestCase
         $this->assertSame('quick_scan_queued', $document->pipeline_stage);
 
         Queue::assertPushed(QuickScanDocumentMetadata::class);
+    }
+
+    public function test_rescan_returns_conflict_when_rescan_lock_is_held(): void
+    {
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $child = ChildProfile::factory()->create([
+            'user_id' => (string) $user->_id,
+        ]);
+        $token = Auth::guard('api')->login($user);
+
+        $document = Document::factory()->create([
+            'user_id' => (string) $user->_id,
+            'child_profile_id' => (string) $child->_id,
+            'status' => 'queued',
+            'scan_status' => 'ready',
+            'validation_status' => 'pending',
+            'pipeline_stage' => 'awaiting_validation',
+        ]);
+
+        $lock = Cache::lock('documents:rescan:'.(string) $document->_id, 5);
+        $this->assertTrue($lock->get());
+
+        try {
+            $response = $this->withHeader('Authorization', 'Bearer '.$token)
+                ->postJson('/api/v1/children/'.$child->_id.'/documents/'.$document->_id.'/rescan');
+
+            $response->assertStatus(409);
+            $response->assertJsonPath(
+                'message',
+                'Document rescan already in progress. Please retry.'
+            );
+            Queue::assertNotPushed(QuickScanDocumentMetadata::class);
+        } finally {
+            $lock->release();
+        }
     }
 
     public function test_rescan_rejects_confirmed_document_and_does_not_dispatch_job(): void

@@ -1041,6 +1041,12 @@ abstract class L10n {
   /// **'Quick scan'**
   String get docStatusQuickScanProcessing;
 
+  /// Document status: quick scan failed
+  ///
+  /// In en, this message translates to:
+  /// **'Quick scan failed'**
+  String get docStatusQuickScanFailed;
+
   /// Document status: awaiting validation
   ///
   /// In en, this message translates to:

@@ -105,6 +105,12 @@ class AppState extends ChangeNotifier {
   String? currentGameId;
   String? pipelineStage;
   bool hasFirstPlayableSignal = false;
+  bool awaitingScanValidation = false;
+  String? scanSuggestedTopic;
+  String? scanSuggestedLanguage;
+  double scanSuggestionConfidence = 0.0;
+  List<String> scanSuggestionAlternatives = [];
+  String? scanSuggestionModel;
   bool isSwitchingChild = false;
   bool isSyncingDocuments = false;
   String? documentSyncError;
@@ -174,6 +180,12 @@ class AppState extends ChangeNotifier {
     uploadProgressPercent = 0;
     processingProgressPercent = 0;
     processingStageLabel = 'Waiting';
+    awaitingScanValidation = false;
+    scanSuggestedTopic = null;
+    scanSuggestedLanguage = null;
+    scanSuggestionConfidence = 0.0;
+    scanSuggestionAlternatives = [];
+    scanSuggestionModel = null;
     activeQuizSessionData = null;
     memoryPersonalizationEnabled = true;
     recommendationWhyEnabled = true;
@@ -849,6 +861,12 @@ class AppState extends ChangeNotifier {
     processingStageLabel = 'Uploading';
     pipelineStage = 'uploading';
     hasFirstPlayableSignal = false;
+    awaitingScanValidation = false;
+    scanSuggestedTopic = null;
+    scanSuggestedLanguage = null;
+    scanSuggestionConfidence = 0.0;
+    scanSuggestionAlternatives = [];
+    scanSuggestionModel = null;
     notifyListeners();
 
     try {
@@ -866,14 +884,18 @@ class AppState extends ChangeNotifier {
       );
       lastDocumentId = _extractId(document);
 
-      generationStatus = 'Processing and generating quiz...';
+      generationStatus = 'Analyzing document before generation...';
       uploadProgressPercent = 100;
-      processingProgressPercent = 5;
-      processingStageLabel = 'Queued';
-      pipelineStage = 'queued';
+      processingProgressPercent = 10;
+      processingStageLabel = 'Quick Scan Queue';
+      pipelineStage = 'quick_scan_queued';
       notifyListeners();
 
       await _pollForPackAndQuiz(session.childId, lastDocumentId);
+      if (awaitingScanValidation) {
+        generationStatus = 'Review topic and language before continuing.';
+        return;
+      }
       generationStatus = 'Quiz ready!';
       processingProgressPercent = 100;
       processingStageLabel = 'Ready';
@@ -904,6 +926,12 @@ class AppState extends ChangeNotifier {
     processingStageLabel = 'Uploading';
     pipelineStage = 'uploading';
     hasFirstPlayableSignal = false;
+    awaitingScanValidation = false;
+    scanSuggestedTopic = null;
+    scanSuggestedLanguage = null;
+    scanSuggestionConfidence = 0.0;
+    scanSuggestionAlternatives = [];
+    scanSuggestionModel = null;
     notifyListeners();
 
     try {
@@ -921,14 +949,18 @@ class AppState extends ChangeNotifier {
       );
       lastDocumentId = _extractId(document);
 
-      generationStatus = 'Processing and generating quiz...';
+      generationStatus = 'Analyzing document before generation...';
       uploadProgressPercent = 100;
-      processingProgressPercent = 5;
-      processingStageLabel = 'Queued';
-      pipelineStage = 'queued';
+      processingProgressPercent = 10;
+      processingStageLabel = 'Quick Scan Queue';
+      pipelineStage = 'quick_scan_queued';
       notifyListeners();
 
       await _pollForPackAndQuiz(session.childId, lastDocumentId);
+      if (awaitingScanValidation) {
+        generationStatus = 'Review topic and language before continuing.';
+        return;
+      }
       generationStatus = 'Quiz ready!';
       processingProgressPercent = 100;
       processingStageLabel = 'Ready';
@@ -1233,6 +1265,7 @@ class AppState extends ChangeNotifier {
     final title = doc['original_filename']?.toString() ?? 'Document';
     final subject = doc['subject']?.toString() ?? 'General';
     final status = doc['status']?.toString() ?? 'unknown';
+    final stage = doc['pipeline_stage']?.toString();
     final createdAt =
         DateTime.tryParse(doc['created_at']?.toString() ?? '') ??
         DateTime.now();
@@ -1241,7 +1274,7 @@ class AppState extends ChangeNotifier {
       title: title,
       subject: subject,
       createdAt: createdAt,
-      statusLabel: _statusLabelForDocument(status),
+      statusLabel: _statusLabelForDocument(status, stage: stage),
     );
   }
 
@@ -1298,6 +1331,8 @@ class AppState extends ChangeNotifier {
       final status = doc['status']?.toString();
       final docStage = doc['pipeline_stage']?.toString();
       final progressHint = (doc['progress_hint'] as num?)?.toInt();
+      final scanStatus = doc['scan_status']?.toString();
+      final validationStatus = doc['validation_status']?.toString();
       final firstPlayableGameType = doc['first_playable_game_type']?.toString();
       final readyGameTypesRaw = doc['ready_game_types'] as List<dynamic>? ?? [];
       final hasFirstPlayable =
@@ -1325,6 +1360,38 @@ class AppState extends ChangeNotifier {
         generationStatus = stageMessage;
         notifyListeners();
       }
+
+      final shouldAwaitValidation =
+          docStage == 'awaiting_validation' ||
+          docStage == 'quick_scan_failed' ||
+          (validationStatus == 'pending' && scanStatus == 'ready');
+      if (shouldAwaitValidation) {
+        awaitingScanValidation = true;
+        scanSuggestedTopic =
+            doc['scan_topic_suggestion']?.toString() ??
+            doc['subject']?.toString() ??
+            pendingSubject;
+        scanSuggestedLanguage =
+            doc['scan_language_suggestion']?.toString() ??
+            doc['language']?.toString() ??
+            pendingLanguage;
+        scanSuggestionConfidence =
+            (doc['scan_confidence'] as num?)?.toDouble() ?? 0.0;
+        scanSuggestionAlternatives =
+            (doc['scan_alternatives'] as List<dynamic>? ?? [])
+                .map((value) => value.toString())
+                .where((value) => value.isNotEmpty)
+                .toList();
+        scanSuggestionModel = doc['scan_model']?.toString();
+        processingStageLabel = 'Awaiting Validation';
+        generationStatus = scanStatus == 'failed'
+            ? 'Scan failed. Enter topic/language manually and confirm.'
+            : 'Validate topic and language to continue.';
+        notifyListeners();
+        return;
+      }
+
+      awaitingScanValidation = false;
 
       if (status == 'failed') {
         throw BackendException('Document processing failed.');
@@ -1378,6 +1445,94 @@ class AppState extends ChangeNotifier {
     throw BackendException('Quiz generation timed out. Please try again.');
   }
 
+  Future<bool> confirmCurrentDocumentScan({
+    required String topic,
+    required String language,
+  }) async {
+    final documentId = lastDocumentId;
+    if (documentId == null) {
+      generationError = 'Missing document ID for scan confirmation.';
+      notifyListeners();
+      return false;
+    }
+
+    isGeneratingQuiz = true;
+    generationError = null;
+    generationStatus = 'Starting deep analysis...';
+    processingStageLabel = 'Queued';
+    pipelineStage = 'queued';
+    processingProgressPercent = max(processingProgressPercent, 35);
+    awaitingScanValidation = false;
+    notifyListeners();
+
+    try {
+      final session = await _ensureBackendSession();
+      await backend.confirmDocumentScan(
+        childId: session.childId,
+        documentId: documentId,
+        topic: topic,
+        language: language,
+      );
+
+      await _pollForPackAndQuiz(session.childId, documentId);
+      if (awaitingScanValidation) {
+        isGeneratingQuiz = false;
+        notifyListeners();
+        return false;
+      }
+
+      generationStatus = 'Quiz ready!';
+      processingProgressPercent = 100;
+      processingStageLabel = 'Ready';
+      pipelineStage = 'ready';
+      isGeneratingQuiz = false;
+      notifyListeners();
+      return true;
+    } catch (error) {
+      generationError = error.toString();
+      generationStatus = 'Generation failed';
+      isGeneratingQuiz = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> rescanCurrentDocument() async {
+    final documentId = lastDocumentId;
+    if (documentId == null) {
+      generationError = 'Missing document ID for rescan.';
+      notifyListeners();
+      return false;
+    }
+
+    isGeneratingQuiz = true;
+    generationError = null;
+    generationStatus = 'Re-running quick scan...';
+    processingStageLabel = 'Quick Scan Queue';
+    pipelineStage = 'quick_scan_queued';
+    processingProgressPercent = 10;
+    awaitingScanValidation = false;
+    notifyListeners();
+
+    try {
+      final session = await _ensureBackendSession();
+      await backend.rescanDocument(
+        childId: session.childId,
+        documentId: documentId,
+      );
+      await _pollForPackAndQuiz(session.childId, documentId);
+      isGeneratingQuiz = false;
+      notifyListeners();
+      return true;
+    } catch (error) {
+      generationError = error.toString();
+      generationStatus = 'Quick scan failed';
+      isGeneratingQuiz = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   String? _generationStatusForStage({
     required String? pipelineStage,
     required String? status,
@@ -1392,6 +1547,9 @@ class AppState extends ChangeNotifier {
     }
 
     return switch (pipelineStage) {
+      'quick_scan_queued' => '${prefix}Preparing quick scan...',
+      'quick_scan_processing' => '${prefix}Scanning topic and language...',
+      'awaiting_validation' => '${prefix}Review AI topic/language suggestions.',
       'queued' => '${prefix}Waiting in queue...',
       'ocr' => '${prefix}Reading your document...',
       'concept_extraction_queued' => '${prefix}Preparing concepts...',
@@ -1401,6 +1559,8 @@ class AppState extends ChangeNotifier {
       'game_generation_queued' => '${prefix}Preparing games...',
       'game_generation' => '${prefix}Generating games and quizzes...',
       'ready' => '100% • Quiz ready!',
+      'quick_scan_failed' =>
+        'Quick scan failed. Please rescan or edit manually.',
       'ocr_failed' => 'OCR failed. Please retry.',
       'concept_extraction_failed' => 'Concept extraction failed. Please retry.',
       'learning_pack_failed' => 'Pack generation failed. Please retry.',
@@ -1427,6 +1587,9 @@ class AppState extends ChangeNotifier {
     }
 
     return switch (pipelineStage) {
+      'quick_scan_queued' => 'Quick Scan Queue',
+      'quick_scan_processing' => 'Quick Scan',
+      'awaiting_validation' => 'Awaiting Validation',
       'queued' => 'Queued',
       'ocr' => 'OCR',
       'concept_extraction_queued' => 'Concept Queue',
@@ -1436,6 +1599,7 @@ class AppState extends ChangeNotifier {
       'game_generation_queued' => 'Game Queue',
       'game_generation' => 'Game Generation',
       'ready' => 'Ready',
+      'quick_scan_failed' => 'Quick Scan Failed',
       'ocr_failed' => 'OCR Failed',
       'concept_extraction_failed' => 'Concept Failed',
       'learning_pack_failed' => 'Pack Failed',
@@ -2511,7 +2675,16 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  String _statusLabelForDocument(String status) {
+  String _statusLabelForDocument(String status, {String? stage}) {
+    if (stage == 'awaiting_validation') {
+      return 'awaiting_validation';
+    }
+    if (stage == 'quick_scan_queued' || stage == 'quick_scan_processing') {
+      return stage!;
+    }
+    if (stage == 'quick_scan_failed') {
+      return 'quick_scan_failed';
+    }
     return status;
   }
 

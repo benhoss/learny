@@ -516,6 +516,9 @@ class L10nFr extends L10n {
   String get docStatusQuickScanProcessing => 'anayse rapide';
 
   @override
+  String get docStatusQuickScanFailed => 'Échec de l\'analyse rapide';
+
+  @override
   String get docStatusAwaitingValidation => 'En attente de validation';
 
   @override

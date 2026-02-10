@@ -377,6 +377,64 @@ class BackendClient {
     return payload['data'] as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> getDocumentScan({
+    required String childId,
+    required String documentId,
+  }) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/v1/children/$childId/documents/$documentId/scan'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Get document scan failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> confirmDocumentScan({
+    required String childId,
+    required String documentId,
+    required String topic,
+    required String language,
+  }) async {
+    final response = await _client.post(
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/documents/$documentId/confirm-scan',
+      ),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({'topic': topic, 'language': language}),
+    );
+
+    if (response.statusCode != 202 && response.statusCode != 200) {
+      throw BackendException('Confirm document scan failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> rescanDocument({
+    required String childId,
+    required String documentId,
+  }) async {
+    final response = await _client.post(
+      Uri.parse(
+        '$baseUrl/api/v1/children/$childId/documents/$documentId/rescan',
+      ),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 202) {
+      throw BackendException('Rescan document failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
   Future<List<dynamic>> listLearningPacks({
     required String childId,
     String? documentId,

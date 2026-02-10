@@ -62,6 +62,12 @@ class DocumentScanController extends Controller
                         return response()->json(['data' => $document], 200);
                     }
 
+                    if (! $this->canConfirmDocument($document)) {
+                        return response()->json([
+                            'message' => 'Document cannot be confirmed in its current state.',
+                        ], 409);
+                    }
+
                     $document->subject = $data['topic'];
                     $document->language = $data['language'];
                     $document->validated_topic = $data['topic'];
@@ -88,30 +94,51 @@ class DocumentScanController extends Controller
     {
         $child = $this->findOwnedChild($childId);
 
-        $document = Document::where('_id', $documentId)
-            ->where('child_profile_id', (string) $child->_id)
-            ->firstOrFail();
+        try {
+            return Cache::lock('documents:rescan:'.$documentId, 5)->block(
+                3,
+                function () use ($child, $documentId): JsonResponse {
+                    $document = Document::where('_id', $documentId)
+                        ->where('child_profile_id', (string) $child->_id)
+                        ->firstOrFail();
 
-        if (! $this->canRescanDocument($document)) {
+                    if (! $this->canRescanDocument($document)) {
+                        return response()->json([
+                            'message' => 'Document cannot be rescanned in its current state.',
+                        ], 409);
+                    }
+
+                    $document->scan_status = 'queued';
+                    $document->validation_status = 'pending';
+                    $document->scan_topic_suggestion = null;
+                    $document->scan_language_suggestion = null;
+                    $document->scan_confidence = null;
+                    $document->scan_alternatives = [];
+                    $document->scan_model = null;
+                    $document->scan_completed_at = null;
+                    PipelineTelemetry::transition($document, 'quick_scan_queued', 10, 'queued');
+                    $document->save();
+
+                    QuickScanDocumentMetadata::dispatch((string) $document->_id);
+
+                    return response()->json(['data' => $document], 202);
+                }
+            );
+        } catch (LockTimeoutException) {
             return response()->json([
-                'message' => 'Document cannot be rescanned in its current state.',
+                'message' => 'Document rescan already in progress. Please retry.',
             ], 409);
         }
+    }
 
-        $document->scan_status = 'queued';
-        $document->validation_status = 'pending';
-        $document->scan_topic_suggestion = null;
-        $document->scan_language_suggestion = null;
-        $document->scan_confidence = null;
-        $document->scan_alternatives = [];
-        $document->scan_model = null;
-        $document->scan_completed_at = null;
-        PipelineTelemetry::transition($document, 'quick_scan_queued', 10, 'queued');
-        $document->save();
+    private function canConfirmDocument(Document $document): bool
+    {
+        $stage = (string) ($document->pipeline_stage ?? '');
+        if ($stage !== '') {
+            return in_array($stage, ['awaiting_validation', 'quick_scan_failed'], true);
+        }
 
-        QuickScanDocumentMetadata::dispatch((string) $document->_id);
-
-        return response()->json(['data' => $document], 202);
+        return in_array((string) ($document->scan_status ?? ''), ['ready', 'failed'], true);
     }
 
     private function canRescanDocument(Document $document): bool

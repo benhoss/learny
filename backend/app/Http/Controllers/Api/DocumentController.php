@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Concerns\FindsOwnedChild;
 use App\Http\Controllers\Controller;
-use App\Jobs\ProcessDocumentOcr;
+use App\Jobs\QuickScanDocumentMetadata;
 use App\Jobs\GenerateLearningPackFromDocument;
 use App\Models\ChildProfile;
 use App\Models\Document;
@@ -109,6 +109,17 @@ class DocumentController extends Controller
             'learning_goal' => $data['learning_goal'] ?? null,
             'context_text' => $data['context_text'] ?? null,
             'requested_game_types' => $data['requested_game_types'] ?? null,
+            'scan_status' => 'queued',
+            'scan_topic_suggestion' => null,
+            'scan_language_suggestion' => null,
+            'scan_confidence' => null,
+            'scan_alternatives' => [],
+            'scan_model' => null,
+            'scan_completed_at' => null,
+            'validation_status' => 'pending',
+            'validated_topic' => null,
+            'validated_language' => null,
+            'validated_at' => null,
             'pipeline_stage' => null,
             'stage_started_at' => null,
             'progress_hint' => 0,
@@ -118,10 +129,10 @@ class DocumentController extends Controller
             'stage_timings' => [],
             'stage_history' => [],
         ]);
-        PipelineTelemetry::transition($document, 'queued', 5, 'queued');
+        PipelineTelemetry::transition($document, 'quick_scan_queued', 10, 'queued');
         $document->save();
 
-        ProcessDocumentOcr::dispatch((string) $document->_id);
+        QuickScanDocumentMetadata::dispatch((string) $document->_id);
 
         return response()->json([
             'data' => $document,

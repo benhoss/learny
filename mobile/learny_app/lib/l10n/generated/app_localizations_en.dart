@@ -517,6 +517,9 @@ class L10nEn extends L10n {
   String get docStatusQuickScanProcessing => 'Quick scan';
 
   @override
+  String get docStatusQuickScanFailed => 'Quick scan failed';
+
+  @override
   String get docStatusAwaitingValidation => 'Awaiting validation';
 
   @override

@@ -514,6 +514,9 @@ class L10nNl extends L10n {
   String get docStatusQuickScanProcessing => 'Quick Scan';
 
   @override
+  String get docStatusQuickScanFailed => 'Snelle scan mislukt';
+
+  @override
   String get docStatusAwaitingValidation => 'In afwachting van bevestiging';
 
   @override

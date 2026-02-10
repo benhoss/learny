@@ -46,7 +46,7 @@ class MetadataSuggestionService
         }
 
         $language = $this->detectLanguage($text, (string) ($input['language_hint'] ?? ''));
-        $learningGoal = $this->goalForSubject($subject);
+        $learningGoal = $this->goalForSubject($subject, $language);
 
         $confidence = min(0.95, max(0.35, 0.35 + ($topSubjectScore * 0.15)));
 
@@ -95,7 +95,7 @@ class MetadataSuggestionService
 
         $learningGoal = $decoded['learning_goal'] ?? null;
         if (! is_string($learningGoal) || trim($learningGoal) === '') {
-            $learningGoal = $this->goalForSubject($subject);
+            $learningGoal = $this->goalForSubject($subject, $language);
         }
 
         return [
@@ -140,8 +140,40 @@ class MetadataSuggestionService
         return 'English';
     }
 
-    protected function goalForSubject(string $subject): string
+    protected function goalForSubject(string $subject, string $language = 'English'): string
     {
+        $lang = strtolower($language);
+        if ($lang === 'french') {
+            return match ($subject) {
+                'Math' => 'Résoudre les exercices de base avec moins d’erreurs.',
+                'Science' => 'Expliquer les concepts clés avec des exemples simples.',
+                'History' => 'Retenir les événements et relier causes et conséquences.',
+                'Geography' => 'Identifier les lieux et comparer les régions.',
+                'Language' => 'Pratiquer le vocabulaire et la construction de phrases.',
+                default => 'Renforcer la confiance sur les concepts principaux.',
+            };
+        }
+        if ($lang === 'dutch') {
+            return match ($subject) {
+                'Math' => 'Kernopgaven oplossen met minder fouten.',
+                'Science' => 'Belangrijke concepten uitleggen met eenvoudige voorbeelden.',
+                'History' => 'Gebeurtenissen onthouden en oorzaken met gevolgen verbinden.',
+                'Geography' => 'Plaatsen herkennen en regio’s vergelijken.',
+                'Language' => 'Woordenschat en zinsbouw oefenen.',
+                default => 'Zelfvertrouwen opbouwen rond de belangrijkste concepten.',
+            };
+        }
+        if ($lang === 'spanish') {
+            return match ($subject) {
+                'Math' => 'Resolver ejercicios básicos con menos errores.',
+                'Science' => 'Explicar conceptos clave con ejemplos sencillos.',
+                'History' => 'Recordar eventos y conectar causas y consecuencias.',
+                'Geography' => 'Identificar lugares y comparar regiones.',
+                'Language' => 'Practicar vocabulario y construcción de oraciones.',
+                default => 'Aumentar la confianza en los conceptos principales.',
+            };
+        }
+
         return match ($subject) {
             'Math' => 'Solve core exercises with fewer mistakes.',
             'Science' => 'Explain key concepts using simple examples.',
@@ -179,6 +211,7 @@ Return JSON only, no markdown:
 Rules:
 - Prefer the document's actual language over English if the text is clearly non-English.
 - If unsure, set subject "General" and confidence <= 0.5.
+- The learning_goal must be written in the same language as the language field.
 - Use the image content as the main source of truth.
 
 Context text (may be empty): {$context}

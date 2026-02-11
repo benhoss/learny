@@ -682,6 +682,98 @@ class L10nFr extends L10n {
   String get libraryRegenerateTooltip => 'Re-générer le quiz';
 
   @override
+  String get librarySearchHint => 'Rechercher des documents et des packs';
+
+  @override
+  String get libraryFilterSubject => 'Matière';
+
+  @override
+  String get libraryFilterTopic => 'Thème';
+
+  @override
+  String get libraryFilterGrade => 'Niveau';
+
+  @override
+  String get libraryFilterLanguage => 'Langue';
+
+  @override
+  String get libraryClearFilters => 'Effacer les filtres';
+
+  @override
+  String get libraryDocumentsSection => 'Documents';
+
+  @override
+  String get libraryPacksSection => 'Packs d\'apprentissage';
+
+  @override
+  String get libraryNoDocumentsMatch =>
+      'Aucun document ne correspond à vos filtres.';
+
+  @override
+  String get libraryNoPacksMatch => 'Aucun pack ne correspond à vos filtres.';
+
+  @override
+  String get librarySmartCategoriesTitle => 'Catégories intelligentes';
+
+  @override
+  String get librarySmartCategoriesSubtitle =>
+      'Classés automatiquement par matière et thème.';
+
+  @override
+  String get libraryCollectionsTitle => 'Collections';
+
+  @override
+  String get libraryCollectionsSubtitle =>
+      'Vos regroupements manuels par enfant.';
+
+  @override
+  String get libraryCollectionsEmpty =>
+      'Aucune collection pour le moment. Ajoutez-en une lors de la validation d’un document.';
+
+  @override
+  String get libraryRecentUploadsTitle => 'Importations récentes';
+
+  @override
+  String get libraryRecentUploadsSubtitle =>
+      'Les documents les plus récents en premier.';
+
+  @override
+  String get libraryUnclassifiedTitle => 'Non classé';
+
+  @override
+  String get libraryUnclassifiedSubtitle =>
+      'Métadonnées de matière/thème/niveau manquantes.';
+
+  @override
+  String get libraryFilterClear => 'Effacer';
+
+  @override
+  String get libraryFilterDone => 'Terminé';
+
+  @override
+  String get uploadTopicHint =>
+      'ex. Fractions, Grammaire, Seconde Guerre mondiale';
+
+  @override
+  String get uploadGradeLabel => 'Niveau';
+
+  @override
+  String get uploadGradeHint => 'ex. CM2';
+
+  @override
+  String get uploadCollectionsLabel =>
+      'Collections (séparées par des virgules)';
+
+  @override
+  String get uploadCollectionsHint => 'ex. Semaine d’examen d’Emma, Devoirs';
+
+  @override
+  String get uploadTagsLabel => 'Tags (séparés par des virgules)';
+
+  @override
+  String get uploadTagsHint => 'ex. fractions, verbes';
+
+  @override
   String get revisionSetupTitle => 'Révision Express';
 
   @override

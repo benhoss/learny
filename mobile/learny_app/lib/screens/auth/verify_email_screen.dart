@@ -20,8 +20,9 @@ class VerifyEmailScreen extends StatelessWidget {
         decoration: InputDecoration(labelText: l.verifyEmailCodeLabel),
       ),
       primaryAction: ElevatedButton(
-        onPressed: () {
-          state.completeOnboarding();
+        onPressed: () async {
+          await state.completeOnboarding(force: true);
+          if (!context.mounted) return;
           Navigator.pushNamed(context, AppRoutes.home);
         },
         child: Text(l.verifyEmailContinueToApp),

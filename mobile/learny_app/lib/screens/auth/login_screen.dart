@@ -18,9 +18,7 @@ class LoginScreen extends StatelessWidget {
       gradient: LearnyGradients.hero,
       body: Column(
         children: [
-          TextField(
-            decoration: InputDecoration(labelText: l.authEmailLabel),
-          ),
+          TextField(decoration: InputDecoration(labelText: l.authEmailLabel)),
           const SizedBox(height: 12),
           TextField(
             decoration: InputDecoration(labelText: l.authPasswordLabel),
@@ -29,15 +27,17 @@ class LoginScreen extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.forgotPassword),
+              onPressed: () =>
+                  Navigator.pushNamed(context, AppRoutes.forgotPassword),
               child: Text(l.loginForgotPassword),
             ),
           ),
         ],
       ),
       primaryAction: ElevatedButton(
-        onPressed: () {
-          state.completeOnboarding();
+        onPressed: () async {
+          await state.completeOnboarding(force: true);
+          if (!context.mounted) return;
           Navigator.pushNamed(context, AppRoutes.home);
         },
         child: Text(l.loginButton),

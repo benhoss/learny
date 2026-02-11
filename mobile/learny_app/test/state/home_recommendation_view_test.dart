@@ -4,6 +4,7 @@ import 'package:learny_app/screens/home/home_screen.dart';
 import 'package:learny_app/state/app_state.dart';
 import 'package:learny_app/state/app_state_scope.dart';
 import 'package:learny_app/theme/app_theme.dart';
+import 'package:learny_app/l10n/generated/app_localizations.dart';
 
 void main() {
   testWidgets('home recommendation shows why dialog when enabled', (
@@ -32,6 +33,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: LearnyTheme.light(),
+        localizationsDelegates: L10n.localizationsDelegates,
+        supportedLocales: L10n.supportedLocales,
         home: AppStateScope(
           notifier: state,
           child: const Scaffold(body: HomeScreen()),

@@ -18,7 +18,11 @@ class UploadScreen extends StatefulWidget {
 class _UploadScreenState extends State<UploadScreen> {
   final _titleController = TextEditingController();
   final _subjectController = TextEditingController();
+  final _topicController = TextEditingController();
   final _languageController = TextEditingController();
+  final _gradeController = TextEditingController();
+  final _collectionsController = TextEditingController();
+  final _tagsController = TextEditingController();
   final _goalController = TextEditingController();
   final _contextController = TextEditingController();
   final List<String> _selectedGameTypes = [
@@ -38,7 +42,11 @@ class _UploadScreenState extends State<UploadScreen> {
   void dispose() {
     _titleController.dispose();
     _subjectController.dispose();
+    _topicController.dispose();
     _languageController.dispose();
+    _gradeController.dispose();
+    _collectionsController.dispose();
+    _tagsController.dispose();
     _goalController.dispose();
     _contextController.dispose();
     super.dispose();
@@ -48,8 +56,11 @@ class _UploadScreenState extends State<UploadScreen> {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final hasContext =
-        _subjectController.text.trim().isNotEmpty ||
-        _goalController.text.trim().isNotEmpty;
+        (_subjectController.text.trim().isNotEmpty ||
+            _topicController.text.trim().isNotEmpty ||
+            _goalController.text.trim().isNotEmpty) &&
+        _languageController.text.trim().isNotEmpty &&
+        _gradeController.text.trim().isNotEmpty;
     return PlaceholderScreen(
       title: L10n.of(context).uploadTitle,
       subtitle: L10n.of(context).uploadSubtitle,
@@ -96,10 +107,43 @@ class _UploadScreenState extends State<UploadScreen> {
           ),
           const SizedBox(height: 8),
           TextField(
+            controller: _topicController,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              labelText: L10n.of(context).processingTopicLabel,
+              hintText: L10n.of(context).uploadTopicHint,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
             controller: _languageController,
             decoration: InputDecoration(
               labelText: L10n.of(context).uploadLanguageLabel,
               hintText: L10n.of(context).uploadLanguageHint,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _gradeController,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadGradeLabel,
+              hintText: L10n.of(context).uploadGradeHint,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _collectionsController,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadCollectionsLabel,
+              hintText: L10n.of(context).uploadCollectionsHint,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _tagsController,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadTagsLabel,
+              hintText: L10n.of(context).uploadTagsHint,
             ),
           ),
           const SizedBox(height: 8),
@@ -179,7 +223,21 @@ class _UploadScreenState extends State<UploadScreen> {
                 state.setPendingContext(
                   title: _titleController.text.trim(),
                   subject: _subjectController.text.trim(),
+                  topic: _topicController.text.trim(),
                   language: _languageController.text.trim(),
+                  gradeLevel: _gradeController.text.trim(),
+                  collections: _collectionsController.text
+                      .split(',')
+                      .map((value) => value.trim())
+                      .where((value) => value.isNotEmpty)
+                      .toSet()
+                      .toList(),
+                  tags: _tagsController.text
+                      .split(',')
+                      .map((value) => value.trim())
+                      .where((value) => value.isNotEmpty)
+                      .toSet()
+                      .toList(),
                   learningGoal: _goalController.text.trim(),
                   contextText: _contextController.text.trim(),
                 );
@@ -232,6 +290,9 @@ class _UploadScreenState extends State<UploadScreen> {
       }
       if (_subjectController.text.trim().isEmpty && subject.isNotEmpty) {
         _subjectController.text = subject;
+      }
+      if (_topicController.text.trim().isEmpty && subject.isNotEmpty) {
+        _topicController.text = subject;
       }
       if (_languageController.text.trim().isEmpty && language.isNotEmpty) {
         _languageController.text = language;

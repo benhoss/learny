@@ -12,4 +12,16 @@ return [
     |
     */
     'bound_child_profile_id' => env('BOUND_CHILD_PROFILE_ID'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Onboarding Compliance Defaults
+    |--------------------------------------------------------------------------
+    */
+    'default_market' => env('LEARNY_DEFAULT_MARKET', 'US'),
+    'consent_age_by_market' => [
+        'US' => (int) env('LEARNY_CONSENT_AGE_US', 13),
+        'FR' => (int) env('LEARNY_CONSENT_AGE_FR', 15),
+        'NL' => (int) env('LEARNY_CONSENT_AGE_NL', 16),
+    ],
 ];

@@ -5,5 +5,5 @@ class BackendConfig {
   static const demoPassword = 'secret123';
   static const childName = 'Alex';
   static const childGrade = '6th';
-  static const disableOnboarding = true;
+  static const disableOnboarding = false;
 }

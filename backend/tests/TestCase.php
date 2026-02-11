@@ -24,6 +24,9 @@ abstract class TestCase extends BaseTestCase
             'revision_sessions',
             'learning_memory_events',
             'school_assessments',
+            'onboarding_states',
+            'onboarding_events',
+            'onboarding_link_tokens',
         ]);
     }
 

@@ -62,6 +62,14 @@ class GenerateLearningPackFromDocument implements ShouldQueue
                     'status' => 'ready',
                     'schema_version' => 'v1',
                     'content' => $content,
+                    'subject' => $document->subject,
+                    'topic' => $document->topic ?? $document->validated_topic,
+                    'grade_level' => $document->grade_level,
+                    'language' => $document->language ?? $document->validated_language,
+                    'document_type' => $document->document_type,
+                    'source' => $document->source,
+                    'tags' => $document->tags ?? [],
+                    'collections' => $document->collections ?? [],
                 ]);
 
                 PipelineTelemetry::transition($document, 'game_generation_queued', 80);

@@ -1,16 +1,68 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
+import '../../state/app_state_scope.dart';
 import '../../theme/app_assets.dart';
 import '../../theme/app_theme.dart';
 import '../shared/gradient_scaffold.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
   @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  bool _redirected = false;
+  bool _skipping = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final state = AppStateScope.of(context);
+    if (_redirected || !state.onboardingHydrated) {
+      return;
+    }
+
+    final target = state.onboardingResumeRoute;
+    if (target != AppRoutes.welcome) {
+      _redirected = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, target);
+      });
+    }
+  }
+
+  Future<void> _chooseRole(String role) async {
+    final state = AppStateScope.of(context);
+    await state.selectOnboardingRole(role);
+    if (!mounted) return;
+    final target = role == 'parent'
+        ? AppRoutes.parentOnboarding
+        : AppRoutes.howItWorks;
+    Navigator.pushReplacementNamed(context, target);
+  }
+
+  Future<void> _debugSkip() async {
+    setState(() => _skipping = true);
+    final state = AppStateScope.of(context);
+    final ok = await state.debugSkipOnboardingAutoLogin();
+    if (!mounted) return;
+    setState(() => _skipping = false);
+    if (ok) {
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final l = L10n.of(context);
+    final state = AppStateScope.of(context);
+    if (!state.onboardingHydrated) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return GradientScaffold(
       gradient: LearnyGradients.hero,
       child: Stack(
@@ -21,10 +73,7 @@ class WelcomeScreen extends StatelessWidget {
             child: IgnorePointer(
               child: Opacity(
                 opacity: 0.16,
-                child: Image.asset(
-                  AppImages.renderOnboarding,
-                  width: 260,
-                ),
+                child: Image.asset(AppImages.renderOnboarding, width: 260),
               ),
             ),
           ),
@@ -35,71 +84,48 @@ class WelcomeScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 16),
                 Text(
-                  l.onboardingWelcomeTitle,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineLarge
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                  'Welcome to Learny',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  l.onboardingWelcomeSubtitle,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(color: LearnyColors.slateMedium),
-                ),
-                const Spacer(),
-                Center(
-                  child: Container(
-                    width: 240,
-                    height: 240,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [
-                        BoxShadow(
-                          color: LearnyColors.coral.withValues(alpha: 0.2),
-                          blurRadius: 30,
-                          offset: const Offset(0, 16),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Image.asset(
-                        AppImages.foxMascot,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
+                  'Choose your role to start onboarding.',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: LearnyColors.slateMedium,
                   ),
                 ),
                 const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    3,
-                    (index) => Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: index == 0 ? 18 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: index == 0
-                            ? LearnyColors.coral
-                            : LearnyColors.slateLight,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.howItWorks),
-                    child: Text(l.onboardingGetStarted),
+                    onPressed: () => _chooseRole('child'),
+                    child: const Text("I'm a learner"),
                   ),
                 ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => _chooseRole('parent'),
+                    child: const Text("I'm a parent/guardian"),
+                  ),
+                ),
+                if (kDebugMode) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: _skipping ? null : _debugSkip,
+                      child: Text(
+                        _skipping
+                            ? 'Signing in test user...'
+                            : 'Skip onboarding (debug: auto login test user)',
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

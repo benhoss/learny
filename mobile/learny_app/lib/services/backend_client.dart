@@ -14,6 +14,21 @@ class BackendClient {
 
   String? token;
 
+  Future<Map<String, dynamic>> onboardingPolicy({String? market}) async {
+    final uri = Uri.parse('$baseUrl/api/v1/onboarding/policy');
+    final target = market == null
+        ? uri
+        : uri.replace(queryParameters: {'market': market});
+    final response = await _client.get(target, headers: _jsonHeaders());
+
+    if (response.statusCode != 200) {
+      throw BackendException('Onboarding policy failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
@@ -72,6 +87,157 @@ class BackendClient {
     return (payload['data'] as List<dynamic>?) ?? [];
   }
 
+  Future<Map<String, dynamic>> onboardingState() async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/v1/onboarding/state'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Onboarding state failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> updateOnboardingState({
+    required String role,
+    required String currentStep,
+    Map<String, dynamic>? checkpoints,
+    List<String>? completedSteps,
+    bool markComplete = false,
+  }) async {
+    final response = await _client.put(
+      Uri.parse('$baseUrl/api/v1/onboarding/state'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        'role': role,
+        'current_step': currentStep,
+        if (checkpoints != null) 'checkpoints': checkpoints,
+        if (completedSteps != null) 'completed_steps': completedSteps,
+        'mark_complete': markComplete,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException(
+        'Update onboarding state failed: ${response.body}',
+      );
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> trackOnboardingEvent({
+    required String role,
+    required String eventName,
+    String? step,
+    String? instanceId,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/onboarding/events'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        'role': role,
+        'event_name': eventName,
+        if (step != null) 'step': step,
+        if (instanceId != null) 'instance_id': instanceId,
+        if (metadata != null) 'metadata': metadata,
+      }),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw BackendException('Track onboarding event failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> createOnboardingLinkToken({
+    required String childId,
+    int expiresInSeconds = 600,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/onboarding/link-tokens'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        'child_id': childId,
+        'expires_in_seconds': expiresInSeconds,
+      }),
+    );
+
+    if (response.statusCode != 201) {
+      throw BackendException(
+        'Create onboarding link token failed: ${response.body}',
+      );
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> consumeOnboardingLinkToken({
+    required String code,
+    String? childId,
+    required String deviceName,
+    String? devicePlatform,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/onboarding/link-tokens/consume'),
+      headers: _jsonHeaders(includeContentType: true),
+      body: jsonEncode({
+        'code': code,
+        if (childId != null) 'child_id': childId,
+        'device_name': deviceName,
+        if (devicePlatform != null) 'device_platform': devicePlatform,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException(
+        'Consume onboarding link token failed: ${response.body}',
+      );
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<List<dynamic>> listChildDevices({required String childId}) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/v1/children/$childId/devices'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('List child devices failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return (payload['data'] as List<dynamic>?) ?? [];
+  }
+
+  Future<Map<String, dynamic>> revokeChildDevice({
+    required String childId,
+    required String deviceId,
+  }) async {
+    final response = await _client.delete(
+      Uri.parse('$baseUrl/api/v1/children/$childId/devices/$deviceId'),
+      headers: _authHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Revoke child device failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> createChild({
     required String name,
     String? gradeLevel,
@@ -123,8 +289,11 @@ class BackendClient {
     required String filename,
     String? title,
     String? subject,
+    String? topic,
     String? language,
     String? gradeLevel,
+    List<String>? collections,
+    List<String>? tags,
     String? learningGoal,
     String? contextText,
     List<String>? requestedGameTypes,
@@ -143,11 +312,24 @@ class BackendClient {
     if (subject != null && subject.isNotEmpty) {
       request.fields['subject'] = subject;
     }
+    if (topic != null && topic.isNotEmpty) {
+      request.fields['topic'] = topic;
+    }
     if (language != null && language.isNotEmpty) {
       request.fields['language'] = language;
     }
     if (gradeLevel != null && gradeLevel.isNotEmpty) {
       request.fields['grade_level'] = gradeLevel;
+    }
+    if (collections != null && collections.isNotEmpty) {
+      for (var index = 0; index < collections.length; index += 1) {
+        request.fields['collections[$index]'] = collections[index];
+      }
+    }
+    if (tags != null && tags.isNotEmpty) {
+      for (var index = 0; index < tags.length; index += 1) {
+        request.fields['tags[$index]'] = tags[index];
+      }
     }
     if (learningGoal != null && learningGoal.isNotEmpty) {
       request.fields['learning_goal'] = learningGoal;
@@ -179,8 +361,11 @@ class BackendClient {
     required List<String> filenames,
     String? title,
     String? subject,
+    String? topic,
     String? language,
     String? gradeLevel,
+    List<String>? collections,
+    List<String>? tags,
     String? learningGoal,
     String? contextText,
     List<String>? requestedGameTypes,
@@ -208,11 +393,24 @@ class BackendClient {
     if (subject != null && subject.isNotEmpty) {
       request.fields['subject'] = subject;
     }
+    if (topic != null && topic.isNotEmpty) {
+      request.fields['topic'] = topic;
+    }
     if (language != null && language.isNotEmpty) {
       request.fields['language'] = language;
     }
     if (gradeLevel != null && gradeLevel.isNotEmpty) {
       request.fields['grade_level'] = gradeLevel;
+    }
+    if (collections != null && collections.isNotEmpty) {
+      for (var index = 0; index < collections.length; index += 1) {
+        request.fields['collections[$index]'] = collections[index];
+      }
+    }
+    if (tags != null && tags.isNotEmpty) {
+      for (var index = 0; index < tags.length; index += 1) {
+        request.fields['tags[$index]'] = tags[index];
+      }
     }
     if (learningGoal != null && learningGoal.isNotEmpty) {
       request.fields['learning_goal'] = learningGoal;
@@ -940,8 +1138,7 @@ class BackendClient {
 
   bool _looksLikeHtml(String body) {
     final trimmed = body.trimLeft();
-    return trimmed.startsWith('<!DOCTYPE html') ||
-        trimmed.startsWith('<html');
+    return trimmed.startsWith('<!DOCTYPE html') || trimmed.startsWith('<html');
   }
 }
 

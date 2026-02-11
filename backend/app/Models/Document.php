@@ -26,8 +26,15 @@ class Document extends Model
         'ocr_error',
         'processed_at',
         'subject',
+        'topic',
         'language',
         'grade_level',
+        'document_type',
+        'source',
+        'tags',
+        'collections',
+        'ai_confidence',
+        'user_override',
         'learning_goal',
         'context_text',
         'requested_game_types',
@@ -70,6 +77,10 @@ class Document extends Model
         'ready_game_types' => 'array',
         'stage_timings' => 'array',
         'stage_history' => 'array',
+        'tags' => 'array',
+        'collections' => 'array',
+        'ai_confidence' => 'float',
+        'user_override' => 'boolean',
     ];
 
     public function childProfile()

@@ -20,10 +20,20 @@ class LearningPack extends Model
         'status',
         'schema_version',
         'content',
+        'subject',
+        'topic',
+        'grade_level',
+        'language',
+        'document_type',
+        'source',
+        'tags',
+        'collections',
     ];
 
     protected $casts = [
         'content' => 'array',
+        'tags' => 'array',
+        'collections' => 'array',
     ];
 
     public function games()

@@ -8,6 +8,7 @@ use App\Jobs\QuickScanDocumentMetadata;
 use App\Jobs\GenerateLearningPackFromDocument;
 use App\Models\ChildProfile;
 use App\Models\Document;
+use App\Support\Documents\FacetCanonicalizer;
 use App\Support\Documents\PipelineTelemetry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,9 +42,16 @@ class DocumentController extends Controller
             'files' => ['required_without:file', 'array', 'min:1'],
             'files.*' => ['file', 'max:10240', 'mimes:jpg,jpeg,png'],
             'subject' => ['nullable', 'string', 'max:120'],
+            'topic' => ['nullable', 'string', 'max:120'],
             'title' => ['nullable', 'string', 'max:120'],
             'language' => ['nullable', 'string', 'max:32'],
             'grade_level' => ['nullable', 'string', 'max:64'],
+            'document_type' => ['nullable', 'string', 'max:64'],
+            'source' => ['nullable', 'string', 'max:64'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['string', 'max:64'],
+            'collections' => ['nullable', 'array'],
+            'collections.*' => ['string', 'max:64'],
             'learning_goal' => ['nullable', 'string', 'max:160'],
             'context_text' => ['nullable', 'string', 'max:500'],
             'requested_game_types' => ['nullable', 'array'],
@@ -53,9 +61,11 @@ class DocumentController extends Controller
             ],
         ]);
 
-        if (blank($data['subject'] ?? null) && blank($data['learning_goal'] ?? null)) {
+        if (blank($data['subject'] ?? null) &&
+            blank($data['topic'] ?? null) &&
+            blank($data['learning_goal'] ?? null)) {
             throw ValidationException::withMessages([
-                'subject' => ['Provide a subject or learning goal to guide quiz generation.'],
+                'subject' => ['Provide a subject, topic, or learning goal to guide quiz generation.'],
             ]);
         }
 
@@ -93,6 +103,15 @@ class DocumentController extends Controller
             }
         }
 
+        $topicFacet = FacetCanonicalizer::canonicalizeTopic($data['topic'] ?? $data['subject'] ?? null);
+        $subjectCandidate = FacetCanonicalizer::canonicalizeSubject($data['subject'] ?? null)
+            ?? FacetCanonicalizer::canonicalizeSubject($topicFacet);
+        $subjectFacet = FacetCanonicalizer::isCoreSubject($subjectCandidate) ? $subjectCandidate : 'General';
+        $languageFacet = FacetCanonicalizer::canonicalizeLanguage($data['language'] ?? null);
+        if ($languageFacet === null && $subjectFacet === 'Language') {
+            $languageFacet = FacetCanonicalizer::canonicalizeLanguage($topicFacet);
+        }
+
         $document = Document::create([
             'user_id' => (string) Auth::guard('api')->id(),
             'child_profile_id' => (string) $child->_id,
@@ -104,10 +123,17 @@ class DocumentController extends Controller
             'mime_type' => $mimeTypes[0] ?? null,
             'mime_types' => $mimeTypes,
             'size_bytes' => $totalBytes,
-            'subject' => $data['subject'] ?? null,
+            'subject' => $subjectFacet,
+            'topic' => $topicFacet ?? $subjectFacet,
             'title' => $data['title'] ?? null,
-            'language' => $data['language'] ?? null,
-            'grade_level' => $data['grade_level'] ?? null,
+            'language' => $languageFacet,
+            'grade_level' => FacetCanonicalizer::canonicalizeGradeLevel($data['grade_level'] ?? null),
+            'document_type' => $data['document_type'] ?? null,
+            'source' => $data['source'] ?? null,
+            'tags' => FacetCanonicalizer::canonicalizeList($data['tags'] ?? []),
+            'collections' => FacetCanonicalizer::canonicalizeList($data['collections'] ?? []),
+            'ai_confidence' => null,
+            'user_override' => false,
             'learning_goal' => $data['learning_goal'] ?? null,
             'context_text' => $data['context_text'] ?? null,
             'requested_game_types' => $data['requested_game_types'] ?? null,

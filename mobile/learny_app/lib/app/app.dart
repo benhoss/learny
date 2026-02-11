@@ -21,6 +21,7 @@ import '../screens/home/notifications_screen.dart';
 import '../screens/onboarding/consent_screen.dart';
 import '../screens/onboarding/create_profile_screen.dart';
 import '../screens/onboarding/how_it_works_screen.dart';
+import '../screens/onboarding/parent_onboarding_screen.dart';
 import '../screens/onboarding/plan_screen.dart';
 import '../screens/onboarding/welcome_screen.dart';
 import '../screens/packs/pack_detail_screen.dart';
@@ -50,7 +51,6 @@ import '../screens/account/upgrade_plan_screen.dart';
 import '../screens/system/empty_state_screen.dart';
 import '../screens/system/error_state_screen.dart';
 import '../screens/system/offline_screen.dart';
-import '../app/backend_config.dart';
 import '../state/app_state.dart';
 import '../state/app_state_scope.dart';
 
@@ -63,6 +63,7 @@ class LearnyApp extends StatelessWidget {
     AppRoutes.createProfile,
     AppRoutes.consent,
     AppRoutes.plan,
+    AppRoutes.parentOnboarding,
     AppRoutes.signup,
     AppRoutes.login,
     AppRoutes.forgotPassword,
@@ -82,11 +83,9 @@ class LearnyApp extends StatelessWidget {
             locale: state.locale,
             localizationsDelegates: L10n.localizationsDelegates,
             supportedLocales: L10n.supportedLocales,
-            initialRoute: BackendConfig.disableOnboarding
-                ? AppRoutes.home
-                : AppRoutes.welcome,
+            initialRoute: AppRoutes.welcome,
             onGenerateRoute: (settings) {
-              if (BackendConfig.disableOnboarding &&
+              if (state.onboardingComplete &&
                   _onboardingRoutes.contains(settings.name)) {
                 return MaterialPageRoute(
                   settings: const RouteSettings(name: AppRoutes.home),
@@ -101,6 +100,7 @@ class LearnyApp extends StatelessWidget {
               AppRoutes.createProfile: (_) => const CreateProfileScreen(),
               AppRoutes.consent: (_) => const ConsentScreen(),
               AppRoutes.plan: (_) => const PlanScreen(),
+              AppRoutes.parentOnboarding: (_) => const ParentOnboardingScreen(),
               AppRoutes.signup: (_) => const SignupScreen(),
               AppRoutes.login: (_) => const LoginScreen(),
               AppRoutes.forgotPassword: (_) => const ForgotPasswordScreen(),

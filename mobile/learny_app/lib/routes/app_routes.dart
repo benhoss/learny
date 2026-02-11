@@ -4,6 +4,7 @@ class AppRoutes {
   static const createProfile = '/create-profile';
   static const consent = '/consent';
   static const plan = '/plan';
+  static const parentOnboarding = '/parent-onboarding';
 
   static const signup = '/signup';
   static const login = '/login';

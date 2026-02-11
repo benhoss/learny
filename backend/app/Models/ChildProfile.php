@@ -33,6 +33,7 @@ class ChildProfile extends Model
         'recommendation_why_level',
         'last_memory_reset_at',
         'last_memory_reset_scope',
+        'linked_devices',
     ];
 
     protected $hidden = [
@@ -50,6 +51,7 @@ class ChildProfile extends Model
         'memory_personalization_enabled' => 'boolean',
         'recommendation_why_enabled' => 'boolean',
         'last_memory_reset_at' => 'datetime',
+        'linked_devices' => 'array',
     ];
 
     protected $attributes = [
@@ -62,6 +64,7 @@ class ChildProfile extends Model
         'recommendation_why_level' => 'detailed',
         'last_memory_reset_at' => null,
         'last_memory_reset_scope' => null,
+        'linked_devices' => [],
     ];
 
     protected $appends = [

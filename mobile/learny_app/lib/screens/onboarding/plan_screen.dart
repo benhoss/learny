@@ -1,119 +1,143 @@
 import 'package:flutter/material.dart';
-import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
+import '../../state/app_state_scope.dart';
 import '../../theme/app_theme.dart';
 import '../shared/gradient_scaffold.dart';
 
-class PlanScreen extends StatelessWidget {
+class PlanScreen extends StatefulWidget {
   const PlanScreen({super.key});
 
   @override
+  State<PlanScreen> createState() => _PlanScreenState();
+}
+
+class _PlanScreenState extends State<PlanScreen> {
+  final _codeController = TextEditingController();
+  final _deviceController = TextEditingController(text: 'My phone');
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    _deviceController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _skip() async {
+    final state = AppStateScope.of(context);
+    await state.saveOnboardingStep(
+      step: 'completed',
+      completedStep: 'parent_link_prompt',
+    );
+    final ok = await state.completeOnboarding();
+    if (!ok) {
+      if (!mounted) return;
+      setState(() {
+        _error =
+            'Parent consent is required for this age group before finishing.';
+      });
+      return;
+    }
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, AppRoutes.home);
+  }
+
+  Future<void> _linkNow() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final state = AppStateScope.of(context);
+    final ok = await state.linkChildDeviceWithCode(
+      code: _codeController.text.trim(),
+      deviceName: _deviceController.text.trim().isEmpty
+          ? 'My phone'
+          : _deviceController.text.trim(),
+    );
+    if (!mounted) return;
+
+    setState(() {
+      _busy = false;
+      _error = ok
+          ? null
+          : 'Invalid code. Ask your parent to generate a new one.';
+    });
+
+    if (ok) {
+      final completed = await state.completeOnboarding();
+      if (!completed) {
+        if (!mounted) return;
+        setState(() {
+          _error =
+              'Parent consent is required for this age group before finishing.';
+        });
+        return;
+      }
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, AppRoutes.home);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final l = L10n.of(context);
     return GradientScaffold(
       gradient: LearnyGradients.hero,
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: ListView(
           children: [
-            Text(
-              l.planChooseTitle,
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Connect with a parent (optional)',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pushReplacementNamed(
+                    context,
+                    AppRoutes.welcome,
+                  ),
+                  child: const Text('Switch role'),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
-            Text(
-              l.planChooseSubtitle,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: LearnyColors.slateMedium),
-            ),
+            const Text('You can skip this now and do it later in settings.'),
             const SizedBox(height: 20),
-            _PlanCard(
-              title: l.planFreeTitle,
-              subtitle: l.planFreeSubtitle,
-              price: '\$0',
-              highlight: false,
-              onTap: () => Navigator.pushNamed(context, AppRoutes.signup),
-            ),
-            _PlanCard(
-              title: l.planProTitle,
-              subtitle: l.planProSubtitle,
-              price: '\$9.99',
-              highlight: true,
-              onTap: () => Navigator.pushNamed(context, AppRoutes.signup),
-            ),
-            _PlanCard(
-              title: l.planFamilyTitle,
-              subtitle: l.planFamilySubtitle,
-              price: '\$14.99',
-              highlight: false,
-              onTap: () => Navigator.pushNamed(context, AppRoutes.signup),
+            TextField(
+              controller: _codeController,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              decoration: const InputDecoration(
+                labelText: '6-digit parent code',
+              ),
             ),
             const SizedBox(height: 12),
+            TextField(
+              controller: _deviceController,
+              decoration: const InputDecoration(labelText: 'Device name'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _busy ? null : _linkNow,
+              child: Text(_busy ? 'Linking...' : 'Link device now'),
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 8),
+              Text(_error!, style: const TextStyle(color: Colors.red)),
+            ],
+            const SizedBox(height: 8),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
-              child: Text(l.planAlreadyHaveAccount),
+              onPressed: _busy ? null : _skip,
+              child: const Text('Skip for now'),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _PlanCard extends StatelessWidget {
-  const _PlanCard({
-    required this.title,
-    required this.subtitle,
-    required this.price,
-    required this.highlight,
-    required this.onTap,
-  });
-
-  final String title;
-  final String subtitle;
-  final String price;
-  final bool highlight;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: highlight ? LearnyColors.slateDark : Colors.white,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: highlight ? LearnyColors.coral : LearnyColors.peach,
-          child: Icon(
-            highlight ? Icons.star_rounded : Icons.favorite_rounded,
-            color: highlight ? Colors.white : LearnyColors.coral,
-          ),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: highlight ? Colors.white : LearnyColors.slateDark,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            color: highlight ? Colors.white70 : LearnyColors.slateMedium,
-          ),
-        ),
-        trailing: Text(
-          price,
-          style: TextStyle(
-            color: highlight ? Colors.white : LearnyColors.slateDark,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        onTap: onTap,
       ),
     );
   }

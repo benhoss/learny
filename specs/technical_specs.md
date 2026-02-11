@@ -101,3 +101,18 @@ Mobile App (Flutter / React Native)
 
 - Personalized Learner Profile 2.0: see `specs/personalized_learner_profile_2_0_spec.md`.
 - School Results Hub: see `specs/school_results_hub_spec.md`.
+- Onboarding Implementation PRD: see `specs/onboarding_implementation_prd.md`.
+
+
+## 10. Onboarding and Account-Linking Requirements
+
+- Support dual onboarding flows:
+  - Child-first self registration with minimal friction and rapid first activity.
+  - Parent-first registration with support for multiple child profiles.
+- Parent-child relationship model must allow one parent to supervise one or more children.
+- Child login on personal devices must support parent-approved linking and device revocation.
+- Onboarding must be resumable with persisted step state.
+- Capture onboarding analytics events for funnel measurement (TTFLV, completion, linking, retention).
+
+Detailed UX/product recommendations, consent decision matrix, and onboarding DoD criteria: see `specs/onboarding_research_spec.md`.
+Implementation delivery contract (requirements, rollout, DoD): see `specs/onboarding_implementation_prd.md`.

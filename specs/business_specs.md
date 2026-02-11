@@ -47,6 +47,12 @@ The product aims to teach children **how to learn with AI**, not how to cheat.
 3. Receive instant feedback
 4. Use “Revision Express” before tests
 
+### Onboarding Focus (New Priority)
+- Child-first onboarding must be easy, fun, and engaging, with a first learning action in under 90 seconds.
+- Parent onboarding must support creating and supervising one or more child accounts.
+- Detailed onboarding recommendations: see `specs/onboarding_research_spec.md`.
+- Implementation PRD for execution scope and rollout: see `specs/onboarding_implementation_prd.md`.
+
 ---
 
 ## 6. Core Features (MVP)

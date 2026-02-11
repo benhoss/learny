@@ -679,6 +679,96 @@ class L10nNl extends L10n {
   String get libraryRegenerateTooltip => 'Quiz opnieuw genereren';
 
   @override
+  String get librarySearchHint => 'Zoek documenten en packs';
+
+  @override
+  String get libraryFilterSubject => 'Vak';
+
+  @override
+  String get libraryFilterTopic => 'Onderwerp';
+
+  @override
+  String get libraryFilterGrade => 'Niveau';
+
+  @override
+  String get libraryFilterLanguage => 'Taal';
+
+  @override
+  String get libraryClearFilters => 'Filters wissen';
+
+  @override
+  String get libraryDocumentsSection => 'Documenten';
+
+  @override
+  String get libraryPacksSection => 'Leerpakketten';
+
+  @override
+  String get libraryNoDocumentsMatch =>
+      'Geen documenten komen overeen met je filters.';
+
+  @override
+  String get libraryNoPacksMatch =>
+      'Geen pakketten komen overeen met je filters.';
+
+  @override
+  String get librarySmartCategoriesTitle => 'Slimme categorieën';
+
+  @override
+  String get librarySmartCategoriesSubtitle =>
+      'Automatisch ingedeeld op vak en onderwerp.';
+
+  @override
+  String get libraryCollectionsTitle => 'Collecties';
+
+  @override
+  String get libraryCollectionsSubtitle => 'Jouw handmatige groepen per kind.';
+
+  @override
+  String get libraryCollectionsEmpty =>
+      'Nog geen collecties. Voeg er een toe bij het beoordelen van een document.';
+
+  @override
+  String get libraryRecentUploadsTitle => 'Recente uploads';
+
+  @override
+  String get libraryRecentUploadsSubtitle => 'Nieuwste documenten eerst.';
+
+  @override
+  String get libraryUnclassifiedTitle => 'Ongeclassificeerd';
+
+  @override
+  String get libraryUnclassifiedSubtitle =>
+      'Ontbrekende metadata voor vak/onderwerp/niveau.';
+
+  @override
+  String get libraryFilterClear => 'Wissen';
+
+  @override
+  String get libraryFilterDone => 'Klaar';
+
+  @override
+  String get uploadTopicHint =>
+      'bijv. Breuken, Grammatica, Tweede Wereldoorlog';
+
+  @override
+  String get uploadGradeLabel => 'Niveau';
+
+  @override
+  String get uploadGradeHint => 'bijv. Groep 7';
+
+  @override
+  String get uploadCollectionsLabel => 'Collecties (komma-gescheiden)';
+
+  @override
+  String get uploadCollectionsHint => 'bijv. Emma toetsweek, Huiswerk';
+
+  @override
+  String get uploadTagsLabel => 'Tags (komma-gescheiden)';
+
+  @override
+  String get uploadTagsHint => 'bijv. breuken, werkwoorden';
+
+  @override
   String get revisionSetupTitle => 'Herhaling Express';
 
   @override

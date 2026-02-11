@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\HomeRecommendationController;
 use App\Http\Controllers\Api\LearningPackController;
 use App\Http\Controllers\Api\MemoryPreferencesController;
+use App\Http\Controllers\Api\OnboardingController;
 use App\Http\Controllers\Api\QuizSessionController;
 use App\Http\Controllers\Api\RevisionSessionController;
 use App\Http\Controllers\Api\ReviewQueueController;
@@ -23,11 +24,15 @@ Route::get('/health', HealthController::class);
 Route::prefix('v1')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/onboarding/link-tokens/consume', [OnboardingController::class, 'consumeLinkToken'])
+        ->middleware('throttle:api-write');
+    Route::get('/onboarding/policy', [OnboardingController::class, 'policy']);
 
     Route::middleware(['auth:api', 'throttle:api'])->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::post('/auth/refresh', [AuthController::class, 'refresh']);
+        Route::get('/onboarding/state', [OnboardingController::class, 'showState']);
 
         Route::apiResource('children', ChildProfileController::class)
             ->only(['index', 'show']);
@@ -81,6 +86,11 @@ Route::prefix('v1')->group(function () {
             Route::post('children/{child}/learning-packs/{pack}/games/{game}/retry', [GameController::class, 'retry']);
             Route::patch('children/{child}/quiz-sessions/{session}', [QuizSessionController::class, 'update']);
             Route::post('children/{child}/revision-session/{session}', [RevisionSessionController::class, 'submit']);
+            Route::put('/onboarding/state', [OnboardingController::class, 'updateState']);
+            Route::post('/onboarding/events', [OnboardingController::class, 'trackEvent']);
+            Route::post('/onboarding/link-tokens', [OnboardingController::class, 'createLinkToken']);
+            Route::get('children/{child}/devices', [OnboardingController::class, 'listDevices']);
+            Route::delete('children/{child}/devices/{device}', [OnboardingController::class, 'revokeDevice']);
         });
     });
 });

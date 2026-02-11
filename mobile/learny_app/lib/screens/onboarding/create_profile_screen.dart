@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
+import '../../state/app_state_scope.dart';
 import '../../theme/app_assets.dart';
 import '../../theme/app_theme.dart';
 import '../shared/gradient_scaffold.dart';
@@ -13,99 +13,122 @@ class CreateProfileScreen extends StatefulWidget {
 }
 
 class _CreateProfileScreenState extends State<CreateProfileScreen> {
-  static const _supportedLanguages = [
-    ('en', 'English'),
-    ('fr', 'Français'),
-    ('nl', 'Nederlands'),
-  ];
+  final _nicknameController = TextEditingController(text: 'Alex');
+  String _avatar = 'fox';
+  bool _busy = false;
+  String? _error;
 
-  String _selectedLanguage = 'en';
+  @override
+  void dispose() {
+    _nicknameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _continue() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final state = AppStateScope.of(context);
+    await state.saveOnboardingStep(
+      step: 'first_challenge',
+      checkpoint: {
+        'nickname': _nicknameController.text.trim(),
+        'avatar': _avatar,
+      },
+      completedStep: 'child_avatar',
+    );
+    final created = await state.createChildForOnboarding(
+      name: _nicknameController.text.trim().isEmpty
+          ? 'Learner'
+          : _nicknameController.text.trim(),
+      gradeLevel: state.onboardingCheckpoints['grade']?.toString() ?? '6th',
+      preferredLanguage:
+          state.onboardingCheckpoints['language']?.toString() ?? 'en',
+      role: 'child',
+    );
+
+    if (!mounted) return;
+    if (created == null) {
+      setState(() {
+        _busy = false;
+        _error = 'Could not create your learner profile. Please try again.';
+      });
+      return;
+    }
+
+    setState(() => _busy = false);
+    Navigator.pushReplacementNamed(context, AppRoutes.consent);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final l = L10n.of(context);
     return GradientScaffold(
       gradient: LearnyGradients.hero,
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: ListView(
           children: [
-            Text(
-              l.createProfileTitle,
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l.createProfileSubtitle,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: LearnyColors.slateMedium),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              decoration: InputDecoration(
-                labelText: l.createProfileNameLabel,
-                hintText: l.createProfileNameHint,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l.createProfileLanguageLabel,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: _selectedLanguage,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                Text(
+                  'Choose nickname + avatar',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              items: _supportedLanguages
-                  .map((lang) => DropdownMenuItem(
-                        value: lang.$1,
-                        child: Text(lang.$2),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedLanguage = value);
-                }
-              },
+                const Spacer(),
+                TextButton(
+                  onPressed: () => Navigator.pushReplacementNamed(
+                    context,
+                    AppRoutes.welcome,
+                  ),
+                  child: const Text('Switch role'),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            Text(
-              l.createProfileAvatarLabel,
-              style: Theme.of(context).textTheme.titleMedium,
+            TextField(
+              controller: _nicknameController,
+              decoration: const InputDecoration(
+                labelText: 'Nickname',
+                hintText: 'How should we call you?',
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Wrap(
               spacing: 12,
               runSpacing: 12,
               children: [
-                _AvatarChip(image: AppImages.foxMascot, label: l.createProfileAvatarFox),
-                _AvatarChip(
+                _AvatarOption(
+                  selected: _avatar == 'fox',
+                  onTap: () => setState(() => _avatar = 'fox'),
+                  image: AppImages.foxMascot,
+                  label: 'Fox',
+                ),
+                _AvatarOption(
+                  selected: _avatar == 'buddy',
+                  onTap: () => setState(() => _avatar = 'buddy'),
                   image: AppImages.foxStudying,
-                  label: l.createProfileAvatarFoxBuddy,
+                  label: 'Buddy',
                 ),
-                _AvatarChip(icon: Icons.bug_report_rounded, label: l.createProfileAvatarRobot),
-                _AvatarChip(icon: Icons.emoji_nature_rounded, label: l.createProfileAvatarOwl),
-                _AvatarChip(
-                  icon: Icons.sports_soccer_rounded,
-                  label: l.createProfileAvatarPenguin,
+                _AvatarOption(
+                  selected: _avatar == 'robot',
+                  onTap: () => setState(() => _avatar = 'robot'),
+                  icon: Icons.smart_toy_rounded,
+                  label: 'Robot',
                 ),
-                _AvatarChip(icon: Icons.park_rounded, label: l.createProfileAvatarDino),
               ],
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, AppRoutes.consent),
-              child: Text(l.createProfileContinue),
+              onPressed: _busy ? null : _continue,
+              child: const Text('Start first challenge'),
             ),
+            if (_error != null) ...[
+              const SizedBox(height: 8),
+              Text(_error!, style: const TextStyle(color: Colors.red)),
+            ],
           ],
         ),
       ),
@@ -113,26 +136,52 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   }
 }
 
-class _AvatarChip extends StatelessWidget {
-  const _AvatarChip({this.icon, this.image, required this.label});
+class _AvatarOption extends StatelessWidget {
+  const _AvatarOption({
+    required this.selected,
+    required this.onTap,
+    required this.label,
+    this.image,
+    this.icon,
+  });
 
-  final IconData? icon;
-  final String? image;
+  final bool selected;
+  final VoidCallback onTap;
   final String label;
+  final String? image;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      avatar: CircleAvatar(
-        backgroundColor: LearnyColors.peach,
-        backgroundImage: image != null ? AssetImage(image!) : null,
-        child: image == null && icon != null
-            ? Icon(icon, color: LearnyColors.coral)
-            : null,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: 104,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? LearnyColors.coral : LearnyColors.slateLight,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 28,
+              backgroundColor: LearnyColors.peach,
+              backgroundImage: image != null ? AssetImage(image!) : null,
+              child: image == null && icon != null
+                  ? Icon(icon, color: LearnyColors.coral)
+                  : null,
+            ),
+            const SizedBox(height: 8),
+            Text(label),
+          ],
+        ),
       ),
-      label: Text(label),
-      backgroundColor: Colors.white,
-      labelStyle: const TextStyle(fontWeight: FontWeight.w600),
     );
   }
 }

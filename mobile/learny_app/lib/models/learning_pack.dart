@@ -5,6 +5,10 @@ class LearningPack {
     required this.id,
     required this.title,
     required this.subject,
+    this.topic,
+    this.gradeLevel,
+    this.language,
+    this.collections = const [],
     required this.itemCount,
     required this.minutes,
     required this.icon,
@@ -18,6 +22,10 @@ class LearningPack {
   final String id;
   final String title;
   final String subject;
+  final String? topic;
+  final String? gradeLevel;
+  final String? language;
+  final List<String> collections;
   final int itemCount;
   final int minutes;
   final IconData icon;
@@ -31,6 +39,10 @@ class LearningPack {
     String? id,
     String? title,
     String? subject,
+    String? topic,
+    String? gradeLevel,
+    String? language,
+    List<String>? collections,
     int? itemCount,
     int? minutes,
     IconData? icon,
@@ -44,6 +56,10 @@ class LearningPack {
       id: id ?? this.id,
       title: title ?? this.title,
       subject: subject ?? this.subject,
+      topic: topic ?? this.topic,
+      gradeLevel: gradeLevel ?? this.gradeLevel,
+      language: language ?? this.language,
+      collections: collections ?? this.collections,
       itemCount: itemCount ?? this.itemCount,
       minutes: minutes ?? this.minutes,
       icon: icon ?? this.icon,

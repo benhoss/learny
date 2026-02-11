@@ -1341,6 +1341,174 @@ abstract class L10n {
   /// **'Re-generate quiz'**
   String get libraryRegenerateTooltip;
 
+  /// Library search field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Search documents and packs'**
+  String get librarySearchHint;
+
+  /// Library filter label for subject
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get libraryFilterSubject;
+
+  /// Library filter label for topic
+  ///
+  /// In en, this message translates to:
+  /// **'Topic'**
+  String get libraryFilterTopic;
+
+  /// Library filter label for grade
+  ///
+  /// In en, this message translates to:
+  /// **'Grade'**
+  String get libraryFilterGrade;
+
+  /// Library filter label for language
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get libraryFilterLanguage;
+
+  /// Clear filters button
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filters'**
+  String get libraryClearFilters;
+
+  /// Library documents section header
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get libraryDocumentsSection;
+
+  /// Library packs section header
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Packs'**
+  String get libraryPacksSection;
+
+  /// Library empty state when no documents match filters
+  ///
+  /// In en, this message translates to:
+  /// **'No documents match your filters.'**
+  String get libraryNoDocumentsMatch;
+
+  /// Library empty state when no packs match filters
+  ///
+  /// In en, this message translates to:
+  /// **'No packs match your filters.'**
+  String get libraryNoPacksMatch;
+
+  /// Library smart categories header
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Categories'**
+  String get librarySmartCategoriesTitle;
+
+  /// Library smart categories subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-classified by subject and topic.'**
+  String get librarySmartCategoriesSubtitle;
+
+  /// Library collections header
+  ///
+  /// In en, this message translates to:
+  /// **'Collections'**
+  String get libraryCollectionsTitle;
+
+  /// Library collections subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your manual groupings per child.'**
+  String get libraryCollectionsSubtitle;
+
+  /// Library empty collections message
+  ///
+  /// In en, this message translates to:
+  /// **'No collections yet. Add one when reviewing a document.'**
+  String get libraryCollectionsEmpty;
+
+  /// Library recent uploads header
+  ///
+  /// In en, this message translates to:
+  /// **'Recent uploads'**
+  String get libraryRecentUploadsTitle;
+
+  /// Library recent uploads subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Latest documents first.'**
+  String get libraryRecentUploadsSubtitle;
+
+  /// Library unclassified header
+  ///
+  /// In en, this message translates to:
+  /// **'Unclassified'**
+  String get libraryUnclassifiedTitle;
+
+  /// Library unclassified subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Missing subject/topic/grade metadata.'**
+  String get libraryUnclassifiedSubtitle;
+
+  /// Filter sheet clear button
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get libraryFilterClear;
+
+  /// Filter sheet done button
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get libraryFilterDone;
+
+  /// Topic input hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Fractions, Grammar, World War II'**
+  String get uploadTopicHint;
+
+  /// Grade input label
+  ///
+  /// In en, this message translates to:
+  /// **'Grade'**
+  String get uploadGradeLabel;
+
+  /// Grade input hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 5th Grade'**
+  String get uploadGradeHint;
+
+  /// Collections input label
+  ///
+  /// In en, this message translates to:
+  /// **'Collections (comma separated)'**
+  String get uploadCollectionsLabel;
+
+  /// Collections input hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Emma Exam Week, Homework'**
+  String get uploadCollectionsHint;
+
+  /// Tags input label
+  ///
+  /// In en, this message translates to:
+  /// **'Tags (comma separated)'**
+  String get uploadTagsLabel;
+
+  /// Tags input hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. fractions, verbs'**
+  String get uploadTagsHint;
+
   /// Revision setup title
   ///
   /// In en, this message translates to:

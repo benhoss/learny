@@ -124,6 +124,80 @@ class DocumentUploadTest extends TestCase
         Queue::assertPushed(ProcessDocumentOcr::class);
     }
 
+    public function test_upload_normalizes_subject_topic_language_and_lists_to_canonical_facets(): void
+    {
+        Storage::fake('s3');
+
+        $user = User::factory()->create();
+        $child = ChildProfile::factory()->create([
+            'user_id' => (string) $user->_id,
+        ]);
+        $token = Auth::guard('api')->login($user);
+
+        $file = UploadedFile::fake()->create('worksheet.pdf', 120, 'application/pdf');
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->withHeader('Accept', 'application/json')
+            ->post('/api/v1/children/'.$child->_id.'/documents', [
+                'file' => $file,
+                'subject' => 'sciences',
+                'topic' => '  SCIENCE  ',
+                'language' => 'french',
+                'tags' => [' verbs ', 'Verbs', 'grammar'],
+                'collections' => [' exam week ', 'Exam Week'],
+            ]);
+
+        $response->assertStatus(201);
+        $documentId = $this->extractId($response->json('data'));
+        $document = Document::find($documentId);
+        $this->assertNotNull($document);
+        $this->assertSame('Science', $document->subject);
+        $this->assertSame('Science', $document->topic);
+        $this->assertSame('French', $document->language);
+        $this->assertSame(['Verbs', 'Grammar'], $document->tags);
+        $this->assertSame(['Exam Week'], $document->collections);
+    }
+
+    public function test_confirm_scan_normalizes_topic_and_language_and_sets_controlled_subject(): void
+    {
+        Queue::fake();
+
+        $user = User::factory()->create();
+        $child = ChildProfile::factory()->create([
+            'user_id' => (string) $user->_id,
+        ]);
+        $token = Auth::guard('api')->login($user);
+
+        $document = Document::factory()->create([
+            'user_id' => (string) $user->_id,
+            'child_profile_id' => (string) $child->_id,
+            'subject' => null,
+            'status' => 'queued',
+            'scan_status' => 'ready',
+            'validation_status' => 'pending',
+            'pipeline_stage' => 'awaiting_validation',
+            'scan_topic_suggestion' => 'Science',
+            'scan_language_suggestion' => 'French',
+        ]);
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/children/'.$child->_id.'/documents/'.$document->_id.'/confirm-scan', [
+                'topic' => 'sciences',
+                'language' => 'french',
+            ]);
+
+        $response->assertStatus(202);
+
+        $document->refresh();
+        $this->assertSame('Science', $document->subject);
+        $this->assertSame('Science', $document->topic);
+        $this->assertSame('French', $document->language);
+        $this->assertSame('Science', $document->validated_topic);
+        $this->assertSame('French', $document->validated_language);
+        $this->assertFalse((bool) $document->user_override);
+        Queue::assertPushed(ProcessDocumentOcr::class);
+    }
+
     public function test_confirm_scan_is_idempotent_after_first_confirmation(): void
     {
         Queue::fake();

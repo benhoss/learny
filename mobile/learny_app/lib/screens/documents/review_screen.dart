@@ -20,7 +20,11 @@ class ReviewScreen extends StatefulWidget {
 class _ReviewScreenState extends State<ReviewScreen> {
   final _titleController = TextEditingController();
   final _subjectController = TextEditingController();
+  final _topicController = TextEditingController();
   final _languageController = TextEditingController();
+  final _gradeController = TextEditingController();
+  final _collectionsController = TextEditingController();
+  final _tagsController = TextEditingController();
   final _goalController = TextEditingController();
   final _contextController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
@@ -42,7 +46,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
   void dispose() {
     _titleController.dispose();
     _subjectController.dispose();
+    _topicController.dispose();
     _languageController.dispose();
+    _gradeController.dispose();
+    _collectionsController.dispose();
+    _tagsController.dispose();
     _goalController.dispose();
     _contextController.dispose();
     super.dispose();
@@ -70,8 +78,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final hasContext =
-        _subjectController.text.trim().isNotEmpty ||
-        _goalController.text.trim().isNotEmpty;
+        (_subjectController.text.trim().isNotEmpty ||
+            _topicController.text.trim().isNotEmpty ||
+            _goalController.text.trim().isNotEmpty) &&
+        _languageController.text.trim().isNotEmpty &&
+        _gradeController.text.trim().isNotEmpty;
     final hasImages = state.pendingImages.isNotEmpty;
     return PlaceholderScreen(
       title: L10n.of(context).reviewScreenTitle,
@@ -149,7 +160,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
           _ReviewContextFields(
             titleController: _titleController,
             subjectController: _subjectController,
+            topicController: _topicController,
             languageController: _languageController,
+            gradeController: _gradeController,
+            collectionsController: _collectionsController,
+            tagsController: _tagsController,
             goalController: _goalController,
             contextController: _contextController,
             onContextChanged: () => setState(() {}),
@@ -173,7 +188,21 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 state.setPendingContext(
                   title: _titleController.text.trim(),
                   subject: _subjectController.text.trim(),
+                  topic: _topicController.text.trim(),
                   language: _languageController.text.trim(),
+                  gradeLevel: _gradeController.text.trim(),
+                  collections: _collectionsController.text
+                      .split(',')
+                      .map((value) => value.trim())
+                      .where((value) => value.isNotEmpty)
+                      .toSet()
+                      .toList(),
+                  tags: _tagsController.text
+                      .split(',')
+                      .map((value) => value.trim())
+                      .where((value) => value.isNotEmpty)
+                      .toSet()
+                      .toList(),
                   learningGoal: _goalController.text.trim(),
                   contextText: _contextController.text.trim(),
                 );
@@ -281,6 +310,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
       if (_subjectController.text.trim().isEmpty && subject.isNotEmpty) {
         _subjectController.text = subject;
       }
+      if (_topicController.text.trim().isEmpty && subject.isNotEmpty) {
+        _topicController.text = subject;
+      }
       if (_languageController.text.trim().isEmpty && language.isNotEmpty) {
         _languageController.text = language;
       }
@@ -299,7 +331,11 @@ class _ReviewContextFields extends StatelessWidget {
   const _ReviewContextFields({
     required this.titleController,
     required this.subjectController,
+    required this.topicController,
     required this.languageController,
+    required this.gradeController,
+    required this.collectionsController,
+    required this.tagsController,
     required this.goalController,
     required this.contextController,
     required this.onContextChanged,
@@ -307,7 +343,11 @@ class _ReviewContextFields extends StatelessWidget {
 
   final TextEditingController titleController;
   final TextEditingController subjectController;
+  final TextEditingController topicController;
   final TextEditingController languageController;
+  final TextEditingController gradeController;
+  final TextEditingController collectionsController;
+  final TextEditingController tagsController;
   final TextEditingController goalController;
   final TextEditingController contextController;
   final VoidCallback onContextChanged;
@@ -335,10 +375,43 @@ class _ReviewContextFields extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
+          controller: topicController,
+          onChanged: (_) => onContextChanged(),
+          decoration: InputDecoration(
+            labelText: L10n.of(context).processingTopicLabel,
+            hintText: L10n.of(context).uploadTopicHint,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
           controller: languageController,
           decoration: InputDecoration(
             labelText: L10n.of(context).uploadLanguageLabel,
             hintText: L10n.of(context).uploadLanguageHint,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: gradeController,
+          decoration: InputDecoration(
+            labelText: L10n.of(context).uploadGradeLabel,
+            hintText: L10n.of(context).uploadGradeHint,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: collectionsController,
+          decoration: InputDecoration(
+            labelText: L10n.of(context).uploadCollectionsLabel,
+            hintText: L10n.of(context).uploadCollectionsHint,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: tagsController,
+          decoration: InputDecoration(
+            labelText: L10n.of(context).uploadTagsLabel,
+            hintText: L10n.of(context).uploadTagsHint,
           ),
         ),
         const SizedBox(height: 8),

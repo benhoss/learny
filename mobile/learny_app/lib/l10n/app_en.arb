@@ -900,6 +900,118 @@
   "@libraryRegenerateTooltip": {
     "description": "Regenerate tooltip"
   },
+  "librarySearchHint": "Search documents and packs",
+  "@librarySearchHint": {
+    "description": "Library search field hint"
+  },
+  "libraryFilterSubject": "Subject",
+  "@libraryFilterSubject": {
+    "description": "Library filter label for subject"
+  },
+  "libraryFilterTopic": "Topic",
+  "@libraryFilterTopic": {
+    "description": "Library filter label for topic"
+  },
+  "libraryFilterGrade": "Grade",
+  "@libraryFilterGrade": {
+    "description": "Library filter label for grade"
+  },
+  "libraryFilterLanguage": "Language",
+  "@libraryFilterLanguage": {
+    "description": "Library filter label for language"
+  },
+  "libraryClearFilters": "Clear filters",
+  "@libraryClearFilters": {
+    "description": "Clear filters button"
+  },
+  "libraryDocumentsSection": "Documents",
+  "@libraryDocumentsSection": {
+    "description": "Library documents section header"
+  },
+  "libraryPacksSection": "Learning Packs",
+  "@libraryPacksSection": {
+    "description": "Library packs section header"
+  },
+  "libraryNoDocumentsMatch": "No documents match your filters.",
+  "@libraryNoDocumentsMatch": {
+    "description": "Library empty state when no documents match filters"
+  },
+  "libraryNoPacksMatch": "No packs match your filters.",
+  "@libraryNoPacksMatch": {
+    "description": "Library empty state when no packs match filters"
+  },
+  "librarySmartCategoriesTitle": "Smart Categories",
+  "@librarySmartCategoriesTitle": {
+    "description": "Library smart categories header"
+  },
+  "librarySmartCategoriesSubtitle": "Auto-classified by subject and topic.",
+  "@librarySmartCategoriesSubtitle": {
+    "description": "Library smart categories subtitle"
+  },
+  "libraryCollectionsTitle": "Collections",
+  "@libraryCollectionsTitle": {
+    "description": "Library collections header"
+  },
+  "libraryCollectionsSubtitle": "Your manual groupings per child.",
+  "@libraryCollectionsSubtitle": {
+    "description": "Library collections subtitle"
+  },
+  "libraryCollectionsEmpty": "No collections yet. Add one when reviewing a document.",
+  "@libraryCollectionsEmpty": {
+    "description": "Library empty collections message"
+  },
+  "libraryRecentUploadsTitle": "Recent uploads",
+  "@libraryRecentUploadsTitle": {
+    "description": "Library recent uploads header"
+  },
+  "libraryRecentUploadsSubtitle": "Latest documents first.",
+  "@libraryRecentUploadsSubtitle": {
+    "description": "Library recent uploads subtitle"
+  },
+  "libraryUnclassifiedTitle": "Unclassified",
+  "@libraryUnclassifiedTitle": {
+    "description": "Library unclassified header"
+  },
+  "libraryUnclassifiedSubtitle": "Missing subject/topic/grade metadata.",
+  "@libraryUnclassifiedSubtitle": {
+    "description": "Library unclassified subtitle"
+  },
+  "libraryFilterClear": "Clear",
+  "@libraryFilterClear": {
+    "description": "Filter sheet clear button"
+  },
+  "libraryFilterDone": "Done",
+  "@libraryFilterDone": {
+    "description": "Filter sheet done button"
+  },
+  "uploadTopicHint": "e.g. Fractions, Grammar, World War II",
+  "@uploadTopicHint": {
+    "description": "Topic input hint"
+  },
+  "uploadGradeLabel": "Grade",
+  "@uploadGradeLabel": {
+    "description": "Grade input label"
+  },
+  "uploadGradeHint": "e.g. 5th Grade",
+  "@uploadGradeHint": {
+    "description": "Grade input hint"
+  },
+  "uploadCollectionsLabel": "Collections (comma separated)",
+  "@uploadCollectionsLabel": {
+    "description": "Collections input label"
+  },
+  "uploadCollectionsHint": "e.g. Emma Exam Week, Homework",
+  "@uploadCollectionsHint": {
+    "description": "Collections input hint"
+  },
+  "uploadTagsLabel": "Tags (comma separated)",
+  "@uploadTagsLabel": {
+    "description": "Tags input label"
+  },
+  "uploadTagsHint": "e.g. fractions, verbs",
+  "@uploadTagsHint": {
+    "description": "Tags input hint"
+  },
   "revisionSetupTitle": "Revision Express",
   "@revisionSetupTitle": {
     "description": "Revision setup title"

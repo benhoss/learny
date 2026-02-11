@@ -681,6 +681,93 @@ class L10nEn extends L10n {
   String get libraryRegenerateTooltip => 'Re-generate quiz';
 
   @override
+  String get librarySearchHint => 'Search documents and packs';
+
+  @override
+  String get libraryFilterSubject => 'Subject';
+
+  @override
+  String get libraryFilterTopic => 'Topic';
+
+  @override
+  String get libraryFilterGrade => 'Grade';
+
+  @override
+  String get libraryFilterLanguage => 'Language';
+
+  @override
+  String get libraryClearFilters => 'Clear filters';
+
+  @override
+  String get libraryDocumentsSection => 'Documents';
+
+  @override
+  String get libraryPacksSection => 'Learning Packs';
+
+  @override
+  String get libraryNoDocumentsMatch => 'No documents match your filters.';
+
+  @override
+  String get libraryNoPacksMatch => 'No packs match your filters.';
+
+  @override
+  String get librarySmartCategoriesTitle => 'Smart Categories';
+
+  @override
+  String get librarySmartCategoriesSubtitle =>
+      'Auto-classified by subject and topic.';
+
+  @override
+  String get libraryCollectionsTitle => 'Collections';
+
+  @override
+  String get libraryCollectionsSubtitle => 'Your manual groupings per child.';
+
+  @override
+  String get libraryCollectionsEmpty =>
+      'No collections yet. Add one when reviewing a document.';
+
+  @override
+  String get libraryRecentUploadsTitle => 'Recent uploads';
+
+  @override
+  String get libraryRecentUploadsSubtitle => 'Latest documents first.';
+
+  @override
+  String get libraryUnclassifiedTitle => 'Unclassified';
+
+  @override
+  String get libraryUnclassifiedSubtitle =>
+      'Missing subject/topic/grade metadata.';
+
+  @override
+  String get libraryFilterClear => 'Clear';
+
+  @override
+  String get libraryFilterDone => 'Done';
+
+  @override
+  String get uploadTopicHint => 'e.g. Fractions, Grammar, World War II';
+
+  @override
+  String get uploadGradeLabel => 'Grade';
+
+  @override
+  String get uploadGradeHint => 'e.g. 5th Grade';
+
+  @override
+  String get uploadCollectionsLabel => 'Collections (comma separated)';
+
+  @override
+  String get uploadCollectionsHint => 'e.g. Emma Exam Week, Homework';
+
+  @override
+  String get uploadTagsLabel => 'Tags (comma separated)';
+
+  @override
+  String get uploadTagsHint => 'e.g. fractions, verbs';
+
+  @override
   String get revisionSetupTitle => 'Revision Express';
 
   @override

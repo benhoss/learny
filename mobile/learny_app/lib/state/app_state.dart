@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../app/backend_config.dart';
 import '../routes/app_routes.dart';
 import '../models/activity_item.dart';
@@ -31,15 +33,15 @@ class AppState extends ChangeNotifier {
     bool initializeBackendSession = true,
     Duration submitRetryDelay = const Duration(seconds: 2),
   }) : backend = backendClient ?? BackendClient(baseUrl: BackendConfig.baseUrl),
-       _submitRetryDelay = submitRetryDelay {
+       _submitRetryDelay = submitRetryDelay,
+       _initializeBackendSessionRequested = initializeBackendSession {
     _load();
-    if (initializeBackendSession) {
-      _initializeBackendSession();
-    }
+    _loadOnboardingState();
   }
 
   final BackendClient backend;
   final Duration _submitRetryDelay;
+  final bool _initializeBackendSessionRequested;
 
   late UserProfile profile;
   late ParentProfile parentProfile;
@@ -71,6 +73,12 @@ class AppState extends ChangeNotifier {
   Locale? locale;
 
   bool onboardingComplete = false;
+  bool onboardingHydrated = false;
+  String onboardingRole = '';
+  String onboardingStep = 'role_entry';
+  Map<String, dynamic> onboardingCheckpoints = {};
+  Set<String> onboardingCompletedSteps = <String>{};
+  Set<String> onboardingTrackedEvents = <String>{};
 
   String? selectedPackId;
   QuizSession? quizSession;
@@ -98,8 +106,12 @@ class AppState extends ChangeNotifier {
   List<Uint8List> pendingImages = [];
   List<String> pendingImageNames = [];
   String? pendingSubject;
+  String? pendingTopic;
   String? pendingTitle;
   String? pendingLanguage;
+  String? pendingGradeLevel;
+  List<String> pendingCollections = [];
+  List<String> pendingTags = [];
   String? pendingLearningGoal;
   String? pendingContextText;
   List<String> pendingGameTypes = [];
@@ -198,6 +210,90 @@ class AppState extends ChangeNotifier {
   }
 
   static const Set<String> supportedLanguages = {'en', 'fr', 'nl'};
+  static const String _onboardingCompleteKey = 'onboarding.complete';
+  static const String _onboardingRoleKey = 'onboarding.role';
+  static const String _onboardingStepKey = 'onboarding.step';
+  static const String _onboardingCheckpointsKey = 'onboarding.checkpoints';
+  static const String _onboardingCompletedStepsKey =
+      'onboarding.completed_steps';
+  static const String _onboardingTrackedEventsKey = 'onboarding.tracked_events';
+
+  Future<void> _loadOnboardingState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      onboardingComplete = prefs.getBool(_onboardingCompleteKey) ?? false;
+      onboardingRole = prefs.getString(_onboardingRoleKey) ?? '';
+      onboardingStep = prefs.getString(_onboardingStepKey) ?? 'role_entry';
+      onboardingCheckpoints = Map<String, dynamic>.from(
+        _decodeJsonMap(prefs.getString(_onboardingCheckpointsKey)),
+      );
+      onboardingCompletedSteps = Set<String>.from(
+        prefs.getStringList(_onboardingCompletedStepsKey) ?? const <String>[],
+      );
+      onboardingTrackedEvents = Set<String>.from(
+        prefs.getStringList(_onboardingTrackedEventsKey) ?? const <String>[],
+      );
+    } catch (_) {
+      onboardingComplete = false;
+      onboardingRole = '';
+      onboardingStep = 'role_entry';
+      onboardingCheckpoints = {};
+      onboardingCompletedSteps = <String>{};
+      onboardingTrackedEvents = <String>{};
+    }
+    onboardingHydrated = true;
+    notifyListeners();
+
+    if (_initializeBackendSessionRequested &&
+        (onboardingComplete || onboardingRole.isNotEmpty)) {
+      _initializeBackendSession();
+    }
+  }
+
+  Future<void> _persistOnboardingState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_onboardingCompleteKey, onboardingComplete);
+      await prefs.setString(_onboardingRoleKey, onboardingRole);
+      await prefs.setString(_onboardingStepKey, onboardingStep);
+      await prefs.setString(
+        _onboardingCheckpointsKey,
+        _encodeJsonMap(onboardingCheckpoints),
+      );
+      await prefs.setStringList(
+        _onboardingCompletedStepsKey,
+        onboardingCompletedSteps.toList(growable: false),
+      );
+      await prefs.setStringList(
+        _onboardingTrackedEventsKey,
+        onboardingTrackedEvents.toList(growable: false),
+      );
+    } catch (_) {
+      // Ignore persistence failures in non-widget tests or unsupported envs.
+    }
+  }
+
+  String _encodeJsonMap(Map<String, dynamic> value) {
+    return jsonEncode(value);
+  }
+
+  Map<String, dynamic> _decodeJsonMap(String? raw) {
+    if (raw == null || raw.isEmpty) {
+      return const {};
+    }
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+      if (decoded is Map) {
+        return decoded.map((key, value) => MapEntry(key.toString(), value));
+      }
+    } catch (_) {
+      // Ignore malformed persisted onboarding payload.
+    }
+    return const {};
+  }
 
   void setLocale(Locale? newLocale) {
     if (newLocale == locale) return;
@@ -300,9 +396,352 @@ class AppState extends ChangeNotifier {
         currentPackGameType != null;
   }
 
-  void completeOnboarding() {
-    onboardingComplete = true;
+  Future<void> selectOnboardingRole(String role) async {
+    onboardingRole = role;
+    onboardingStep = role == 'parent' ? 'parent_setup' : 'child_profile';
+    onboardingCompletedSteps = <String>{};
+    onboardingCheckpoints = <String, dynamic>{};
+    if (_initializeBackendSessionRequested) {
+      _initializeBackendSession();
+    }
+    await _trackOnboardingEvent(
+      role: role,
+      eventName: 'onboarding_role_selected',
+      step: 'role_entry',
+    );
+    await _persistOnboardingState();
     notifyListeners();
+  }
+
+  Future<void> saveOnboardingStep({
+    required String step,
+    Map<String, dynamic>? checkpoint,
+    String? completedStep,
+    bool markComplete = false,
+  }) async {
+    onboardingStep = step;
+    if (checkpoint != null) {
+      onboardingCheckpoints = {...onboardingCheckpoints, ...checkpoint};
+    }
+    if (completedStep != null && completedStep.isNotEmpty) {
+      onboardingCompletedSteps.add(completedStep);
+    }
+
+    await _persistOnboardingState();
+
+    if (backend.token != null && onboardingRole.isNotEmpty) {
+      try {
+        await backend.updateOnboardingState(
+          role: onboardingRole,
+          currentStep: onboardingStep,
+          checkpoints: onboardingCheckpoints,
+          completedSteps: onboardingCompletedSteps.toList(growable: false),
+          markComplete: markComplete,
+        );
+      } catch (_) {
+        // Ignore onboarding sync errors in client flow.
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<bool> completeOnboarding({bool force = false}) async {
+    if (!force && onboardingRole == 'child') {
+      final allowed = await _childCompletionAllowedByPolicy();
+      if (!allowed) {
+        return false;
+      }
+    }
+
+    onboardingStep = 'completed';
+    onboardingCompletedSteps.add('completed');
+    await _persistOnboardingState();
+
+    if (backend.token != null && onboardingRole.isNotEmpty) {
+      try {
+        await backend.updateOnboardingState(
+          role: onboardingRole,
+          currentStep: onboardingStep,
+          checkpoints: onboardingCheckpoints,
+          completedSteps: onboardingCompletedSteps.toList(growable: false),
+          markComplete: true,
+        );
+      } catch (_) {
+        return false;
+      }
+    }
+
+    onboardingComplete = true;
+    if (_initializeBackendSessionRequested) {
+      _initializeBackendSession();
+    }
+    await _persistOnboardingState();
+    notifyListeners();
+    return true;
+  }
+
+  Future<bool> debugSkipOnboardingAutoLogin() async {
+    try {
+      await _ensureBackendSession();
+      return await completeOnboarding(force: true);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> parentAuthenticateForOnboarding({
+    required String name,
+    required String email,
+    required String password,
+    required bool loginMode,
+  }) async {
+    try {
+      final payload = loginMode
+          ? await backend.login(email: email, password: password)
+          : await backend.register(
+              name: name,
+              email: email,
+              password: password,
+            );
+      _syncProfileFromAuthPayload(payload);
+      final backendChildren = await backend.listChildren();
+      children = backendChildren
+          .whereType<Map<String, dynamic>>()
+          .map(_mapChildProfile)
+          .whereType<ChildProfile>()
+          .toList();
+      if (!loginMode) {
+        await _trackOnboardingEvent(
+          role: 'parent',
+          eventName: 'parent_signup_completed',
+          step: 'parent_signup',
+        );
+      }
+      await saveOnboardingStep(
+        step: 'parent_setup',
+        completedStep: 'parent_signup',
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<ChildProfile?> createChildForOnboarding({
+    required String name,
+    required String gradeLevel,
+    String preferredLanguage = 'en',
+    String role = 'parent',
+  }) async {
+    try {
+      final data = await backend.createChild(
+        name: name,
+        gradeLevel: gradeLevel,
+        preferredLanguage: preferredLanguage,
+      );
+      final mapped = _mapChildProfile(data);
+      if (mapped != null) {
+        children = [...children, mapped];
+        if (role == 'child') {
+          backendChildId = mapped.id;
+        } else {
+          backendChildId ??= mapped.id;
+        }
+      }
+      await _trackOnboardingEvent(
+        role: role,
+        eventName: 'child_profile_created',
+        step: 'add_children',
+        instanceId: mapped?.id,
+      );
+      final nextStep = role == 'child' ? onboardingStep : 'parent_setup';
+      final completedStep = role == 'child' ? 'child_profile' : 'add_children';
+      await saveOnboardingStep(
+        step: nextStep,
+        checkpoint: {
+          'child_count': children.length,
+          if (mapped?.id != null) 'child_id': mapped!.id,
+        },
+        completedStep: completedStep,
+      );
+      return mapped;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<String?> generateParentLinkCode(String childId) async {
+    try {
+      final data = await backend.createOnboardingLinkToken(childId: childId);
+      await saveOnboardingStep(
+        step: 'parent_setup',
+        completedStep: 'link_child_device',
+      );
+      return data['code']?.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchLinkedDevices(String childId) async {
+    try {
+      final data = await backend.listChildDevices(childId: childId);
+      return data.whereType<Map<String, dynamic>>().toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<void> revokeLinkedDevice(String childId, String deviceId) async {
+    await backend.revokeChildDevice(childId: childId, deviceId: deviceId);
+  }
+
+  Future<bool> linkChildDeviceWithCode({
+    required String code,
+    required String deviceName,
+  }) async {
+    try {
+      final response = await backend.consumeOnboardingLinkToken(
+        code: code,
+        childId: backendChildId,
+        deviceName: deviceName,
+      );
+      await _trackOnboardingEvent(
+        role: 'child',
+        eventName: 'child_device_linked',
+        step: 'parent_link_prompt',
+        metadata: {'child_id': response['child_id']},
+      );
+      await saveOnboardingStep(
+        step: 'parent_link_prompt',
+        completedStep: 'parent_linked',
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> completeParentOnboarding({
+    required Map<String, dynamic> controls,
+  }) async {
+    await _trackOnboardingEvent(
+      role: 'parent',
+      eventName: 'parent_controls_configured',
+      step: 'parent_controls',
+      metadata: controls,
+    );
+    return completeOnboarding(force: true);
+  }
+
+  Future<void> _trackOnboardingEvent({
+    required String role,
+    required String eventName,
+    String? step,
+    String? instanceId,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final dedupeKey = '$role|${step ?? ''}|$eventName|${instanceId ?? ''}';
+    if (onboardingTrackedEvents.contains(dedupeKey)) {
+      return;
+    }
+    onboardingTrackedEvents.add(dedupeKey);
+    await _persistOnboardingState();
+
+    if (backend.token == null) {
+      return;
+    }
+
+    try {
+      await backend.trackOnboardingEvent(
+        role: role,
+        eventName: eventName,
+        step: step,
+        instanceId: instanceId,
+        metadata: metadata,
+      );
+    } catch (_) {
+      // Ignore telemetry failures.
+    }
+  }
+
+  Future<void> trackOnboardingEvent({
+    required String role,
+    required String eventName,
+    String? step,
+    String? instanceId,
+    Map<String, dynamic>? metadata,
+  }) {
+    return _trackOnboardingEvent(
+      role: role,
+      eventName: eventName,
+      step: step,
+      instanceId: instanceId,
+      metadata: metadata,
+    );
+  }
+
+  Future<bool> _childCompletionAllowedByPolicy() async {
+    try {
+      final policy = await backend.onboardingPolicy();
+      final consentAge = (policy['consent_age'] as num?)?.toInt() ?? 13;
+      final requiresConsent =
+          (policy['requires_verified_parent_consent'] as bool?) ?? true;
+      final ageBracket = onboardingCheckpoints['age_bracket']?.toString();
+      final minimumAge = _minimumAgeFromBracket(ageBracket);
+
+      if (!requiresConsent ||
+          minimumAge == null ||
+          minimumAge >= consentAge ||
+          onboardingCompletedSteps.contains('parent_linked')) {
+        return true;
+      }
+
+      final childId = backendChildId;
+      if (childId == null) {
+        return false;
+      }
+      final devices = await fetchLinkedDevices(childId);
+      return devices.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  int? _minimumAgeFromBracket(String? bracket) {
+    if (bracket == null || bracket.trim().isEmpty) {
+      return null;
+    }
+    final normalized = bracket.trim();
+    if (normalized.contains('-')) {
+      final parts = normalized.split('-');
+      return int.tryParse(parts.first);
+    }
+    if (normalized.endsWith('+')) {
+      return int.tryParse(normalized.substring(0, normalized.length - 1));
+    }
+    return int.tryParse(normalized);
+  }
+
+  String get onboardingResumeRoute {
+    if (onboardingComplete) {
+      return AppRoutes.home;
+    }
+    if (onboardingRole == 'parent') {
+      return AppRoutes.parentOnboarding;
+    }
+    switch (onboardingStep) {
+      case 'child_profile':
+        return AppRoutes.howItWorks;
+      case 'child_avatar':
+        return AppRoutes.createProfile;
+      case 'first_challenge':
+        return AppRoutes.consent;
+      case 'parent_link_prompt':
+        return AppRoutes.plan;
+      default:
+        return AppRoutes.welcome;
+    }
   }
 
   void selectPack(String packId) {
@@ -313,12 +752,22 @@ class AppState extends ChangeNotifier {
   void startDocumentProcessing({
     required String title,
     required String subject,
+    String? topic,
+    String? language,
+    String? gradeLevel,
+    List<String>? collections,
+    List<String>? tags,
   }) {
     _docCounter += 1;
     final newDoc = DocumentItem(
       id: 'doc-${_docCounter.toString().padLeft(3, '0')}',
       title: title,
       subject: subject,
+      topic: topic ?? subject,
+      language: language,
+      gradeLevel: gradeLevel,
+      collections: collections ?? const [],
+      tags: tags ?? const [],
       createdAt: DateTime.now(),
       statusLabel: 'Processing',
     );
@@ -348,6 +797,10 @@ class AppState extends ChangeNotifier {
       id: 'pack-${doc.id}',
       title: doc.title,
       subject: doc.subject,
+      topic: doc.topic,
+      gradeLevel: doc.gradeLevel,
+      language: doc.language,
+      collections: doc.collections,
       itemCount: 12,
       minutes: 10,
       icon: style.icon,
@@ -815,13 +1268,21 @@ class AppState extends ChangeNotifier {
   void setPendingContext({
     String? title,
     String? subject,
+    String? topic,
     String? language,
+    String? gradeLevel,
+    List<String>? collections,
+    List<String>? tags,
     String? learningGoal,
     String? contextText,
   }) {
     pendingTitle = title;
     pendingSubject = subject;
+    pendingTopic = topic;
     pendingLanguage = language;
+    pendingGradeLevel = gradeLevel;
+    pendingCollections = collections ?? [];
+    pendingTags = tags ?? [];
     pendingLearningGoal = learningGoal;
     pendingContextText = contextText;
     notifyListeners();
@@ -889,8 +1350,11 @@ class AppState extends ChangeNotifier {
         filename: filename,
         title: pendingTitle,
         subject: pendingSubject,
+        topic: pendingTopic,
         language: pendingLanguage,
-        gradeLevel: BackendConfig.childGrade,
+        gradeLevel: pendingGradeLevel ?? BackendConfig.childGrade,
+        collections: pendingCollections,
+        tags: pendingTags,
         learningGoal: pendingLearningGoal,
         contextText: pendingContextText,
         requestedGameTypes: pendingGameTypes,
@@ -920,6 +1384,10 @@ class AppState extends ChangeNotifier {
       isGeneratingQuiz = false;
       pendingSubject = null;
       pendingLanguage = null;
+      pendingTopic = null;
+      pendingGradeLevel = null;
+      pendingCollections = [];
+      pendingTags = [];
       pendingLearningGoal = null;
       pendingContextText = null;
       pendingGameTypes = [];
@@ -955,8 +1423,11 @@ class AppState extends ChangeNotifier {
         filenames: filenames,
         title: pendingTitle,
         subject: pendingSubject,
+        topic: pendingTopic,
         language: pendingLanguage,
-        gradeLevel: BackendConfig.childGrade,
+        gradeLevel: pendingGradeLevel ?? BackendConfig.childGrade,
+        collections: pendingCollections,
+        tags: pendingTags,
         learningGoal: pendingLearningGoal,
         contextText: pendingContextText,
         requestedGameTypes: pendingGameTypes,
@@ -987,6 +1458,10 @@ class AppState extends ChangeNotifier {
       pendingSubject = null;
       pendingTitle = null;
       pendingLanguage = null;
+      pendingTopic = null;
+      pendingGradeLevel = null;
+      pendingCollections = [];
+      pendingTags = [];
       pendingLearningGoal = null;
       pendingContextText = null;
       pendingGameTypes = [];
@@ -1277,9 +1752,21 @@ class AppState extends ChangeNotifier {
 
   DocumentItem _mapDocumentItem(Map<String, dynamic> doc) {
     final id = _extractId(doc) ?? '';
-    final title = doc['title']?.toString() ?? doc['original_filename']?.toString() ?? 'Document';
-    final subject = doc['subject']?.toString() ?? 'General';
-    final language = doc['language']?.toString();
+    final title =
+        doc['title']?.toString() ??
+        doc['original_filename']?.toString() ??
+        'Document';
+    final rawTopic =
+        doc['topic']?.toString() ?? doc['validated_topic']?.toString();
+    final subject = _canonicalSubjectFacet(
+      doc['subject']?.toString(),
+      fallbackTopic: rawTopic,
+    );
+    final topic = _canonicalTopicFacet(rawTopic, fallbackSubject: subject);
+    final language = _canonicalLanguageFacet(doc['language']?.toString());
+    final gradeLevel = _canonicalTextFacet(doc['grade_level']?.toString());
+    final tagsRaw = doc['tags'] as List<dynamic>? ?? [];
+    final collectionsRaw = doc['collections'] as List<dynamic>? ?? [];
     final status = doc['status']?.toString() ?? 'unknown';
     final stage = doc['pipeline_stage']?.toString();
     final createdAt =
@@ -1289,10 +1776,147 @@ class AppState extends ChangeNotifier {
       id: id,
       title: title,
       subject: subject,
+      topic: topic,
       language: language,
+      gradeLevel: gradeLevel,
+      tags: tagsRaw
+          .map((tag) => tag.toString())
+          .where((tag) => tag.isNotEmpty)
+          .toList(),
+      collections: collectionsRaw
+          .map((collection) => collection.toString())
+          .where((collection) => collection.isNotEmpty)
+          .toList(),
       createdAt: createdAt,
       statusLabel: _statusLabelForDocument(status, stage: stage),
     );
+  }
+
+  String _canonicalSubjectFacet(String? value, {String? fallbackTopic}) {
+    final normalized = _normalizeFacetToken(value);
+    final fromTopic = _normalizeFacetToken(fallbackTopic);
+    const subjectMap = <String, String>{
+      'math': 'Math',
+      'maths': 'Math',
+      'mathematics': 'Math',
+      'science': 'Science',
+      'sciences': 'Science',
+      'history': 'History',
+      'geography': 'Geography',
+      'language': 'Language',
+      'languages': 'Language',
+      'general': 'General',
+      'other': 'General',
+      'misc': 'General',
+    };
+
+    final mapped = subjectMap[normalized ?? ''] ?? subjectMap[fromTopic ?? ''];
+    return mapped ?? 'General';
+  }
+
+  String _canonicalTopicFacet(
+    String? value, {
+    required String fallbackSubject,
+  }) {
+    final normalized = _normalizeFacetToken(value);
+    if (normalized == null) {
+      return fallbackSubject;
+    }
+    switch (normalized) {
+      case 'math':
+      case 'maths':
+      case 'mathematics':
+        return 'Math';
+      case 'science':
+      case 'sciences':
+        return 'Science';
+      case 'history':
+        return 'History';
+      case 'geography':
+        return 'Geography';
+      case 'language':
+      case 'languages':
+        return 'Language';
+      case 'general':
+      case 'other':
+      case 'misc':
+        return 'General';
+      default:
+        return _titleCaseFacet(normalized);
+    }
+  }
+
+  String? _canonicalLanguageFacet(String? value) {
+    final normalized = _normalizeFacetToken(value);
+    if (normalized == null) {
+      return null;
+    }
+    switch (normalized) {
+      case 'en':
+      case 'eng':
+      case 'english':
+        return 'English';
+      case 'fr':
+      case 'fra':
+      case 'french':
+      case 'francais':
+        return 'French';
+      case 'es':
+      case 'spa':
+      case 'spanish':
+        return 'Spanish';
+      case 'nl':
+      case 'dut':
+      case 'nld':
+      case 'dutch':
+        return 'Dutch';
+      case 'de':
+      case 'deu':
+      case 'ger':
+      case 'german':
+        return 'German';
+      case 'it':
+      case 'italian':
+        return 'Italian';
+      case 'pt':
+      case 'portuguese':
+        return 'Portuguese';
+      case 'ar':
+      case 'arabic':
+        return 'Arabic';
+      default:
+        return _titleCaseFacet(normalized);
+    }
+  }
+
+  String? _canonicalTextFacet(String? value) {
+    final normalized = _normalizeFacetToken(value);
+    if (normalized == null) {
+      return null;
+    }
+    return _titleCaseFacet(normalized);
+  }
+
+  String? _normalizeFacetToken(String? value) {
+    if (value == null) {
+      return null;
+    }
+    final normalized = value
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .toLowerCase();
+    if (normalized.isEmpty) {
+      return null;
+    }
+    return normalized;
+  }
+
+  String _titleCaseFacet(String normalized) {
+    return normalized
+        .split(' ')
+        .where((part) => part.isNotEmpty)
+        .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+        .join(' ');
   }
 
   void _syncGamificationFromBackendChild(Map<String, dynamic> child) {
@@ -1673,7 +2297,17 @@ class AppState extends ChangeNotifier {
         .where((key) => key.isNotEmpty)
         .toSet()
         .toList();
-    final subject = summary?.split(' ').first ?? 'Homework';
+    final subject = _canonicalSubjectFacet(
+      pack['subject']?.toString() ?? summary?.split(' ').first,
+      fallbackTopic: pack['topic']?.toString(),
+    );
+    final topic = _canonicalTopicFacet(
+      pack['topic']?.toString(),
+      fallbackSubject: subject,
+    );
+    final gradeLevel = _canonicalTextFacet(pack['grade_level']?.toString());
+    final language = _canonicalLanguageFacet(pack['language']?.toString());
+    final collectionsRaw = pack['collections'] as List<dynamic>? ?? [];
     final masteryPct = (pack['mastery_percentage'] as num?)?.toInt() ?? 0;
     final conceptsMastered = (pack['concepts_mastered'] as num?)?.toInt() ?? 0;
     final conceptsTotal = (pack['concepts_total'] as num?)?.toInt() ?? 0;
@@ -1683,6 +2317,13 @@ class AppState extends ChangeNotifier {
       id: packId,
       title: title,
       subject: subject,
+      topic: topic,
+      gradeLevel: gradeLevel,
+      language: language,
+      collections: collectionsRaw
+          .map((collection) => collection.toString())
+          .where((collection) => collection.isNotEmpty)
+          .toList(),
       itemCount: items.length,
       minutes: 10,
       icon: style.icon,

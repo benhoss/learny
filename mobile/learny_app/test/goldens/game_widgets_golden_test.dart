@@ -9,6 +9,7 @@ import 'package:learny_app/widgets/games/progress_bar.dart';
 import 'package:learny_app/widgets/games/result_summary_card.dart';
 import 'package:learny_app/widgets/games/streak_pill.dart';
 import 'package:learny_app/widgets/games/timer_badge.dart';
+import 'package:learny_app/l10n/generated/app_localizations.dart';
 
 ThemeData _testTheme() {
   return ThemeData(
@@ -33,11 +34,18 @@ ThemeData _testTheme() {
 }
 
 Widget _wrap(Widget child, {double width = 260}) {
-  return Theme(
-    data: _testTheme(),
-    child: Material(
-      child: Center(
-        child: SizedBox(width: width, child: child),
+  return Directionality(
+    textDirection: TextDirection.ltr,
+    child: Localizations(
+      locale: const Locale('en'),
+      delegates: L10n.localizationsDelegates,
+      child: Theme(
+        data: _testTheme(),
+        child: Material(
+          child: Center(
+            child: SizedBox(width: width, child: child),
+          ),
+        ),
       ),
     ),
   );

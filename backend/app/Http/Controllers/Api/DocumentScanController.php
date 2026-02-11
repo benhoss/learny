@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ProcessDocumentOcr;
 use App\Jobs\QuickScanDocumentMetadata;
 use App\Models\Document;
+use App\Support\Documents\FacetCanonicalizer;
 use App\Support\Documents\PipelineTelemetry;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\JsonResponse;
@@ -68,13 +69,30 @@ class DocumentScanController extends Controller
                         ], 409);
                     }
 
-                    $document->subject = $data['topic'];
-                    $document->language = $data['language'];
-                    $document->validated_topic = $data['topic'];
-                    $document->validated_language = $data['language'];
+                    $canonicalTopic = FacetCanonicalizer::canonicalizeTopic($data['topic']) ?? 'General';
+                    $canonicalLanguage = FacetCanonicalizer::canonicalizeLanguage($data['language']) ?? 'English';
+                    $subjectCandidate = FacetCanonicalizer::canonicalizeSubject($document->subject)
+                        ?? FacetCanonicalizer::canonicalizeSubject($canonicalTopic);
+                    $canonicalSubject = FacetCanonicalizer::isCoreSubject($subjectCandidate)
+                        ? $subjectCandidate
+                        : 'General';
+
+                    $document->subject = $canonicalSubject;
+                    $document->topic = $canonicalTopic;
+                    $document->language = $canonicalLanguage;
+                    $document->validated_topic = $canonicalTopic;
+                    $document->validated_language = $canonicalLanguage;
                     $document->validated_at = now();
                     $document->validation_status = 'confirmed';
                     $document->scan_status = 'ready';
+                    $document->ai_confidence = (float) ($document->scan_confidence ?? 0.0);
+                    $document->user_override = filled($document->scan_topic_suggestion)
+                        ? ((FacetCanonicalizer::canonicalizeTopic($document->scan_topic_suggestion) ?? 'General') !== $canonicalTopic)
+                        : false;
+                    if (filled($document->scan_language_suggestion)) {
+                        $document->user_override = $document->user_override ||
+                            ((FacetCanonicalizer::canonicalizeLanguage($document->scan_language_suggestion) ?? 'English') !== $canonicalLanguage);
+                    }
                     PipelineTelemetry::transition($document, 'queued', 35, 'queued');
                     $document->save();
 

@@ -65,6 +65,7 @@ The product aims to teach children **how to learn with AI**, not how to cheat.
   - Quizzes
   - Matching
 - Revision Express mode
+- Smart notifications (push + email) with parent controls
 
 ---
 

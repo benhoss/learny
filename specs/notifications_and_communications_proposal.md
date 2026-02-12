@@ -1,180 +1,202 @@
 # Smart Notifications & Communications Proposal
 
 ## 1. Purpose
-Design a complete cross-channel notification system (push + email, with optional in-app inbox) that improves learning consistency, supports parent supervision, and stays safe for children.
+Define a complete, implementation-ready notification system for Learny that combines native push notifications, email, and in-app inbox updates.
 
-This proposal defines:
-- Product strategy (who gets what, when, and why).
-- UX behavior in the mobile app.
-- Backend architecture and delivery pipeline.
-- Data model and API contracts.
-- Safety/compliance guardrails.
-- Rollout and success metrics.
+The system must:
+- Increase child learning consistency (short, frequent study sessions).
+- Keep parents informed and in control.
+- Respect child-safety and legal constraints.
+- Be reliable and observable from the backend.
 
 ---
 
-## 2. Goals and Non-Goals
+## 2. Research and Product Analysis Summary
 
-### 2.1 Goals
-- Increase healthy learning frequency (especially 3–10 minute sessions).
-- Reduce churn by nudging at the right moment, not by spamming.
-- Help parents stay informed with digest-style communication.
-- Deliver notifications reliably from backend systems.
-- Respect consent, quiet hours, locale, and user preferences.
+### 2.1 Inputs considered
+This proposal is aligned with:
+- Learny business goals: engagement, retention, mastery progression.
+- Learny technical constraints: Laravel backend, Redis queues, MongoDB, mobile app with user settings state.
+- Existing app UX direction: notification center, reminders toggle, parent supervision model.
 
-### 2.2 Non-Goals (MVP)
-- Building a full marketing automation platform.
-- Sending high-frequency promotional campaigns.
-- Real-time chat/messaging between users.
+### 2.2 Notification design findings applied
+1. **Behavior change works best with short action loops**: reminder should drive a concrete next action (e.g., “Start 5-minute Revision Express”), not generic motivation.
+2. **Parent and child messaging should be intentionally different**: child = short and encouraging; parent = contextual digest and supervision.
+3. **Over-sending harms trust and retention**: strict frequency caps and quiet hours are mandatory.
+4. **Reliability beats complexity at launch**: event-driven workflows + robust retries before advanced ML timing.
 
----
-
-## 3. Audience and Channel Strategy
-
-### 3.1 Child-facing
-Primary channel: native push notifications.
-Secondary channel: in-app notification center (already aligned with existing notifications screen concept).
-
-Child notification themes:
-- Learning streak reminders.
-- “Revision Express” before known assessment windows.
-- Positive reinforcement (achievement unlocked, mastery milestone).
-- New learning pack ready after upload/processing.
-
-### 3.2 Parent-facing
-Primary channel: email digests and critical alerts.
-Secondary channel: push notifications for opted-in urgent events.
-
-Parent notification themes:
-- Weekly progress digest.
-- “Needs attention” alerts (drop in activity, repeated low mastery).
-- Operational alerts (document processed, action needed).
-
-### 3.3 Channel decision matrix
-- Immediate and time-sensitive learning nudge → push.
-- Rich summary with charts/context → email.
-- Missed push/open-failure fallback for high-priority items → delayed email fallback.
+### 2.3 Product hypothesis
+If reminders are personalized, capped, and tied to real learning opportunities, Learny should improve session starts and retention without increasing opt-outs.
 
 ---
 
-## 4. UX Principles for “Smart” Notifications
+## 3. Goals and Non-Goals
 
-1. **Intent first, then channel:** decide educational objective before selecting push/email.
-2. **Right time > more messages:** use learner routines and local timezone.
-3. **Age-safe language:** no anxiety-inducing copy; always supportive and actionable.
-4. **Control and transparency:** easy preference toggles per child/parent persona.
-5. **Never interrupt active session:** suppress non-critical notifications while in-game.
-6. **Closed-loop UX:** tapping notification deep-links directly to relevant app screen.
+### 3.1 Goals
+- Increase healthy learning frequency (3–10 minute sessions).
+- Improve D7/D30 retention through timely nudges.
+- Provide parent visibility through useful summaries.
+- Deliver notifications with high reliability and low latency.
+- Ensure legal/privacy-safe communication with minors.
+
+### 3.2 Non-Goals (MVP)
+- Marketing/promotional campaigns engine.
+- Real-time chat-style communications.
+- Complex AI copy generation for every notification.
 
 ---
 
-## 5. Notification Taxonomy
+## 4. Audience and Channel Strategy
+
+### 4.1 Child-facing
+- Primary: native push.
+- Secondary: in-app inbox card.
+
+Use cases:
+- `learning_reminder_due`
+- `streak_at_risk`
+- `revision_window_open`
+- `learning_pack_ready`
+- `achievement_unlocked`
+
+### 4.2 Parent-facing
+- Primary: email digest + operational alerts.
+- Secondary: push for urgent opted-in events.
+
+Use cases:
+- `weekly_progress_digest`
+- `mastery_alert_parent`
+- `consent_or_security_alert`
+
+### 4.3 Channel decision matrix
+| Situation | Preferred channel | Fallback |
+|---|---|---|
+| Time-sensitive learning prompt | Push | In-app inbox |
+| Weekly performance summary | Email | In-app digest tile |
+| Critical consent/security update | Push + Email | None (must deliver) |
+| Push send failed for high-priority item | Email after delay window | In-app inbox |
+
+---
+
+## 5. UX Principles for Smart Notifications
+
+1. Intent first, then channel.
+2. Timing optimization over volume.
+3. Positive, age-appropriate language.
+4. Parent transparency and preference control.
+5. Avoid interruptions during active game sessions.
+6. Deep links to exact destination.
+7. Explain “why this reminder” where applicable (for trust).
+
+---
+
+## 6. Notification Taxonomy and Policy
 
 Each notification has:
-- `type` (what happened)
-- `intent` (why send)
+- `type`
+- `intent`
 - `audience` (`child`, `parent`)
 - `priority` (`critical`, `high`, `normal`, `low`)
 - `channel` (`push`, `email`, `in_app`)
 
-Recommended initial types:
+### 6.1 Initial campaign catalog
+| campaign_key | audience | priority | default channels | trigger |
+|---|---|---|---|---|
+| `learning_reminder_due` | child | normal | push + in_app | inactivity threshold reached |
+| `streak_at_risk` | child | high | push + in_app | streak about to break |
+| `revision_window_open` | child | high | push + in_app | assessment window in <=72h |
+| `learning_pack_ready` | child,parent | normal | push + in_app | pack generation completed |
+| `achievement_unlocked` | child,parent | low | in_app + push | milestone reached |
+| `weekly_progress_digest` | parent | normal | email | weekly digest scheduler |
+| `mastery_alert_parent` | parent | high | email + push(opt-in) | repeated weak performance |
+| `consent_or_security_alert` | parent | critical | email + push | consent/security event |
 
-1. `learning_reminder_due`
-2. `streak_at_risk`
-3. `revision_window_open`
-4. `learning_pack_ready`
-5. `achievement_unlocked`
-6. `weekly_progress_digest`
-7. `mastery_alert_parent`
-8. `consent_or_security_alert`
+### 6.2 Suppression and fatigue rules
+- Child reminders max: 2/day, 6/week.
+- Parent non-critical messages max: 1/day, 4/week.
+- Dedupe window: 12 hours per `campaign_key` + `child_id`.
+- No non-critical sends during quiet hours.
 
 ---
 
-## 6. Triggering and Orchestration Model
+## 7. End-to-End Triggering and Orchestration
 
-### 6.1 Event-driven pipeline
-Use backend domain events as the source of truth:
+### 7.1 Domain events used
 - `SessionCompleted`
 - `PackGenerated`
 - `AssessmentImported`
 - `StreakUpdated`
 - `MasteryUpdated`
 - `ChildInactiveDetected`
+- `ConsentPolicyChanged`
 
-Each event enters a notification rules engine:
-1. Evaluate eligibility and consent.
-2. Apply frequency caps and quiet hours.
-3. Personalize template payload.
-4. Schedule/send via channel adapters.
-5. Record delivery and engagement outcomes.
+### 7.2 Processing flow
+1. Domain event written to event bus/queue.
+2. Notification orchestrator loads candidate campaigns.
+3. Policy engine checks consent, preferences, caps, quiet hours.
+4. Personalization engine renders template tokens.
+5. Notification job created with idempotency key.
+6. Channel worker sends through provider adapter.
+7. Provider callbacks update delivery/open/click status.
+8. Analytics pipeline updates dashboards and experiments.
 
-### 6.2 Rules engine policy layers
-- **Eligibility:** role, age bracket, active child profile, locale.
-- **Preference checks:** push/email toggles, reminder opt-in.
-- **Fatigue controls:** daily/weekly caps, dedupe window (for example 12h).
-- **Priority override:** critical safety/security bypasses non-critical caps.
-
-### 6.3 Scheduling intelligence (MVP → v2)
-- MVP: heuristic send windows based on historical active hours.
-- v2: model-based send-time optimization by cohort.
+### 7.3 Priority behavior
+- `critical`: bypass quiet hours and non-critical caps.
+- `high`: quiet hours respected unless assessment-related within configured window.
+- `normal/low`: always respect quiet hours and caps.
 
 ---
 
-## 7. Backend Architecture Proposal
+## 8. Backend Architecture (Laravel + Redis + MongoDB)
 
-## 7.1 Components
-1. **Notification Service (Laravel module)**
-   - Consumes domain events.
-   - Computes recipients and templates.
-   - Creates canonical notification jobs.
+### 8.1 Components
+1. **Notification Orchestrator Service** (Laravel domain module)
+2. **Policy Engine** (eligibility, consent, caps, quiet-hour logic)
+3. **Template Renderer** (localized copy + token interpolation)
+4. **Dispatch Workers** (`notifications_push`, `notifications_email` queues)
+5. **Provider Adapters** (FCM/APNs, email provider)
+6. **Webhook Receiver** (delivery/open/bounce/unsubscribe updates)
+7. **Ledger + Analytics Exporter** (MongoDB + metrics)
 
-2. **Queue + Workers (Redis queues)**
-   - Dedicated queues per channel (`notifications_push`, `notifications_email`).
-   - Retry strategy with exponential backoff.
+### 8.2 Reliability guarantees
+- At-least-once dispatch with idempotent `event_id`.
+- Retries with exponential backoff + jitter.
+- Dead-letter queue after terminal failure.
+- Token hygiene process removes invalid tokens.
+- Circuit breaker for provider outage periods.
 
-3. **Channel Providers**
-   - Push adapter: FCM/APNs abstraction.
-   - Email adapter: transactional provider (e.g., SES, SendGrid, Postmark).
-
-4. **Notification Ledger (MongoDB collections)**
-   - Immutable log of intents, sends, failures, opens, clicks.
-
-5. **Preference Service**
-   - Stores per-user and per-child communication preferences.
-
-### 7.2 Reliability requirements
-- At-least-once job execution + idempotency keys per notification.
-- Provider timeout handling and retry with jitter.
-- Dead-letter queue for repeated failures.
-- Observability dashboards (send success rate, median delay, fail reasons).
-
-### 7.3 Suggested collections
+### 8.3 Suggested MongoDB collections
 
 #### `notification_preferences`
 - `user_id`
-- `child_id` (nullable for parent-global preferences)
-- `channel_settings` (push/email/in_app)
-- `quiet_hours` (start/end/local timezone)
-- `frequency_caps` (daily/weekly)
+- `child_id` (nullable)
+- `channels.push.enabled`
+- `channels.email.enabled`
+- `channels.in_app.enabled`
+- `quiet_hours.start_local`
+- `quiet_hours.end_local`
+- `timezone`
+- `caps.daily`
+- `caps.weekly`
 - `updated_at`
 
 #### `notification_campaigns`
-Defines reusable templates and policy metadata:
 - `campaign_key`
 - `type`
 - `audience`
 - `default_priority`
-- `template_ref_push`
-- `template_ref_email`
+- `template_refs` (per locale/channel)
 - `enabled`
+- `policy_overrides`
 
 #### `notification_events`
-Canonical send record:
 - `event_id` (idempotency key)
-- `user_id` / `child_id`
 - `campaign_key`
+- `user_id`
+- `child_id`
 - `channel`
 - `status` (`queued`, `sent`, `delivered`, `opened`, `clicked`, `failed`, `suppressed`)
+- `suppression_reason` (if any)
 - `provider_message_id`
 - `scheduled_for`
 - `sent_at`
@@ -182,9 +204,10 @@ Canonical send record:
 - `context_payload`
 
 #### `device_tokens`
+- `token_id`
 - `user_id`
-- `child_id` (if device linked to child profile)
-- `platform` (`ios`, `android`)
+- `child_id`
+- `platform`
 - `token`
 - `locale`
 - `timezone`
@@ -193,152 +216,213 @@ Canonical send record:
 
 ---
 
-## 8. API Contracts (Proposed)
+## 9. API Contracts
 
-### 8.1 App → Backend
+### 9.1 Public app APIs
 1. `POST /v1/notifications/device-tokens`
-   - Register/update push token.
-
 2. `DELETE /v1/notifications/device-tokens/{tokenId}`
-   - Revoke token on logout/device unlink.
-
 3. `GET /v1/notifications/preferences`
 4. `PUT /v1/notifications/preferences`
-   - Update toggles, quiet hours, digest cadence.
-
 5. `GET /v1/notifications/inbox?cursor=...`
-   - Fetch in-app notifications feed.
-
 6. `POST /v1/notifications/{id}/read`
-   - Mark read for inbox state consistency.
+7. `POST /v1/notifications/{id}/open` (optional tracking event)
 
-### 8.2 Internal/backend endpoints (optional)
+### 9.2 Internal APIs
 - `POST /internal/notifications/trigger`
 - `POST /internal/notifications/retry/{eventId}`
+- `POST /internal/notifications/simulate` (staging/debug only)
+
+### 9.3 Example request: update preferences
+```json
+{
+  "childId": "child_123",
+  "channels": {
+    "push": true,
+    "email": false,
+    "inApp": true
+  },
+  "quietHours": {
+    "startLocal": "20:30",
+    "endLocal": "07:00",
+    "timezone": "Europe/Amsterdam"
+  },
+  "caps": {
+    "daily": 2,
+    "weekly": 6
+  }
+}
+```
 
 ---
 
-## 9. Personalization Logic
+## 10. Personalization Strategy
 
-### 9.1 Inputs
-- Last 7/30-day activity profile.
-- Streak status.
-- Weak areas and pending revision topics.
-- School assessment dates (if present).
-- Prior notification interactions (open/click/ignore).
+### 10.1 Inputs
+- Activity recency and session duration.
+- Streak state.
+- Weak areas and unresolved concepts.
+- Upcoming assessments.
+- Historical notification engagement.
+- Preferred study windows.
 
-### 9.2 Decision examples
-- If child hasn’t studied in 48h and local time is in preferred window, send `learning_reminder_due`.
-- If exam is within 72h and weak topic unresolved, send `revision_window_open`.
-- If 3 reminders ignored this week, downgrade cadence and switch to parent digest mention (instead of more child nudges).
+### 10.2 Decision examples
+- 48h inactivity + preferred window open -> send `learning_reminder_due`.
+- Exam within 72h + weak topic unresolved -> send `revision_window_open`.
+- 3 ignored reminders this week -> pause child reminder campaign for 48h and mention in parent digest.
 
-### 9.3 Guardrails
-- Hard cap example: max 2 child push reminders/day, max 6/week.
-- No push between 20:30 and 07:00 local time (configurable per market).
-- Avoid negative framing (“you are behind”); use positive prompts.
+### 10.3 Cadence adaptation (MVP)
+- Engaged users: keep standard cadence.
+- Low engagement: reduce frequency and prioritize higher-value triggers.
+- Highly active users: suppress routine reminders, keep milestone notifications.
 
 ---
 
-## 10. Content and Template Strategy
+## 11. Content and Template System
 
-### 10.1 Push content schema
+### 11.1 Push template schema
 - `title`
 - `body`
 - `deeplink`
 - `campaign_key`
-- `personalization_tokens`
+- `tokens`
+- `ttl_seconds`
 
-### 10.2 Email content schema
-- Subject line + preheader.
-- Structured sections: wins, weak spots, recommended next action.
-- Clear CTA deep-linking to parent dashboard or child activity.
+### 11.2 Email template structure
+- Subject + preheader.
+- Parent digest blocks:
+  - Wins this week
+  - Areas to revisit
+  - Recommended next action
+- Single clear CTA.
 
-### 10.3 Localization
-- Template variants by language (`en`, `fr`, `nl`, others).
-- Fallback locale chain with default English.
+### 11.3 Copy guidelines
+- Child copy: short, supportive, action-oriented.
+- Parent copy: factual and decision-supportive.
+- No blame language; avoid high-pressure urgency except security alerts.
 
----
-
-## 11. Security, Privacy, and Compliance
-
-1. COPPA/GDPR-K aligned controls for child data handling.
-2. Parent consent gate for child notifications where required.
-3. Data minimization in payloads (never include sensitive raw school data in push text).
-4. Signed deep links and authenticated destination checks.
-5. Preference changes and suppression decisions are audit-logged.
-
----
-
-## 12. Analytics and Experimentation
-
-### 12.1 Core funnel metrics
-- Send rate, delivery rate, open rate, click/open-to-session conversion.
-- Reminder-to-learning-session conversion within 24h.
-- Incremental retention lift (D7/D30) for opted-in cohorts.
-- Unsubscribe/disable rate by campaign type.
-
-### 12.2 Experimentation plan
-- A/B test reminder timing windows.
-- A/B test supportive copy variants.
-- Holdout group for causal impact on learning sessions.
-
-### 12.3 Alerting thresholds
-- Delivery success < 95% for any channel over 30 minutes.
-- Spike in `failed` or `suppressed` statuses.
-- Significant jump in opt-out rate after campaign rollout.
+### 11.4 Localization
+- Locale variants: `en`, `fr`, `nl` first.
+- Fallback chain: child/parent locale -> app locale -> `en`.
 
 ---
 
-## 13. Rollout Plan
+## 12. Security, Privacy, and Compliance
 
-### Phase 1 (Foundation)
-- Device token registration.
-- Preferences APIs + UI wiring.
-- Push provider integration + simple reminder campaigns.
-- Notification ledger and dashboards.
-
-### Phase 2 (Smart Rules)
-- Event-driven rules for streak risk, pack ready, and inactivity.
-- Parent weekly email digest.
-- Frequency caps + quiet hours fully enforced.
-
-### Phase 3 (Optimization)
-- Send-time optimization.
-- Campaign experimentation tooling.
-- Cross-channel fallback optimization.
+1. Enforce COPPA/GDPR-K requirements by market.
+2. Parent consent checks for child comms where required.
+3. Minimize personal data in push payloads.
+4. Signed deep links + authenticated route checks.
+5. Audit log for preference changes and suppression outcomes.
+6. Right-to-delete workflow removes tokens and notification history per policy.
 
 ---
 
-## 14. Definition of Done (Notifications Initiative)
+## 13. Observability and Analytics
 
-- End-to-end flow works for at least 3 notification types (`learning_reminder_due`, `learning_pack_ready`, `weekly_progress_digest`).
-- Preferences are honored consistently across push and email.
-- Delivery, open, and failure analytics available in dashboards.
-- Quiet hours and frequency caps pass automated policy tests.
-- Legal/privacy review completed for child-facing communications.
+### 13.1 Operational dashboards
+- Queue depth and processing latency.
+- Send/delivery success by channel/provider.
+- Failure reasons by campaign.
+- Token invalidation trend.
 
----
+### 13.2 Product funnel metrics
+- Send -> open -> session-start conversion.
+- Reminder-to-session conversion within 24h.
+- D7/D30 retention impact for exposed vs holdout cohorts.
+- Opt-out and unsubscribe rates.
 
-## 15. Risks and Mitigations
-
-1. **Notification fatigue**
-   - Mitigate with strict caps, suppression rules, and engagement-aware throttling.
-
-2. **Provider lock-in**
-   - Mitigate via adapter abstraction and provider-agnostic event model.
-
-3. **Low push deliverability**
-   - Mitigate token hygiene jobs, fallback channels, and provider monitoring.
-
-4. **Regulatory complexity across regions**
-   - Mitigate policy layer with market-specific defaults and legal review checklist.
+### 13.3 Alerts
+- Delivery success <95% over 30 minutes.
+- Queue lag >10 minutes for high-priority campaigns.
+- Opt-out spike >30% week-over-week.
 
 ---
 
-## 16. Recommended Next Implementation Tasks
+## 14. Experimentation Framework
 
-1. Add backend notification domain module and queue workers.
-2. Add device token + preferences API endpoints.
-3. Add app-side permission flow and preferences screens wiring.
-4. Ship 3 initial campaigns with templates and localization.
-5. Add instrumentation and dashboards before broad rollout.
+### 14.1 Early experiments
+1. Send window test: 16:00–18:00 vs 18:00–20:00.
+2. Copy framing test: “streak” vs “quick revision boost”.
+3. Parent digest format test: concise vs detailed.
+
+### 14.2 Measurement
+- Primary: session starts within 24h.
+- Secondary: 7-day active learning days, opt-outs.
+- Guardrail: no significant increase in disable/unsubscribe.
+
+---
+
+## 15. Rollout Plan
+
+### Phase 1 — Foundation (2–3 sprints)
+- Device token registration + revocation.
+- Preferences APIs and app integration.
+- Push dispatch pipeline.
+- Notification ledger and baseline dashboards.
+
+### Phase 2 — Core Smart Campaigns (2 sprints)
+- `learning_reminder_due`, `learning_pack_ready`, `weekly_progress_digest`.
+- Frequency caps, dedupe, quiet hours.
+- Provider webhooks + state transitions.
+
+### Phase 3 — Optimization (ongoing)
+- Cadence adaptation and advanced timing optimization.
+- Controlled A/B experimentation.
+- Cross-channel fallback tuning.
+
+---
+
+## 16. Implementation Tasks (Engineering Backlog)
+
+### 16.1 Backend
+1. Create `Notifications` Laravel domain module.
+2. Add MongoDB repositories for preferences/events/campaigns/tokens.
+3. Implement policy engine and suppression reasons.
+4. Build push/email adapter interfaces + first provider implementations.
+5. Add queue workers and DLQ handling.
+6. Add webhooks endpoint + signature verification.
+
+### 16.2 Mobile app
+1. Permission request and device token registration flow.
+2. Deep-link routing from notification payloads.
+3. Preference UI wiring to backend API.
+4. In-app inbox sync and read-state updates.
+
+### 16.3 Data and analytics
+1. Define canonical event schema for notification lifecycle.
+2. Build retention + conversion dashboards.
+3. Add experiment assignment and holdout logic.
+
+---
+
+## 17. Definition of Done
+
+- Three campaigns live end-to-end:
+  - `learning_reminder_due`
+  - `learning_pack_ready`
+  - `weekly_progress_digest`
+- Preferences and quiet hours enforced consistently.
+- Delivery/open/failure metrics visible in dashboards.
+- Policy tests cover caps, dedupe, quiet hours, consent gating.
+- Legal/privacy sign-off completed for child-facing communication.
+
+---
+
+## 18. Risks and Mitigations
+
+1. **Notification fatigue** -> strict caps, adaptive suppression, and campaign reviews.
+2. **Provider lock-in** -> adapter abstraction and neutral internal event model.
+3. **Low deliverability** -> token hygiene, retries, fallback channels, alerting.
+4. **Regional legal variance** -> market-specific policy configuration and compliance checklist.
+
+---
+
+## 19. Recommended Next Step
+
+Start Phase 1 with a thin vertical slice:
+1. Register token.
+2. Trigger `learning_pack_ready` on successful generation.
+3. Deliver push + in-app card.
+4. Track delivered/opened/session_started metrics.
+
+This gives immediate product value and validates the full backend-to-app notification loop before adding more campaigns.

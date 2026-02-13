@@ -12,6 +12,9 @@ use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\HomeRecommendationController;
 use App\Http\Controllers\Api\LearningPackController;
 use App\Http\Controllers\Api\MemoryPreferencesController;
+use App\Http\Controllers\Api\NotificationDeviceController;
+use App\Http\Controllers\Api\NotificationInboxController;
+use App\Http\Controllers\Api\NotificationPreferencesController;
 use App\Http\Controllers\Api\OnboardingController;
 use App\Http\Controllers\Api\QuizSessionController;
 use App\Http\Controllers\Api\RevisionSessionController;
@@ -41,6 +44,9 @@ Route::prefix('v1')->group(function () {
         Route::get('children/{child}/progress', [ChildProgressController::class, 'progress']);
         Route::get('children/{child}/home-recommendations', [HomeRecommendationController::class, 'index']);
         Route::get('children/{child}/memory/preferences', [MemoryPreferencesController::class, 'show']);
+        Route::get('children/{child}/notification-preferences', [NotificationPreferencesController::class, 'show']);
+        Route::get('children/{child}/notifications', [NotificationInboxController::class, 'childInbox']);
+        Route::get('notifications/parent-inbox', [NotificationInboxController::class, 'parentInbox']);
         Route::get('children/{child}/school-assessments', [SchoolAssessmentController::class, 'index']);
 
         Route::get('children/{child}/documents', [DocumentController::class, 'index']);
@@ -69,6 +75,11 @@ Route::prefix('v1')->group(function () {
             Route::patch('children/{child}/school-assessments/{assessment}', [SchoolAssessmentController::class, 'update']);
             Route::delete('children/{child}/school-assessments/{assessment}', [SchoolAssessmentController::class, 'destroy']);
             Route::put('children/{child}/memory/preferences', [MemoryPreferencesController::class, 'update']);
+            Route::put('children/{child}/notification-preferences', [NotificationPreferencesController::class, 'update']);
+            Route::post('children/{child}/notification-devices', [NotificationDeviceController::class, 'store']);
+            Route::delete('children/{child}/notification-devices/{deviceTokenId}', [NotificationDeviceController::class, 'destroy']);
+            Route::post('children/{child}/notifications/{id}/read', [NotificationInboxController::class, 'markRead']);
+            Route::post('children/{child}/notifications/{id}/open', [NotificationInboxController::class, 'markOpen']);
             Route::post('children/{child}/memory/clear-scope', [MemoryPreferencesController::class, 'clearScope']);
             Route::post('children/{child}/home-recommendations/events', [HomeRecommendationController::class, 'track']);
 

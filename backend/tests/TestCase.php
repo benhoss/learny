@@ -27,6 +27,9 @@ abstract class TestCase extends BaseTestCase
             'onboarding_states',
             'onboarding_events',
             'onboarding_link_tokens',
+            'notification_preferences',
+            'notification_events',
+            'device_tokens',
         ]);
     }
 

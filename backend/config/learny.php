@@ -24,4 +24,22 @@ return [
         'FR' => (int) env('LEARNY_CONSENT_AGE_FR', 15),
         'NL' => (int) env('LEARNY_CONSENT_AGE_NL', 16),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Notifications
+    |--------------------------------------------------------------------------
+    */
+    'notifications' => [
+        'policy_version' => env('NOTIFICATIONS_POLICY_VERSION', 'v1'),
+        'internal_token' => env('NOTIFICATIONS_INTERNAL_TOKEN'),
+        'internal_allowlist' => array_values(array_filter(array_map(
+            static fn (?string $ip): ?string => filled($ip) ? trim($ip) : null,
+            explode(',', (string) env('NOTIFICATIONS_INTERNAL_ALLOWLIST', ''))
+        ))),
+        'dedupe_window_hours' => (int) env('NOTIFICATIONS_DEDUPE_WINDOW_HOURS', 12),
+        'active_session_window_seconds' => (int) env('NOTIFICATIONS_ACTIVE_SESSION_WINDOW_SECONDS', 45),
+        'defer_seconds' => (int) env('NOTIFICATIONS_DEFER_SECONDS', 60),
+        'max_retry_attempts' => (int) env('NOTIFICATIONS_MAX_RETRY_ATTEMPTS', 3),
+    ],
 ];

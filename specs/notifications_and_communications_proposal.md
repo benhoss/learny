@@ -73,7 +73,7 @@ Use cases:
 |---|---|---|
 | Time-sensitive learning prompt | Push | In-app inbox |
 | Weekly performance summary | Email | In-app digest tile |
-| Critical consent/security update | Push + Email | None (must deliver) |
+| Critical consent/security update | Push + Email | Ops alert + in-app record on next app open |
 | Push send failed for high-priority item | Email after delay window | In-app inbox |
 
 ---
@@ -114,8 +114,26 @@ Each notification has:
 ### 6.2 Suppression and fatigue rules
 - Child reminders max: 2/day, 6/week.
 - Parent non-critical messages max: 1/day, 4/week.
-- Dedupe window: 12 hours per `campaign_key` + `child_id`.
+- Dedupe window: 12 hours per `dedupe_key`.
+- `dedupe_key = campaign_key + audience + recipient_user_id + child_id(nullable) + channel`.
 - No non-critical sends during quiet hours.
+
+### 6.3 Preference precedence and merge algorithm (V1)
+Effective preference resolution order:
+1. Parent global defaults (`user_id`, `child_id = null`)
+2. Child override (`user_id`, `child_id = target child`) only for fields explicitly present
+3. Campaign forced policy for legal/security (`critical` only)
+
+Merge rules:
+- Scalar fields (`timezone`, `quiet_hours.start_local`, `quiet_hours.end_local`): child value overrides if present.
+- Object fields (`channels`, `caps`): merge by key; child keys override only matching keys.
+- Missing child fields inherit parent global values.
+- Campaign forced policy can bypass non-critical toggles only for `consent_or_security_alert`.
+
+Example:
+- Parent defaults: `email=true`, `push=true`, `caps.daily=2`
+- Child override: `email=false`
+- Effective child config: `email=false`, `push=true`, `caps.daily=2`
 
 ---
 
@@ -135,7 +153,9 @@ Each notification has:
 2. Notification orchestrator loads candidate campaigns.
 3. Policy engine checks consent, preferences, caps, quiet hours.
 4. Personalization engine renders template tokens.
-5. Notification job created with idempotency key.
+5. Notification job created with:
+   - `dedupe_key = campaign_key + audience + recipient_user_id + child_id(nullable) + channel`
+   - `idempotency_key = source_event_id + campaign_key + recipient_user_id + child_id + channel`
 6. Channel worker sends through provider adapter.
 7. Provider callbacks update delivery/open/click status.
 8. Analytics pipeline updates dashboards and experiments.
@@ -144,6 +164,12 @@ Each notification has:
 - `critical`: bypass quiet hours and non-critical caps.
 - `high`: quiet hours respected unless assessment-related within configured window.
 - `normal/low`: always respect quiet hours and caps.
+
+### 7.4 Active session interruption gate
+- Policy engine input: `is_child_active_in_session`.
+- Definition (V1): child considered active if last interaction is <=45 seconds ago.
+- If active and campaign priority is `normal` or `low`, defer send to the next eligible window.
+- `high` can send while active only for assessment-related windows; `critical` can send immediately.
 
 ---
 
@@ -160,10 +186,13 @@ Each notification has:
 
 ### 8.2 Reliability guarantees
 - At-least-once dispatch with idempotent `event_id`.
-- Retries with exponential backoff + jitter.
+- Retries with exponential backoff + jitter and bounded attempts per channel.
 - Dead-letter queue after terminal failure.
 - Token hygiene process removes invalid tokens.
 - Circuit breaker for provider outage periods.
+- Terminal behavior for `critical` campaigns:
+  - Try configured channels (`push` + `email`) with bounded retries.
+  - If all attempts fail: set `failed_terminal`, stop sending, emit ops alert, and create in-app record on next app open.
 
 ### 8.3 Suggested MongoDB collections
 
@@ -191,16 +220,24 @@ Each notification has:
 
 #### `notification_events`
 - `event_id` (idempotency key)
+- `source_event_id`
 - `campaign_key`
+- `audience`
+- `recipient_user_id`
 - `user_id`
 - `child_id`
 - `channel`
-- `status` (`queued`, `sent`, `delivered`, `opened`, `clicked`, `failed`, `suppressed`)
+- `dedupe_key`
+- `idempotency_key`
+- `status` (`queued`, `sent`, `delivered`, `opened`, `clicked`, `failed`, `failed_terminal`, `suppressed`)
 - `suppression_reason` (if any)
 - `provider_message_id`
 - `scheduled_for`
 - `sent_at`
 - `failure_reason`
+- `failed_terminal_at` (nullable)
+- `consent_state`
+- `policy_version`
 - `context_payload`
 
 #### `device_tokens`
@@ -214,41 +251,108 @@ Each notification has:
 - `last_seen_at`
 - `revoked_at`
 
+### 8.4 Suggested indexes and constraints
+- `notification_events` unique index on `idempotency_key`.
+- `notification_events` index on `dedupe_key` + `scheduled_for`.
+- `notification_events` index on `recipient_user_id` + `status` + `sent_at`.
+- `notification_events` index on `campaign_key` + `status` + `sent_at`.
+
 ---
 
 ## 9. API Contracts
 
 ### 9.1 Public app APIs
-1. `POST /v1/notifications/device-tokens`
-2. `DELETE /v1/notifications/device-tokens/{tokenId}`
-3. `GET /v1/notifications/preferences`
-4. `PUT /v1/notifications/preferences`
-5. `GET /v1/notifications/inbox?cursor=...`
-6. `POST /v1/notifications/{id}/read`
-7. `POST /v1/notifications/{id}/open` (optional tracking event)
+Base rules:
+- Prefix: `/api/v1`
+- Auth: `auth:api` (JWT)
+- Child-scoped ownership: enforce with existing `FindsOwnedChild` pattern
+
+Endpoints:
+1. `POST /api/v1/children/{child}/notification-devices`
+2. `DELETE /api/v1/children/{child}/notification-devices/{deviceTokenId}`
+3. `GET /api/v1/children/{child}/notification-preferences`
+4. `PUT /api/v1/children/{child}/notification-preferences`
+5. `GET /api/v1/children/{child}/notifications?cursor=...`
+6. `POST /api/v1/children/{child}/notifications/{id}/read`
+7. `POST /api/v1/children/{child}/notifications/{id}/open` (optional tracking event)
+8. `GET /api/v1/notifications/parent-inbox?cursor=...` (parent-facing digest/alerts, self scope)
 
 ### 9.2 Internal APIs
 - `POST /internal/notifications/trigger`
 - `POST /internal/notifications/retry/{eventId}`
 - `POST /internal/notifications/simulate` (staging/debug only)
 
+Internal auth:
+- Service-to-service signed token.
+- Allowlisted internal network or gateway source.
+- `simulate` disabled in production.
+
 ### 9.3 Example request: update preferences
 ```json
 {
-  "childId": "child_123",
-  "channels": {
-    "push": true,
-    "email": false,
-    "inApp": true
+  "globalParentDefaults": {
+    "channels": {
+      "push": true,
+      "email": true,
+      "inApp": true
+    },
+    "quietHours": {
+      "startLocal": "20:30",
+      "endLocal": "07:00",
+      "timezone": "Europe/Amsterdam"
+    },
+    "caps": {
+      "daily": 2,
+      "weekly": 6
+    }
   },
-  "quietHours": {
-    "startLocal": "20:30",
-    "endLocal": "07:00",
-    "timezone": "Europe/Amsterdam"
-  },
-  "caps": {
-    "daily": 2,
-    "weekly": 6
+  "childOverrides": {
+    "channels": {
+      "email": false
+    },
+    "caps": {
+      "daily": 1
+    }
+  }
+}
+```
+
+### 9.4 Response and error contract (V1)
+- Success envelope:
+```json
+{
+  "data": {}
+}
+```
+- Error envelope:
+```json
+{
+  "error": {
+    "code": "not_found|validation_error|forbidden|unauthorized|rate_limited|conflict|internal_error",
+    "message": "Human readable summary",
+    "details": {}
+  }
+}
+```
+- Common statuses:
+  - `200` / `201` success
+  - `204` delete/read with no body
+  - `400` validation error
+  - `401` missing/invalid JWT
+  - `403` child ownership violation
+  - `404` missing child/notification token
+  - `409` idempotency conflict
+  - `429` throttled
+  - `500` internal failure
+
+### 9.5 Pagination contract (inbox endpoints)
+- Cursor-based pagination with `cursor` query parameter.
+- Response shape:
+```json
+{
+  "data": [],
+  "meta": {
+    "nextCursor": "opaque_cursor_or_null"
   }
 }
 ```
@@ -269,6 +373,7 @@ Each notification has:
 - 48h inactivity + preferred window open -> send `learning_reminder_due`.
 - Exam within 72h + weak topic unresolved -> send `revision_window_open`.
 - 3 ignored reminders this week -> pause child reminder campaign for 48h and mention in parent digest.
+- Child currently active in a game + campaign priority `normal` -> defer until active-session gate clears.
 
 ### 10.3 Cadence adaptation (MVP)
 - Engaged users: keep standard cadence.
@@ -315,6 +420,19 @@ Each notification has:
 5. Audit log for preference changes and suppression outcomes.
 6. Right-to-delete workflow removes tokens and notification history per policy.
 
+### 12.1 V1 consent matrix (simple)
+| Market requires verified parent consent? | Consent state | Child push/email campaigns | Child in-app operational notices | Parent communication |
+|---|---|---|---|---|
+| No | any | Allowed via normal policy engine | Allowed | Allowed |
+| Yes | verified | Allowed via normal policy engine | Allowed | Allowed |
+| Yes | missing/unverified | Suppressed for proactive child campaigns | Allowed only while child is active in app | Send `consent_or_security_alert` |
+
+### 12.2 Policy decision traceability
+Store the following on every notification decision:
+- `consent_state`
+- `policy_version`
+- `suppression_reason` (if suppressed)
+
 ---
 
 ## 13. Observability and Analytics
@@ -350,6 +468,13 @@ Each notification has:
 - Secondary: 7-day active learning days, opt-outs.
 - Guardrail: no significant increase in disable/unsubscribe.
 
+### 14.3 Assignment and contamination guardrails
+- Assignment unit:
+  - Child campaigns -> `child_id`
+  - Parent campaigns -> `recipient_user_id`
+- Sticky assignment window: 28 days.
+- Parent digest experiments must not modify child reminder cadence.
+
 ---
 
 ## 15. Rollout Plan
@@ -381,6 +506,9 @@ Each notification has:
 4. Build push/email adapter interfaces + first provider implementations.
 5. Add queue workers and DLQ handling.
 6. Add webhooks endpoint + signature verification.
+7. Add indexes/constraints for `idempotency_key` and `dedupe_key`.
+8. Implement service-to-service auth for `/internal/notifications/*`.
+9. Add active-session signal ingestion and policy gate (`<=45s`).
 
 ### 16.2 Mobile app
 1. Permission request and device token registration flow.
@@ -392,6 +520,32 @@ Each notification has:
 1. Define canonical event schema for notification lifecycle.
 2. Build retention + conversion dashboards.
 3. Add experiment assignment and holdout logic.
+4. Persist assignment stickiness and enforce parent/child contamination guardrails.
+
+### 16.4 Validation scenarios (required)
+1. Policy and suppression
+   - Child campaign suppressed when consent is missing in consent-required market.
+   - Non-critical campaigns respect quiet hours and caps.
+   - High-priority assessment exception behaves as specified.
+   - Active-session deferral delays and later sends once session ends.
+2. Dedupe and idempotency
+   - Duplicate source event does not generate duplicate sends for same recipient/channel.
+   - Parent-only campaigns do not dedupe across different parent users.
+3. Preference precedence
+   - Parent global default applies when child override is absent.
+   - Child override applies only to explicitly provided fields.
+   - Critical legal/security campaign override bypasses non-critical toggles only for allowed campaigns.
+4. Delivery failure handling
+   - Retries follow bounded backoff and set `failed_terminal` on exhaustion.
+   - No further send attempts are scheduled after terminal failure.
+   - Ops alert emitted for terminal critical failures.
+5. Authorization
+   - Parent cannot read/write notifications for non-owned child.
+   - Parent inbox endpoint returns only authenticated user records.
+   - Internal endpoints reject invalid/missing signed service token.
+6. Analytics integrity
+   - Lifecycle transitions (`queued` -> `sent` -> `delivered/opened/failed/suppressed`) are valid and auditable.
+   - Holdout assignment remains sticky for 28 days.
 
 ---
 
@@ -405,6 +559,8 @@ Each notification has:
 - Delivery/open/failure metrics visible in dashboards.
 - Policy tests cover caps, dedupe, quiet hours, consent gating.
 - Legal/privacy sign-off completed for child-facing communication.
+- Terminal failure flow covered: bounded retries, `failed_terminal`, stop sending, ops alert path.
+- API contracts documented with request/response/errors/pagination and ownership auth rules.
 
 ---
 
@@ -414,6 +570,7 @@ Each notification has:
 2. **Provider lock-in** -> adapter abstraction and neutral internal event model.
 3. **Low deliverability** -> token hygiene, retries, fallback channels, alerting.
 4. **Regional legal variance** -> market-specific policy configuration and compliance checklist.
+5. **Over-suppression due to policy complexity** -> explicit precedence rules + auditability fields (`consent_state`, `policy_version`).
 
 ---
 

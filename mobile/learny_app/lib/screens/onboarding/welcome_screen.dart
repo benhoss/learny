@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../routes/app_routes.dart';
 import '../../state/app_state_scope.dart';
 import '../../theme/app_assets.dart';
@@ -133,6 +134,20 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ? 'Signing in test user...'
                             : 'Skip onboarding (debug: auto login test user)',
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        throw StateError('This is test exception');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Verify Sentry Setup'),
                     ),
                   ),
                 ],

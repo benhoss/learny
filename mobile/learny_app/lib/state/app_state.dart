@@ -467,7 +467,7 @@ class AppState extends ChangeNotifier {
           markComplete: true,
         );
       } catch (_) {
-        return false;
+        if (!force) return false;
       }
     }
 

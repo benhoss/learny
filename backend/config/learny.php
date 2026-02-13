@@ -42,4 +42,19 @@ return [
         'defer_seconds' => (int) env('NOTIFICATIONS_DEFER_SECONDS', 60),
         'max_retry_attempts' => (int) env('NOTIFICATIONS_MAX_RETRY_ATTEMPTS', 3),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | AI Guardrails
+    |--------------------------------------------------------------------------
+    */
+    'ai_guardrails' => [
+        'policy_version' => env('LEARNY_AI_GUARDRAILS_POLICY_VERSION', 'v1'),
+        'blocked_terms' => [
+            'kill yourself',
+            'how to cheat',
+            'build a bomb',
+        ],
+    ],
+
 ];

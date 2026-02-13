@@ -30,6 +30,9 @@ abstract class TestCase extends BaseTestCase
             'notification_preferences',
             'notification_events',
             'device_tokens',
+            'ai_generation_runs',
+            'ai_generation_artifacts',
+            'ai_guardrail_results',
         ]);
     }
 

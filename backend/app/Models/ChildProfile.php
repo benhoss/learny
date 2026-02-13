@@ -42,16 +42,12 @@ class ChildProfile extends Model
 
     protected $casts = [
         'birth_year' => 'integer',
-        'learning_style_preferences' => 'array',
-        'support_needs' => 'array',
-        'confidence_by_subject' => 'array',
         'streak_days' => 'integer',
         'longest_streak' => 'integer',
         'total_xp' => 'integer',
         'memory_personalization_enabled' => 'boolean',
         'recommendation_why_enabled' => 'boolean',
         'last_memory_reset_at' => 'datetime',
-        'linked_devices' => 'array',
     ];
 
     protected $attributes = [
@@ -114,7 +110,7 @@ class ChildProfile extends Model
             $segments = explode('-', $value, 2);
             $language = strtolower($segments[0]);
             $region = isset($segments[1]) ? strtoupper($segments[1]) : null;
-            $value = $region === null ? $language : $language.'-'.$region;
+            $value = $region === null ? $language : $language . '-' . $region;
         }
 
         $this->attributes['preferred_language'] = $value;

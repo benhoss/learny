@@ -481,12 +481,8 @@ class AppState extends ChangeNotifier {
   }
 
   Future<bool> debugSkipOnboardingAutoLogin() async {
-    try {
-      await _ensureBackendSession();
-      return await completeOnboarding(force: true);
-    } catch (_) {
-      return false;
-    }
+    await _ensureBackendSession();
+    return await completeOnboarding(force: true);
   }
 
   Future<bool> parentAuthenticateForOnboarding({
@@ -534,6 +530,7 @@ class AppState extends ChangeNotifier {
     String role = 'parent',
   }) async {
     try {
+      await _ensureBackendSession();
       final data = await backend.createChild(
         name: name,
         gradeLevel: gradeLevel,

@@ -47,12 +47,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Future<void> _debugSkip() async {
     setState(() => _skipping = true);
-    final state = AppStateScope.of(context);
-    final ok = await state.debugSkipOnboardingAutoLogin();
-    if (!mounted) return;
-    setState(() => _skipping = false);
-    if (ok) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+    try {
+      final state = AppStateScope.of(context);
+      final ok = await state.debugSkipOnboardingAutoLogin();
+      if (!mounted) return;
+      if (ok) {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Auto login failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _skipping = false);
+      }
     }
   }
 

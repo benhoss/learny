@@ -30,7 +30,7 @@ class _PlanScreenState extends State<PlanScreen> {
       step: 'completed',
       completedStep: 'parent_link_prompt',
     );
-    final ok = await state.completeOnboarding();
+    final ok = await state.completeOnboarding(force: true);
     if (!ok) {
       if (!mounted) return;
       setState(() {

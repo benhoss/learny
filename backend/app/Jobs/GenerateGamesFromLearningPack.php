@@ -56,7 +56,7 @@ class GenerateGamesFromLearningPack implements ShouldQueue
 
         try {
             foreach ($types as $type) {
-                $run = GenerationObservability::startRun([
+                $run = GenerationObservability::startRunSafely([
                     'feature_name' => 'game_generation_'.$type,
                     'actor_type' => 'system',
                     'actor_ref' => (string) $pack->user_id,
@@ -66,35 +66,65 @@ class GenerateGamesFromLearningPack implements ShouldQueue
                     'model_name' => (string) config('prism.openrouter.text_model', 'unknown'),
                     'model_version' => (string) config('prism.openrouter.text_model', 'unknown'),
                     'prompt_template_version' => 'v1',
+                ], [
+                    'document_id' => (string) $pack->document_id,
+                    'learning_pack_id' => (string) $pack->_id,
+                    'game_type' => $type,
+                    'job' => self::class,
                 ]);
 
                 try {
                     $payload = $generator->generate($pack, $type);
-                    GenerationObservability::recordArtifact($run, 'normalized_json', $payload, 'game_'.$type, 'v1');
+                    GenerationObservability::recordArtifactSafely($run, 'normalized_json', $payload, 'game_'.$type, 'v1', [
+                        'document_id' => (string) $pack->document_id,
+                        'learning_pack_id' => (string) $pack->_id,
+                        'game_type' => $type,
+                    ]);
 
                     try {
                         $validator->validate($payload, resource_path("schemas/game_{$type}.json"));
-                        GenerationObservability::recordGuardrail($run, 'output_schema_validation', 'v1', 'pass');
+                        GenerationObservability::recordGuardrailSafely($run, 'output_schema_validation', 'v1', 'pass', 0, [], [], [
+                            'document_id' => (string) $pack->document_id,
+                            'learning_pack_id' => (string) $pack->_id,
+                            'game_type' => $type,
+                        ]);
                     } catch (Throwable $schemaError) {
-                        GenerationObservability::recordGuardrail($run, 'output_schema_validation', 'v1', 'fail', 70, ['schema_validation_failed'], ['message' => $schemaError->getMessage()]);
-                        GenerationObservability::complete($run, 'blocked', 70, $schemaError->getMessage());
+                        GenerationObservability::recordGuardrailSafely($run, 'output_schema_validation', 'v1', 'fail', 70, ['schema_validation_failed'], ['message' => $schemaError->getMessage()], [
+                            'document_id' => (string) $pack->document_id,
+                            'learning_pack_id' => (string) $pack->_id,
+                            'game_type' => $type,
+                        ]);
+                        GenerationObservability::completeSafely($run, 'blocked', 70, $schemaError->getMessage(), [
+                            'document_id' => (string) $pack->document_id,
+                            'learning_pack_id' => (string) $pack->_id,
+                            'game_type' => $type,
+                        ]);
                         throw $schemaError;
                     }
 
                     $safetyResult = $safetyGuard->evaluate($payload);
-                    GenerationObservability::recordGuardrail(
+                    GenerationObservability::recordGuardrailSafely(
                         $run,
                         'child_safety_terms',
                         (string) config('learny.ai_guardrails.policy_version', 'v1'),
                         (string) $safetyResult['result'],
                         (int) ($safetyResult['risk_points'] ?? 0),
                         (array) ($safetyResult['reason_codes'] ?? []),
-                        (array) ($safetyResult['details'] ?? [])
+                        (array) ($safetyResult['details'] ?? []),
+                        [
+                            'document_id' => (string) $pack->document_id,
+                            'learning_pack_id' => (string) $pack->_id,
+                            'game_type' => $type,
+                        ]
                     );
 
                     if (($safetyResult['result'] ?? 'pass') === 'fail') {
                         $message = 'Safety guardrail blocked game generation.';
-                        GenerationObservability::complete($run, 'blocked', (int) ($safetyResult['risk_points'] ?? 80), $message);
+                        GenerationObservability::completeSafely($run, 'blocked', (int) ($safetyResult['risk_points'] ?? 80), $message, [
+                            'document_id' => (string) $pack->document_id,
+                            'learning_pack_id' => (string) $pack->_id,
+                            'game_type' => $type,
+                        ]);
                         throw new \RuntimeException($message);
                     }
 
@@ -108,7 +138,11 @@ class GenerateGamesFromLearningPack implements ShouldQueue
                         'status' => 'ready',
                     ]);
 
-                    GenerationObservability::complete($run, 'served');
+                    GenerationObservability::completeSafely($run, 'served', 0, null, [
+                        'document_id' => (string) $pack->document_id,
+                        'learning_pack_id' => (string) $pack->_id,
+                        'game_type' => $type,
+                    ]);
 
                     if ($document) {
                         $readyTypes = is_array($document->ready_game_types ?? null) ? $document->ready_game_types : [];
@@ -126,8 +160,12 @@ class GenerateGamesFromLearningPack implements ShouldQueue
                         $document->save();
                     }
                 } catch (Throwable $e) {
-                    if (($run->final_status ?? null) === 'processing') {
-                        GenerationObservability::complete($run, 'error', 0, $e->getMessage());
+                    if ($run && ($run->final_status ?? null) === 'processing') {
+                        GenerationObservability::completeSafely($run, 'error', 0, $e->getMessage(), [
+                            'document_id' => (string) $pack->document_id,
+                            'learning_pack_id' => (string) $pack->_id,
+                            'game_type' => $type,
+                        ]);
                     }
 
                     if ($document) {

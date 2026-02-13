@@ -50,11 +50,33 @@ return [
     */
     'ai_guardrails' => [
         'policy_version' => env('LEARNY_AI_GUARDRAILS_POLICY_VERSION', 'v1'),
-        'blocked_terms' => [
-            'kill yourself',
-            'how to cheat',
-            'build a bomb',
-        ],
+        'blocked_terms' => (static function (): array {
+            $defaults = [
+                'kill yourself',
+                'how to cheat',
+                'build a bomb',
+            ];
+
+            $raw = env('LEARNY_AI_GUARDRAILS_BLOCKED_TERMS');
+            if (! is_string($raw) || trim($raw) === '') {
+                return $defaults;
+            }
+
+            $decoded = json_decode($raw, true);
+            $terms = is_array($decoded) ? $decoded : explode(',', $raw);
+
+            $normalized = array_map(
+                static fn (mixed $term): ?string => is_string($term) ? trim($term) : null,
+                $terms
+            );
+
+            $filtered = array_values(array_filter(
+                $normalized,
+                static fn (?string $term): bool => is_string($term) && $term !== ''
+            ));
+
+            return $filtered !== [] ? array_values(array_unique($filtered)) : $defaults;
+        })(),
     ],
 
 ];

@@ -6,7 +6,9 @@ use App\Models\AiGenerationArtifact;
 use App\Models\AiGenerationRun;
 use App\Models\AiGuardrailResult;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Throwable;
 use RuntimeException;
 
 class GenerationObservability
@@ -63,5 +65,73 @@ class GenerationObservability
             'error_message' => $errorMessage,
             'completed_at' => now(),
         ]);
+    }
+
+    public static function startRunSafely(array $attributes, array $context = []): ?AiGenerationRun
+    {
+        try {
+            return self::startRun($attributes);
+        } catch (Throwable $e) {
+            self::logFailure('start_run', $e, $context);
+
+            return null;
+        }
+    }
+
+    public static function recordArtifactSafely(?AiGenerationRun $run, string $type, array $payload, ?string $schemaName = null, ?string $schemaVersion = null, array $context = []): void
+    {
+        if (! $run) {
+            return;
+        }
+
+        try {
+            self::recordArtifact($run, $type, $payload, $schemaName, $schemaVersion);
+        } catch (Throwable $e) {
+            self::logFailure('record_artifact', $e, $context + [
+                'run_id' => (string) ($run->_id ?? ''),
+                'artifact_type' => $type,
+            ]);
+        }
+    }
+
+    public static function recordGuardrailSafely(?AiGenerationRun $run, string $name, string $version, string $result, int $riskPoints = 0, array $reasonCodes = [], array $details = [], array $context = []): void
+    {
+        if (! $run) {
+            return;
+        }
+
+        try {
+            self::recordGuardrail($run, $name, $version, $result, $riskPoints, $reasonCodes, $details);
+        } catch (Throwable $e) {
+            self::logFailure('record_guardrail', $e, $context + [
+                'run_id' => (string) ($run->_id ?? ''),
+                'check_name' => $name,
+            ]);
+        }
+    }
+
+    public static function completeSafely(?AiGenerationRun $run, string $status, int $riskScore = 0, ?string $errorMessage = null, array $context = []): void
+    {
+        if (! $run) {
+            return;
+        }
+
+        try {
+            self::complete($run, $status, $riskScore, $errorMessage);
+        } catch (Throwable $e) {
+            self::logFailure('complete_run', $e, $context + [
+                'run_id' => (string) ($run->_id ?? ''),
+                'status' => $status,
+            ]);
+        }
+    }
+
+    private static function logFailure(string $operation, Throwable $e, array $context = []): void
+    {
+        Log::warning('ai_observability_operation_failed', array_merge([
+            'operation' => $operation,
+            'error' => $e->getMessage(),
+            'exception' => get_class($e),
+        ], $context));
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Services\Safety;
 
+use JsonException;
+
 class GenerationSafetyGuard
 {
     public function evaluate(array $payload): array
@@ -11,7 +13,20 @@ class GenerationSafetyGuard
             fn (mixed $term) => is_string($term) && $term !== ''
         ));
 
-        $serialized = strtolower(json_encode($payload, JSON_UNESCAPED_UNICODE));
+        try {
+            $serializedPayload = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            return [
+                'result' => 'fail',
+                'risk_points' => 100,
+                'reason_codes' => ['payload_serialization_failed'],
+                'details' => [
+                    'message' => $e->getMessage(),
+                ],
+            ];
+        }
+
+        $serialized = strtolower($serializedPayload);
         $matches = [];
 
         foreach ($blockedTerms as $term) {

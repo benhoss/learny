@@ -46,7 +46,7 @@ class GenerateLearningPackFromDocument implements ShouldQueue
             return;
         }
 
-        $run = GenerationObservability::startRun([
+        $run = GenerationObservability::startRunSafely([
             'feature_name' => 'learning_pack_generation',
             'actor_type' => 'system',
             'actor_ref' => (string) $document->user_id,
@@ -56,6 +56,9 @@ class GenerateLearningPackFromDocument implements ShouldQueue
             'model_name' => (string) config('prism.openrouter.text_model', 'unknown'),
             'model_version' => (string) config('prism.openrouter.text_model', 'unknown'),
             'prompt_template_version' => 'v1',
+        ], [
+            'document_id' => (string) $document->_id,
+            'job' => self::class,
         ]);
 
         try {
@@ -66,31 +69,44 @@ class GenerateLearningPackFromDocument implements ShouldQueue
 
             try {
                 $content = $generator->generate($document, $concepts);
-                GenerationObservability::recordArtifact($run, 'normalized_json', $content, 'learning_pack', 'v1');
+                GenerationObservability::recordArtifactSafely($run, 'normalized_json', $content, 'learning_pack', 'v1', [
+                    'document_id' => (string) $document->_id,
+                ]);
 
                 try {
                     $validator->validate($content, resource_path('schemas/learning_pack.json'));
-                    GenerationObservability::recordGuardrail($run, 'output_schema_validation', 'v1', 'pass');
+                    GenerationObservability::recordGuardrailSafely($run, 'output_schema_validation', 'v1', 'pass', 0, [], [], [
+                        'document_id' => (string) $document->_id,
+                    ]);
                 } catch (Throwable $schemaError) {
-                    GenerationObservability::recordGuardrail($run, 'output_schema_validation', 'v1', 'fail', 70, ['schema_validation_failed'], ['message' => $schemaError->getMessage()]);
-                    GenerationObservability::complete($run, 'blocked', 70, $schemaError->getMessage());
+                    GenerationObservability::recordGuardrailSafely($run, 'output_schema_validation', 'v1', 'fail', 70, ['schema_validation_failed'], ['message' => $schemaError->getMessage()], [
+                        'document_id' => (string) $document->_id,
+                    ]);
+                    GenerationObservability::completeSafely($run, 'blocked', 70, $schemaError->getMessage(), [
+                        'document_id' => (string) $document->_id,
+                    ]);
                     throw $schemaError;
                 }
 
                 $safetyResult = $safetyGuard->evaluate($content);
-                GenerationObservability::recordGuardrail(
+                GenerationObservability::recordGuardrailSafely(
                     $run,
                     'child_safety_terms',
                     (string) config('learny.ai_guardrails.policy_version', 'v1'),
                     (string) $safetyResult['result'],
                     (int) ($safetyResult['risk_points'] ?? 0),
                     (array) ($safetyResult['reason_codes'] ?? []),
-                    (array) ($safetyResult['details'] ?? [])
+                    (array) ($safetyResult['details'] ?? []),
+                    [
+                        'document_id' => (string) $document->_id,
+                    ]
                 );
 
                 if (($safetyResult['result'] ?? 'pass') === 'fail') {
                     $message = 'Safety guardrail blocked learning pack generation.';
-                    GenerationObservability::complete($run, 'blocked', (int) ($safetyResult['risk_points'] ?? 80), $message);
+                    GenerationObservability::completeSafely($run, 'blocked', (int) ($safetyResult['risk_points'] ?? 80), $message, [
+                        'document_id' => (string) $document->_id,
+                    ]);
                     throw new \RuntimeException($message);
                 }
 
@@ -117,13 +133,17 @@ class GenerateLearningPackFromDocument implements ShouldQueue
                 $document->save();
 
                 GenerateGamesFromLearningPack::dispatch((string) $pack->_id);
-                GenerationObservability::complete($run, 'served');
+                GenerationObservability::completeSafely($run, 'served', 0, null, [
+                    'document_id' => (string) $document->_id,
+                ]);
             } catch (Throwable $e) {
                 PipelineTelemetry::complete($document, 'failed', 'learning_pack_failed');
                 $document->ocr_error = $e->getMessage();
                 $document->save();
-                if (($run->final_status ?? null) === 'processing') {
-                    GenerationObservability::complete($run, 'error', 0, $e->getMessage());
+                if ($run && ($run->final_status ?? null) === 'processing') {
+                    GenerationObservability::completeSafely($run, 'error', 0, $e->getMessage(), [
+                        'document_id' => (string) $document->_id,
+                    ]);
                 }
                 throw $e;
             }

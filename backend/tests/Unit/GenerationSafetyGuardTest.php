@@ -35,4 +35,18 @@ class GenerationSafetyGuardTest extends TestCase
         $this->assertContains('unsafe_content_detected', $result['reason_codes']);
         $this->assertSame(['HoW To ChEaT'], $result['details']['matched_terms']);
     }
+
+    public function test_it_fails_closed_when_payload_cannot_be_serialized(): void
+    {
+        config()->set('learny.ai_guardrails.blocked_terms', ['anything']);
+
+        $guard = new GenerationSafetyGuard();
+        $result = $guard->evaluate([
+            'summary' => "\xB1\x31",
+        ]);
+
+        $this->assertSame('fail', $result['result']);
+        $this->assertSame(100, $result['risk_points']);
+        $this->assertContains('payload_serialization_failed', $result['reason_codes']);
+    }
 }

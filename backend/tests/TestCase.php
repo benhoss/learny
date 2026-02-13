@@ -27,6 +27,9 @@ abstract class TestCase extends BaseTestCase
             'onboarding_states',
             'onboarding_events',
             'onboarding_link_tokens',
+            'ai_generation_runs',
+            'ai_generation_artifacts',
+            'ai_guardrail_results',
         ]);
     }
 

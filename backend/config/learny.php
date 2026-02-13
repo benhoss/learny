@@ -24,4 +24,20 @@ return [
         'FR' => (int) env('LEARNY_CONSENT_AGE_FR', 15),
         'NL' => (int) env('LEARNY_CONSENT_AGE_NL', 16),
     ],
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | AI Guardrails
+    |--------------------------------------------------------------------------
+    */
+    'ai_guardrails' => [
+        'policy_version' => env('LEARNY_AI_GUARDRAILS_POLICY_VERSION', 'v1'),
+        'blocked_terms' => [
+            'kill yourself',
+            'how to cheat',
+            'build a bomb',
+        ],
+    ],
+
 ];

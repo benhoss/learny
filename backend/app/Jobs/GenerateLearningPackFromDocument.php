@@ -5,6 +5,8 @@ namespace App\Jobs;
 use App\Models\Concept;
 use App\Models\Document;
 use App\Models\LearningPack;
+use App\Services\Safety\GenerationSafetyGuard;
+use App\Support\Ai\GenerationObservability;
 use App\Support\Documents\PipelineTelemetry;
 use App\Services\Generation\LearningPackGeneratorInterface;
 use App\Services\Schemas\JsonSchemaValidator;
@@ -27,7 +29,8 @@ class GenerateLearningPackFromDocument implements ShouldQueue
 
     public function handle(
         LearningPackGeneratorInterface $generator,
-        JsonSchemaValidator $validator
+        JsonSchemaValidator $validator,
+        GenerationSafetyGuard $safetyGuard
     ): void {
         $jobStart = microtime(true);
         $document = Document::find($this->documentId);
@@ -43,6 +46,18 @@ class GenerateLearningPackFromDocument implements ShouldQueue
             return;
         }
 
+        $run = GenerationObservability::startRun([
+            'feature_name' => 'learning_pack_generation',
+            'actor_type' => 'system',
+            'actor_ref' => (string) $document->user_id,
+            'child_profile_id' => (string) $document->child_profile_id,
+            'document_id' => (string) $document->_id,
+            'provider' => 'openrouter',
+            'model_name' => (string) config('prism.openrouter.text_model', 'unknown'),
+            'model_version' => (string) config('prism.openrouter.text_model', 'unknown'),
+            'prompt_template_version' => 'v1',
+        ]);
+
         try {
             PipelineTelemetry::transition($document, 'learning_pack_generation', 65);
             $document->save();
@@ -51,7 +66,33 @@ class GenerateLearningPackFromDocument implements ShouldQueue
 
             try {
                 $content = $generator->generate($document, $concepts);
-                $validator->validate($content, resource_path('schemas/learning_pack.json'));
+                GenerationObservability::recordArtifact($run, 'normalized_json', $content, 'learning_pack', 'v1');
+
+                try {
+                    $validator->validate($content, resource_path('schemas/learning_pack.json'));
+                    GenerationObservability::recordGuardrail($run, 'output_schema_validation', 'v1', 'pass');
+                } catch (Throwable $schemaError) {
+                    GenerationObservability::recordGuardrail($run, 'output_schema_validation', 'v1', 'fail', 70, ['schema_validation_failed'], ['message' => $schemaError->getMessage()]);
+                    GenerationObservability::complete($run, 'blocked', 70, $schemaError->getMessage());
+                    throw $schemaError;
+                }
+
+                $safetyResult = $safetyGuard->evaluate($content);
+                GenerationObservability::recordGuardrail(
+                    $run,
+                    'child_safety_terms',
+                    (string) config('learny.ai_guardrails.policy_version', 'v1'),
+                    (string) $safetyResult['result'],
+                    (int) ($safetyResult['risk_points'] ?? 0),
+                    (array) ($safetyResult['reason_codes'] ?? []),
+                    (array) ($safetyResult['details'] ?? [])
+                );
+
+                if (($safetyResult['result'] ?? 'pass') === 'fail') {
+                    $message = 'Safety guardrail blocked learning pack generation.';
+                    GenerationObservability::complete($run, 'blocked', (int) ($safetyResult['risk_points'] ?? 80), $message);
+                    throw new \RuntimeException($message);
+                }
 
                 $pack = LearningPack::create([
                     'user_id' => (string) $document->user_id,
@@ -76,10 +117,14 @@ class GenerateLearningPackFromDocument implements ShouldQueue
                 $document->save();
 
                 GenerateGamesFromLearningPack::dispatch((string) $pack->_id);
+                GenerationObservability::complete($run, 'served');
             } catch (Throwable $e) {
                 PipelineTelemetry::complete($document, 'failed', 'learning_pack_failed');
                 $document->ocr_error = $e->getMessage();
                 $document->save();
+                if (($run->final_status ?? null) === 'processing') {
+                    GenerationObservability::complete($run, 'error', 0, $e->getMessage());
+                }
                 throw $e;
             }
         } finally {

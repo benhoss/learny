@@ -5,6 +5,8 @@ namespace App\Jobs;
 use App\Models\Game;
 use App\Models\LearningPack;
 use App\Models\Document;
+use App\Services\Safety\GenerationSafetyGuard;
+use App\Support\Ai\GenerationObservability;
 use App\Support\Documents\PipelineTelemetry;
 use App\Services\Generation\GameGeneratorInterface;
 use App\Services\Schemas\JsonSchemaValidator;
@@ -25,7 +27,7 @@ class GenerateGamesFromLearningPack implements ShouldQueue
         $this->onQueue('games');
     }
 
-    public function handle(GameGeneratorInterface $generator, JsonSchemaValidator $validator): void
+    public function handle(GameGeneratorInterface $generator, JsonSchemaValidator $validator, GenerationSafetyGuard $safetyGuard): void
     {
         $jobStart = microtime(true);
         $pack = LearningPack::find($this->learningPackId);
@@ -54,9 +56,47 @@ class GenerateGamesFromLearningPack implements ShouldQueue
 
         try {
             foreach ($types as $type) {
+                $run = GenerationObservability::startRun([
+                    'feature_name' => 'game_generation_'.$type,
+                    'actor_type' => 'system',
+                    'actor_ref' => (string) $pack->user_id,
+                    'child_profile_id' => (string) $pack->child_profile_id,
+                    'document_id' => (string) $pack->document_id,
+                    'provider' => 'openrouter',
+                    'model_name' => (string) config('prism.openrouter.text_model', 'unknown'),
+                    'model_version' => (string) config('prism.openrouter.text_model', 'unknown'),
+                    'prompt_template_version' => 'v1',
+                ]);
+
                 try {
                     $payload = $generator->generate($pack, $type);
-                    $validator->validate($payload, resource_path("schemas/game_{$type}.json"));
+                    GenerationObservability::recordArtifact($run, 'normalized_json', $payload, 'game_'.$type, 'v1');
+
+                    try {
+                        $validator->validate($payload, resource_path("schemas/game_{$type}.json"));
+                        GenerationObservability::recordGuardrail($run, 'output_schema_validation', 'v1', 'pass');
+                    } catch (Throwable $schemaError) {
+                        GenerationObservability::recordGuardrail($run, 'output_schema_validation', 'v1', 'fail', 70, ['schema_validation_failed'], ['message' => $schemaError->getMessage()]);
+                        GenerationObservability::complete($run, 'blocked', 70, $schemaError->getMessage());
+                        throw $schemaError;
+                    }
+
+                    $safetyResult = $safetyGuard->evaluate($payload);
+                    GenerationObservability::recordGuardrail(
+                        $run,
+                        'child_safety_terms',
+                        (string) config('learny.ai_guardrails.policy_version', 'v1'),
+                        (string) $safetyResult['result'],
+                        (int) ($safetyResult['risk_points'] ?? 0),
+                        (array) ($safetyResult['reason_codes'] ?? []),
+                        (array) ($safetyResult['details'] ?? [])
+                    );
+
+                    if (($safetyResult['result'] ?? 'pass') === 'fail') {
+                        $message = 'Safety guardrail blocked game generation.';
+                        GenerationObservability::complete($run, 'blocked', (int) ($safetyResult['risk_points'] ?? 80), $message);
+                        throw new \RuntimeException($message);
+                    }
 
                     Game::create([
                         'user_id' => (string) $pack->user_id,
@@ -67,6 +107,8 @@ class GenerateGamesFromLearningPack implements ShouldQueue
                         'payload' => $payload,
                         'status' => 'ready',
                     ]);
+
+                    GenerationObservability::complete($run, 'served');
 
                     if ($document) {
                         $readyTypes = is_array($document->ready_game_types ?? null) ? $document->ready_game_types : [];
@@ -84,6 +126,10 @@ class GenerateGamesFromLearningPack implements ShouldQueue
                         $document->save();
                     }
                 } catch (Throwable $e) {
+                    if (($run->final_status ?? null) === 'processing') {
+                        GenerationObservability::complete($run, 'error', 0, $e->getMessage());
+                    }
+
                     if ($document) {
                         PipelineTelemetry::complete($document, 'failed', 'game_generation_failed');
                         $document->ocr_error = $e->getMessage();

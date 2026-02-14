@@ -25,7 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        Sentry\Laravel\Integration::handles($exceptions);
+        if (class_exists(\Sentry\Laravel\Integration::class)) {
+            \Sentry\Laravel\Integration::handles($exceptions);
+        }
 
         $exceptions->render(function (RuntimeException $e) {
             if (str_starts_with($e->getMessage(), 'Schema validation failed:')) {

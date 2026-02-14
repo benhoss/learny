@@ -9,4 +9,8 @@ class BackendConfig {
   static const childName = 'Alex';
   static const childGrade = '6th';
   static const disableOnboarding = false;
+  static const forceNoLocalIdentification = bool.fromEnvironment(
+    'FORCE_NO_LOCAL_IDENTIFICATION',
+    defaultValue: false,
+  );
 }

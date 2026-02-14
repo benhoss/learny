@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/app_theme.dart';
@@ -59,7 +60,23 @@ class _ReviewScreenState extends State<ReviewScreen> {
   @override
   void initState() {
     super.initState();
+    _loadSavedGrade();
     WidgetsBinding.instance.addPostFrameCallback((_) => _autoSuggestIfNeeded());
+  }
+
+  Future<void> _loadSavedGrade() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedGrade = prefs.getString('default_grade');
+    if (savedGrade != null && savedGrade.isNotEmpty && mounted) {
+      _gradeController.text = savedGrade;
+      setState(() {}); // Trigger rebuild for button state
+    }
+  }
+
+  Future<void> _saveGrade(String grade) async {
+    if (grade.trim().isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('default_grade', grade.trim());
   }
 
   void _autoSuggestIfNeeded() {
@@ -77,12 +94,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    // Grade is now optional  
     final hasContext =
         (_subjectController.text.trim().isNotEmpty ||
             _topicController.text.trim().isNotEmpty ||
             _goalController.text.trim().isNotEmpty) &&
-        _languageController.text.trim().isNotEmpty &&
-        _gradeController.text.trim().isNotEmpty;
+        _languageController.text.trim().isNotEmpty;
     final hasImages = state.pendingImages.isNotEmpty;
     return PlaceholderScreen(
       title: L10n.of(context).reviewScreenTitle,
@@ -209,6 +226,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 state.setPendingGameTypes(
                   List<String>.from(_selectedGameTypes),
                 );
+                _saveGrade(_gradeController.text); // Save for next time
                 state.generateQuizFromPendingImage();
                 Navigator.pushNamed(context, AppRoutes.processing);
               }

@@ -1601,6 +1601,11 @@ class AppState extends ChangeNotifier {
     }
 
     if (backend.token == null) {
+      if (BackendConfig.forceNoLocalIdentification) {
+        throw BackendException(
+          'Local identification is disabled (FORCE_NO_LOCAL_IDENTIFICATION=true).',
+        );
+      }
       try {
         final payload = await backend.login(
           email: _demoEmail,
@@ -1743,6 +1748,10 @@ class AppState extends ChangeNotifier {
   }
 
   Future<String> _guestInstallId() async {
+    if (BackendConfig.forceNoLocalIdentification) {
+      return '${DateTime.now().microsecondsSinceEpoch}-${Random().nextInt(1 << 20)}';
+    }
+
     const key = 'guest.installation_id';
     final prefs = await SharedPreferences.getInstance();
     final existing = prefs.getString(key);

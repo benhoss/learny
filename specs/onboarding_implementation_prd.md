@@ -8,6 +8,7 @@
   - `specs/onboarding_research_spec.md`
   - `specs/business_specs.md`
   - `specs/technical_specs.md`
+  - `specs/scan_first_onboarding_spec.md`
 
 ---
 
@@ -65,6 +66,7 @@ Learny needs an onboarding experience that helps children reach learning value q
 ### In scope
 - Role split entry (`child` / `parent`).
 - Child-first onboarding flow (profile minimum + avatar + first challenge).
+- Additive scan-first guest path (scan -> quiz -> post-quiz linking prompt), as defined in `specs/scan_first_onboarding_spec.md`.
 - Parent-first onboarding flow (signup + multi-child + linking + basic controls).
 - Parent-child linking via short-lived code/QR.
 - Resumable onboarding state.
@@ -86,6 +88,10 @@ Learny needs an onboarding experience that helps children reach learning value q
 4. Child completes first micro-learning challenge.
 5. Optional parent-link prompt is shown (skip allowed).
 6. Child is routed to normal app home.
+
+Scan-first additive variant:
+- Instead of profile-first as step 2, the child may start with homework scan -> generated quiz -> results.
+- Profile/linking prompts appear post-value, while maintaining existing age/consent and supervision constraints.
 
 ## 7.2 Parent-first flow (secondary)
 1. User selects **“I’m a parent/guardian.”**
@@ -175,6 +181,22 @@ Learny needs an onboarding experience that helps children reach learning value q
 1. Age-gate and consent constraints are enforced according to configured market policy.
 2. Onboarding resumes after interruption without step loss.
 3. Required events fire once per completed step.
+
+---
+
+## 12A. Scan-First Variant Integration (Additive)
+The scan-first onboarding variant is implemented as an additive path within this PRD scope.
+
+### Variant contract
+1. First mandatory user action in child-first path can be homework scan instead of profile setup.
+2. Account creation/linking prompt appears after first completed quiz and remains skippable initially.
+3. Existing age/consent, parent-supervision, and analytics guardrails remain mandatory.
+4. Guest artifacts must be mergeable into child accounts via idempotent linking.
+
+### Variant acceptance checks
+- Child can complete first quiz from scan flow without auth blocker.
+- `guest_session_linked` can be correlated to later `child_profile_created` / linked parent events.
+- Parent linking remains available after first value moment.
 
 ---
 

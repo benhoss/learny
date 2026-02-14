@@ -102,6 +102,7 @@ Mobile App (Flutter / React Native)
 - Personalized Learner Profile 2.0: see `specs/personalized_learner_profile_2_0_spec.md`.
 - School Results Hub: see `specs/school_results_hub_spec.md`.
 - Onboarding Implementation PRD: see `specs/onboarding_implementation_prd.md`.
+- Scan-First Onboarding Specification: see `specs/scan_first_onboarding_spec.md`.
 - Smart Notifications & Communications: see `specs/notifications_and_communications_proposal.md`.
 - Public Websites Briefing Guideline: see `specs/public_websites_briefing_guideline.md`.
 - AI Generation Observability & Guardrails: see `specs/ai_generation_observability_guardrails_spec.md`.

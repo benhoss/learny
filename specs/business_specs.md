@@ -52,6 +52,7 @@ The product aims to teach children **how to learn with AI**, not how to cheat.
 - Parent onboarding must support creating and supervising one or more child accounts.
 - Detailed onboarding recommendations: see `specs/onboarding_research_spec.md`.
 - Implementation PRD for execution scope and rollout: see `specs/onboarding_implementation_prd.md`.
+- Scan-first onboarding strategy (start with homework scan before account creation): see `specs/scan_first_onboarding_spec.md`.
 
 ---
 

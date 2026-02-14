@@ -20,7 +20,7 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
   String _grade = _grades[1];
   String _language = _languages.first;
 
-  Future<void> _continue() async {
+  Future<void> _continueWithDemoQuiz() async {
     final state = AppStateScope.of(context);
     await state.saveOnboardingStep(
       step: 'child_avatar',
@@ -35,6 +35,13 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
 
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, AppRoutes.createProfile);
+  }
+
+  Future<void> _startScanNow() async {
+    final state = AppStateScope.of(context);
+    await state.startScanFirstOnboarding();
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, AppRoutes.upload);
   }
 
   @override
@@ -64,7 +71,10 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            const Text('Three quick inputs, then your first challenge.'),
+            const Text(
+              'Start by scanning your own homework for a relevant quiz. '
+              'No document right now? Use the demo quiz.',
+            ),
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
               initialValue: _ageBracket,
@@ -106,7 +116,15 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
                   setState(() => _language = value ?? _language),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(onPressed: _continue, child: const Text('Continue')),
+            ElevatedButton(
+              onPressed: _startScanNow,
+              child: const Text('Scan my document now'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: _continueWithDemoQuiz,
+              child: const Text('No document: try demo quiz'),
+            ),
           ],
         ),
       ),

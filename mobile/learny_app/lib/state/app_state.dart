@@ -241,6 +241,16 @@ class AppState extends ChangeNotifier {
       onboardingCompletedSteps = <String>{};
       onboardingTrackedEvents = <String>{};
     }
+
+    if (BackendConfig.forceNoLocalIdentification) {
+      onboardingComplete = false;
+      onboardingRole = '';
+      onboardingStep = 'role_entry';
+      onboardingCheckpoints = {};
+      onboardingCompletedSteps = <String>{};
+      onboardingTrackedEvents = <String>{};
+    }
+
     onboardingHydrated = true;
     notifyListeners();
 

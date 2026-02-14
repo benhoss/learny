@@ -245,7 +245,8 @@ class AppState extends ChangeNotifier {
     notifyListeners();
 
     if (_initializeBackendSessionRequested &&
-        (onboardingComplete || onboardingRole.isNotEmpty)) {
+        (onboardingComplete || onboardingRole.isNotEmpty) &&
+        !BackendConfig.forceNoLocalIdentification) {
       _initializeBackendSession();
     }
   }
@@ -362,6 +363,9 @@ class AppState extends ChangeNotifier {
   }
 
   void _initializeBackendSession() {
+    if (BackendConfig.forceNoLocalIdentification && !isScanFirstOnboarding) {
+      return;
+    }
     if (_backendSessionInitializing || _backendSessionReady) {
       return;
     }
@@ -401,7 +405,8 @@ class AppState extends ChangeNotifier {
     onboardingStep = role == 'parent' ? 'parent_setup' : 'child_profile';
     onboardingCompletedSteps = <String>{};
     onboardingCheckpoints = <String, dynamic>{};
-    if (_initializeBackendSessionRequested) {
+    if (_initializeBackendSessionRequested &&
+        !BackendConfig.forceNoLocalIdentification) {
       _initializeBackendSession();
     }
     await _trackOnboardingEvent(
@@ -498,7 +503,8 @@ class AppState extends ChangeNotifier {
     }
 
     onboardingComplete = true;
-    if (_initializeBackendSessionRequested) {
+    if (_initializeBackendSessionRequested &&
+        !BackendConfig.forceNoLocalIdentification) {
       _initializeBackendSession();
     }
     await _persistOnboardingState();

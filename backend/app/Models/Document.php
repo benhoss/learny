@@ -13,6 +13,9 @@ class Document extends Model
     protected $fillable = [
         'user_id',
         'child_profile_id',
+        'owner_type',
+        'owner_guest_session_id',
+        'owner_child_id',
         'status',
         'title',
         'original_filename',
@@ -62,6 +65,8 @@ class Document extends Model
 
     protected $casts = [
         'size_bytes' => 'integer',
+        'owner_guest_session_id' => 'string',
+        'owner_child_id' => 'string',
         'processed_at' => 'datetime',
         'storage_paths' => 'array',
         'mime_types' => 'array',
@@ -81,6 +86,12 @@ class Document extends Model
         'collections' => 'array',
         'ai_confidence' => 'float',
         'user_override' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'owner_type' => 'child',
+        'owner_guest_session_id' => null,
+        'owner_child_id' => null,
     ];
 
     public function childProfile()

@@ -210,6 +210,9 @@ class GameResultController extends Controller
             'game_id' => (string) $game->_id,
         ], [
             'user_id' => (string) Auth::guard('api')->id(),
+            'owner_type' => (string) ($game->owner_type ?: 'child'),
+            'owner_child_id' => (string) $child->_id,
+            'owner_guest_session_id' => $game->owner_guest_session_id,
             'learning_pack_id' => (string) $packId,
             'game_type' => $game->type,
             'schema_version' => $game->schema_version,

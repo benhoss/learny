@@ -49,6 +49,9 @@ class GameController extends Controller
         $game = Game::create([
             'user_id' => (string) Auth::guard('api')->id(),
             'child_profile_id' => (string) $child->_id,
+            'owner_type' => (string) ($pack->owner_type ?: 'child'),
+            'owner_child_id' => (string) $child->_id,
+            'owner_guest_session_id' => $pack->owner_guest_session_id,
             'learning_pack_id' => (string) $pack->_id,
             'type' => $data['type'],
             'schema_version' => 'v1',
@@ -100,6 +103,9 @@ class GameController extends Controller
         $retryGame = Game::create([
             'user_id' => (string) Auth::guard('api')->id(),
             'child_profile_id' => (string) $child->_id,
+            'owner_type' => (string) ($game->owner_type ?: 'child'),
+            'owner_child_id' => (string) $child->_id,
+            'owner_guest_session_id' => $game->owner_guest_session_id,
             'learning_pack_id' => (string) $packId,
             'type' => $game->type,
             'schema_version' => 'v1',

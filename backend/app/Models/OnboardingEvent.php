@@ -17,6 +17,7 @@ class OnboardingEvent extends Model
         'event_name',
         'step',
         'event_key',
+        'guest_session_id',
         'occurred_at',
         'metadata',
     ];

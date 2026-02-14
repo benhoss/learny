@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\LearningMemoryEvent;
 use App\Models\MasteryProfile;
 use App\Models\RevisionSession;
+use App\Models\GuestSession;
 use App\Services\Revision\RevisionComposer;
 use App\Services\Translator;
 use Illuminate\Http\JsonResponse;
@@ -21,12 +22,18 @@ class RevisionSessionController extends Controller
     {
         $child = $this->findOwnedChild($childId);
         $limit = max(3, min(10, (int) $request->integer('limit', 5)));
+        $guestSession = GuestSession::where('guest_user_id', (string) Auth::guard('api')->id())
+            ->where('guest_child_id', (string) $child->_id)
+            ->first();
 
         $items = $composer->compose($child, $limit);
 
         $session = RevisionSession::create([
             'user_id' => (string) Auth::guard('api')->id(),
             'child_profile_id' => (string) $child->_id,
+            'owner_type' => $guestSession ? 'guest' : 'child',
+            'owner_child_id' => (string) $child->_id,
+            'owner_guest_session_id' => $guestSession?->session_id,
             'source' => 'mixed',
             'status' => 'active',
             'started_at' => now(),

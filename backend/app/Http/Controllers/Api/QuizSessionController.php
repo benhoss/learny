@@ -85,6 +85,9 @@ class QuizSessionController extends Controller
         $session = QuizSession::create([
             'user_id' => (string) Auth::guard('api')->id(),
             'child_profile_id' => (string) $child->_id,
+            'owner_type' => (string) ($game->owner_type ?: 'child'),
+            'owner_child_id' => (string) $child->_id,
+            'owner_guest_session_id' => $game->owner_guest_session_id,
             'learning_pack_id' => (string) $packId,
             'game_id' => (string) $game->_id,
             'status' => 'active',

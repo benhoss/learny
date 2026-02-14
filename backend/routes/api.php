@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\DocumentScanController;
 use App\Http\Controllers\Api\DocumentMetadataSuggestionController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\GameResultController;
+use App\Http\Controllers\Api\GuestSessionController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\HomeRecommendationController;
 use App\Http\Controllers\Api\LearningPackController;
@@ -30,6 +31,10 @@ Route::prefix('v1')->group(function () {
     Route::post('/onboarding/link-tokens/consume', [OnboardingController::class, 'consumeLinkToken'])
         ->middleware('throttle:api-write');
     Route::get('/onboarding/policy', [OnboardingController::class, 'policy']);
+    Route::post('/guest/session', [GuestSessionController::class, 'create'])
+        ->middleware('throttle:api-write');
+    Route::post('/guest/events', [GuestSessionController::class, 'trackEvent'])
+        ->middleware('throttle:api-write');
 
     Route::middleware(['auth:api', 'throttle:api'])->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
@@ -100,6 +105,7 @@ Route::prefix('v1')->group(function () {
             Route::put('/onboarding/state', [OnboardingController::class, 'updateState']);
             Route::post('/onboarding/events', [OnboardingController::class, 'trackEvent']);
             Route::post('/onboarding/link-tokens', [OnboardingController::class, 'createLinkToken']);
+            Route::post('/guest/link-account', [GuestSessionController::class, 'linkAccount']);
             Route::get('children/{child}/devices', [OnboardingController::class, 'listDevices']);
             Route::delete('children/{child}/devices/{device}', [OnboardingController::class, 'revokeDevice']);
         });

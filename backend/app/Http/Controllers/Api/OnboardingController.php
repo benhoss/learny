@@ -25,6 +25,15 @@ class OnboardingController extends Controller
         'child_profile_created',
         'first_learning_started',
         'first_learning_completed',
+        'scan_started',
+        'scan_uploaded',
+        'quiz_generated',
+        'quiz_completed',
+        'link_prompt_shown',
+        'link_prompt_accepted',
+        'link_prompt_skipped',
+        'guest_session_started',
+        'guest_session_linked',
         'parent_signup_completed',
         'child_link_code_generated',
         'child_device_linked',
@@ -109,7 +118,7 @@ class OnboardingController extends Controller
     public function trackEvent(Request $request): JsonResponse
     {
         $payload = $request->validate([
-            'role' => ['required', 'string', 'in:child,parent'],
+            'role' => ['required', 'string', 'in:child,parent,guest'],
             'event_name' => ['required', 'string', 'in:'.implode(',', self::EVENT_OPTIONS)],
             'step' => ['nullable', 'string', 'max:100'],
             'instance_id' => ['nullable', 'string', 'max:100'],

@@ -14,6 +14,9 @@ class QuizSession extends Model
     protected $fillable = [
         'user_id',
         'child_profile_id',
+        'owner_type',
+        'owner_guest_session_id',
+        'owner_child_id',
         'learning_pack_id',
         'game_id',
         'status',
@@ -40,5 +43,11 @@ class QuizSession extends Model
         'last_interaction_at' => 'datetime',
         'paused_at' => 'datetime',
         'completed_at' => 'datetime',
+    ];
+
+    protected $attributes = [
+        'owner_type' => 'child',
+        'owner_guest_session_id' => null,
+        'owner_child_id' => null,
     ];
 }

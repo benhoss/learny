@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../routes/app_routes.dart';
 import '../../state/app_state_scope.dart';
 import '../../theme/app_assets.dart';
@@ -44,6 +43,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         ? AppRoutes.parentOnboarding
         : AppRoutes.howItWorks;
     Navigator.pushReplacementNamed(context, target);
+  }
+
+  Future<void> _startScanFirst() async {
+    final state = AppStateScope.of(context);
+    await state.startScanFirstOnboarding();
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, AppRoutes.upload);
   }
 
   Future<void> _debugSkip() async {
@@ -113,6 +119,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   child: ElevatedButton(
                     onPressed: () => _chooseRole('child'),
                     child: const Text("I'm a learner"),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _startScanFirst,
+                    child: const Text('Scan homework now'),
                   ),
                 ),
                 const SizedBox(height: 12),

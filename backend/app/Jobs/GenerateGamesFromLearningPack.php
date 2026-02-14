@@ -131,6 +131,9 @@ class GenerateGamesFromLearningPack implements ShouldQueue
                     Game::create([
                         'user_id' => (string) $pack->user_id,
                         'child_profile_id' => (string) $pack->child_profile_id,
+                        'owner_type' => (string) ($pack->owner_type ?: 'child'),
+                        'owner_guest_session_id' => $pack->owner_guest_session_id,
+                        'owner_child_id' => $pack->owner_child_id ?: (string) $pack->child_profile_id,
                         'learning_pack_id' => (string) $pack->_id,
                         'type' => $type,
                         'schema_version' => 'v1',

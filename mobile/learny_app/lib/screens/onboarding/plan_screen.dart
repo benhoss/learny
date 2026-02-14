@@ -16,6 +16,7 @@ class _PlanScreenState extends State<PlanScreen> {
   final _deviceController = TextEditingController(text: 'My phone');
   bool _busy = false;
   String? _error;
+  bool _promptTracked = false;
 
   @override
   void dispose() {
@@ -26,6 +27,7 @@ class _PlanScreenState extends State<PlanScreen> {
 
   Future<void> _skip() async {
     final state = AppStateScope.of(context);
+    await state.markLinkPromptSkipped();
     await state.saveOnboardingStep(
       step: 'completed',
       completedStep: 'parent_link_prompt',
@@ -49,6 +51,7 @@ class _PlanScreenState extends State<PlanScreen> {
       _error = null;
     });
     final state = AppStateScope.of(context);
+    await state.markLinkPromptAccepted(action: 'link_parent');
     final ok = await state.linkChildDeviceWithCode(
       code: _codeController.text.trim(),
       deviceName: _deviceController.text.trim().isEmpty
@@ -79,8 +82,45 @@ class _PlanScreenState extends State<PlanScreen> {
     }
   }
 
+  Future<void> _saveProgress() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final state = AppStateScope.of(context);
+    await state.markLinkPromptAccepted(action: 'save_progress');
+    final ok = await state.completeOnboarding(force: true);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (!ok) {
+      setState(() {
+        _error =
+            'Parent consent is required for this age group before finishing.';
+      });
+      return;
+    }
+    Navigator.pushReplacementNamed(context, AppRoutes.home);
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (!_promptTracked) {
+      _promptTracked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        AppStateScope.of(context).trackOnboardingEvent(
+          role: AppStateScope.of(context).isScanFirstOnboarding
+              ? 'guest'
+              : 'child',
+          eventName: 'link_prompt_shown',
+          step: 'parent_link_prompt',
+          instanceId: AppStateScope.of(context)
+              .scanFirstCompletedSessions
+              .toString(),
+        );
+      });
+    }
+
     return GradientScaffold(
       gradient: LearnyGradients.hero,
       child: Padding(
@@ -107,8 +147,15 @@ class _PlanScreenState extends State<PlanScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            const Text('You can skip this now and do it later in settings.'),
+            const Text(
+              'Choose one: save progress, link with parent, or maybe later.',
+            ),
             const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _busy ? null : _saveProgress,
+              child: const Text('Save my progress'),
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: _codeController,
               keyboardType: TextInputType.number,
@@ -125,7 +172,7 @@ class _PlanScreenState extends State<PlanScreen> {
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: _busy ? null : _linkNow,
-              child: Text(_busy ? 'Linking...' : 'Link device now'),
+              child: Text(_busy ? 'Linking...' : 'Link with parent'),
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),
@@ -134,7 +181,7 @@ class _PlanScreenState extends State<PlanScreen> {
             const SizedBox(height: 8),
             TextButton(
               onPressed: _busy ? null : _skip,
-              child: const Text('Skip for now'),
+              child: const Text('Maybe later'),
             ),
           ],
         ),

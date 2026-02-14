@@ -113,6 +113,9 @@ class GenerateLearningPackFromDocument implements ShouldQueue
                 $pack = LearningPack::create([
                     'user_id' => (string) $document->user_id,
                     'child_profile_id' => (string) $document->child_profile_id,
+                    'owner_type' => (string) ($document->owner_type ?: 'child'),
+                    'owner_guest_session_id' => $document->owner_guest_session_id,
+                    'owner_child_id' => $document->owner_child_id ?: (string) $document->child_profile_id,
                     'document_id' => (string) $document->_id,
                     'title' => $document->original_filename ?? 'Learning Pack',
                     'summary' => $content['summary'] ?? null,

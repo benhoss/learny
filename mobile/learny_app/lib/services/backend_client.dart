@@ -14,6 +14,77 @@ class BackendClient {
 
   String? token;
 
+  Future<Map<String, dynamic>> createGuestSession({
+    required String deviceSignature,
+    String? instanceId,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/guest/session'),
+      headers: _jsonHeaders(includeContentType: true),
+      body: jsonEncode({
+        'device_signature': deviceSignature,
+        if (instanceId != null) 'instance_id': instanceId,
+      }),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw BackendException('Create guest session failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> linkGuestSessionAccount({
+    required String guestSessionId,
+    required String childId,
+    String? instanceId,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/guest/link-account'),
+      headers: _authHeaders(includeContentType: true),
+      body: jsonEncode({
+        'guest_session_id': guestSessionId,
+        'child_id': childId,
+        if (instanceId != null) 'instance_id': instanceId,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Link guest account failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> trackGuestEvent({
+    required String guestSessionId,
+    required String eventName,
+    String? step,
+    String? instanceId,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$baseUrl/api/v1/guest/events'),
+      headers: _jsonHeaders(includeContentType: true),
+      body: jsonEncode({
+        'guest_session_id': guestSessionId,
+        'event_name': eventName,
+        if (step != null) 'step': step,
+        if (instanceId != null) 'instance_id': instanceId,
+        if (metadata != null) 'metadata': metadata,
+      }),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw BackendException('Track guest event failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> onboardingPolicy({String? market}) async {
     final uri = Uri.parse('$baseUrl/api/v1/onboarding/policy');
     final target = market == null
@@ -297,6 +368,7 @@ class BackendClient {
     String? learningGoal,
     String? contextText,
     List<String>? requestedGameTypes,
+    String? guestSessionId,
   }) async {
     final request = http.MultipartRequest(
       'POST',
@@ -343,6 +415,9 @@ class BackendClient {
             requestedGameTypes[index];
       }
     }
+    if (guestSessionId != null && guestSessionId.isNotEmpty) {
+      request.fields['guest_session_id'] = guestSessionId;
+    }
 
     final streamed = await request.send();
     final response = await http.Response.fromStream(streamed);
@@ -369,6 +444,7 @@ class BackendClient {
     String? learningGoal,
     String? contextText,
     List<String>? requestedGameTypes,
+    String? guestSessionId,
   }) async {
     final request = http.MultipartRequest(
       'POST',
@@ -423,6 +499,9 @@ class BackendClient {
         request.fields['requested_game_types[$index]'] =
             requestedGameTypes[index];
       }
+    }
+    if (guestSessionId != null && guestSessionId.isNotEmpty) {
+      request.fields['guest_session_id'] = guestSessionId;
     }
 
     final streamed = await request.send();

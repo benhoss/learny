@@ -8,6 +8,7 @@ use App\Jobs\QuickScanDocumentMetadata;
 use App\Jobs\GenerateLearningPackFromDocument;
 use App\Models\ChildProfile;
 use App\Models\Document;
+use App\Models\GuestSession;
 use App\Support\Documents\FacetCanonicalizer;
 use App\Support\Documents\PipelineTelemetry;
 use Illuminate\Http\JsonResponse;
@@ -59,6 +60,7 @@ class DocumentController extends Controller
                 'string',
                 'in:flashcards,quiz,matching,true_false,fill_blank,ordering,multiple_select,short_answer',
             ],
+            'guest_session_id' => ['nullable', 'string', 'max:60'],
         ]);
 
         if (blank($data['subject'] ?? null) &&
@@ -112,9 +114,25 @@ class DocumentController extends Controller
             $languageFacet = FacetCanonicalizer::canonicalizeLanguage($topicFacet);
         }
 
+        $guestOwnership = null;
+        if (filled($data['guest_session_id'] ?? null)) {
+            $guestSession = GuestSession::where('session_id', (string) $data['guest_session_id'])->first();
+            if (! $guestSession ||
+                (string) ($guestSession->guest_user_id ?? '') !== (string) Auth::guard('api')->id() ||
+                (string) ($guestSession->guest_child_id ?? '') !== (string) $child->_id) {
+                throw ValidationException::withMessages([
+                    'guest_session_id' => ['Invalid guest session context.'],
+                ]);
+            }
+            $guestOwnership = (string) $guestSession->session_id;
+        }
+
         $document = Document::create([
             'user_id' => (string) Auth::guard('api')->id(),
             'child_profile_id' => (string) $child->_id,
+            'owner_type' => $guestOwnership ? 'guest' : 'child',
+            'owner_child_id' => (string) $child->_id,
+            'owner_guest_session_id' => $guestOwnership,
             'status' => 'queued',
             'original_filename' => $originalFilename ?? 'document',
             'storage_disk' => config('filesystems.default', 's3'),

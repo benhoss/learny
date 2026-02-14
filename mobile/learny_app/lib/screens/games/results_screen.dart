@@ -25,6 +25,7 @@ class ResultsScreen extends StatelessWidget {
     final correct = outcome?.correctAnswers ?? session?.correctCount ?? 0;
     final roundXp = outcome?.xpEarned ?? (correct * 5);
     final isPackSession = state.inPackSession;
+    final shouldShowLinkPrompt = state.shouldShowPostQuizLinkPrompt;
     final hasRetry =
         !isPackSession && (session?.incorrectIndices.isNotEmpty ?? false);
     final tokens = context.tokens;
@@ -98,6 +99,10 @@ class ResultsScreen extends StatelessWidget {
             delay: const Duration(milliseconds: 700),
             child: PressableScale(
               onTap: () {
+                if (shouldShowLinkPrompt) {
+                  Navigator.pushNamed(context, AppRoutes.plan);
+                  return;
+                }
                 if (isPackSession) {
                   state.completePackSession();
                   state.resetQuiz();
@@ -124,7 +129,11 @@ class ResultsScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      isPackSession ? L10n.of(context).resultsFinishSession : L10n.of(context).resultsContinue,
+                      shouldShowLinkPrompt
+                          ? 'Save progress / link next'
+                          : (isPackSession
+                                ? L10n.of(context).resultsFinishSession
+                                : L10n.of(context).resultsContinue),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,

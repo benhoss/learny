@@ -85,6 +85,9 @@ class LearningPackController extends Controller
         $pack = LearningPack::create([
             'user_id' => (string) Auth::guard('api')->id(),
             'child_profile_id' => (string) $child->_id,
+            'owner_type' => (string) ($document->owner_type ?: 'child'),
+            'owner_child_id' => (string) $child->_id,
+            'owner_guest_session_id' => $document->owner_guest_session_id,
             'document_id' => (string) $document->_id,
             'title' => $data['title'],
             'summary' => $data['summary'] ?? null,

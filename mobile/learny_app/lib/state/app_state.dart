@@ -413,6 +413,32 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> startScanFirstOnboarding() async {
+    await selectOnboardingRole('child');
+
+    final guestSessionId = await _ensureGuestSession();
+    final checkpoints = <String, dynamic>{
+      'scan_first': true,
+      'guest_session_id': guestSessionId,
+      'scan_first_completed_sessions':
+          (onboardingCheckpoints['scan_first_completed_sessions'] as num?)
+              ?.toInt() ??
+          0,
+    };
+
+    await saveOnboardingStep(
+      step: 'guest_prelink',
+      checkpoint: checkpoints,
+      completedStep: 'guest_prelink',
+    );
+    await _trackOnboardingEvent(
+      role: 'guest',
+      eventName: 'scan_started',
+      step: 'guest_prelink',
+      instanceId: guestSessionId,
+    );
+  }
+
   Future<void> saveOnboardingStep({
     required String step,
     Map<String, dynamic>? checkpoint,
@@ -613,6 +639,7 @@ class AppState extends ChangeNotifier {
         step: 'parent_link_prompt',
         completedStep: 'parent_linked',
       );
+      await _linkGuestSessionToChildIfPresent();
       return true;
     } catch (_) {
       return false;
@@ -645,18 +672,33 @@ class AppState extends ChangeNotifier {
     onboardingTrackedEvents.add(dedupeKey);
     await _persistOnboardingState();
 
-    if (backend.token == null) {
+    if (backend.token == null && role != 'guest') {
       return;
     }
 
     try {
-      await backend.trackOnboardingEvent(
-        role: role,
-        eventName: eventName,
-        step: step,
-        instanceId: instanceId,
-        metadata: metadata,
-      );
+      if (role == 'guest') {
+        final guestSessionId =
+            onboardingCheckpoints['guest_session_id']?.toString();
+        if (guestSessionId == null || guestSessionId.isEmpty) {
+          return;
+        }
+        await backend.trackGuestEvent(
+          guestSessionId: guestSessionId,
+          eventName: eventName,
+          step: step,
+          instanceId: instanceId,
+          metadata: metadata,
+        );
+      } else {
+        await backend.trackOnboardingEvent(
+          role: role,
+          eventName: eventName,
+          step: step,
+          instanceId: instanceId,
+          metadata: metadata,
+        );
+      }
     } catch (_) {
       // Ignore telemetry failures.
     }
@@ -728,6 +770,8 @@ class AppState extends ChangeNotifier {
       return AppRoutes.parentOnboarding;
     }
     switch (onboardingStep) {
+      case 'guest_prelink':
+        return AppRoutes.upload;
       case 'child_profile':
         return AppRoutes.howItWorks;
       case 'child_avatar':
@@ -739,6 +783,57 @@ class AppState extends ChangeNotifier {
       default:
         return AppRoutes.welcome;
     }
+  }
+
+  bool get isScanFirstOnboarding =>
+      onboardingCheckpoints['scan_first'] == true;
+
+  int get scanFirstCompletedSessions =>
+      (onboardingCheckpoints['scan_first_completed_sessions'] as num?)
+          ?.toInt() ??
+      0;
+
+  bool get hasSkippedInitialLinkPrompt =>
+      onboardingCheckpoints['link_prompt_skipped_once'] == true;
+
+  bool get shouldShowPostQuizLinkPrompt {
+    if (!isScanFirstOnboarding) {
+      return false;
+    }
+    if (onboardingCompletedSteps.contains('parent_linked')) {
+      return false;
+    }
+    final completed = scanFirstCompletedSessions;
+    if (completed >= 1 && !hasSkippedInitialLinkPrompt) {
+      return true;
+    }
+    if (completed >= 2 && hasSkippedInitialLinkPrompt) {
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> markLinkPromptSkipped() async {
+    await _trackOnboardingEvent(
+      role: isScanFirstOnboarding ? 'guest' : 'child',
+      eventName: 'link_prompt_skipped',
+      step: 'parent_link_prompt',
+    );
+    onboardingCheckpoints = {
+      ...onboardingCheckpoints,
+      'link_prompt_skipped_once': true,
+    };
+    await _persistOnboardingState();
+    notifyListeners();
+  }
+
+  Future<void> markLinkPromptAccepted({String action = 'link_parent'}) async {
+    await _trackOnboardingEvent(
+      role: isScanFirstOnboarding ? 'guest' : 'child',
+      eventName: 'link_prompt_accepted',
+      step: 'parent_link_prompt',
+      metadata: {'action': action},
+    );
   }
 
   void selectPack(String packId) {
@@ -1340,6 +1435,13 @@ class AppState extends ChangeNotifier {
     notifyListeners();
 
     try {
+      if (isScanFirstOnboarding) {
+        await _trackOnboardingEvent(
+          role: 'guest',
+          eventName: 'scan_uploaded',
+          step: 'guest_prelink',
+        );
+      }
       final session = await _ensureBackendSession();
       final document = await backend.uploadDocument(
         childId: session.childId,
@@ -1355,6 +1457,9 @@ class AppState extends ChangeNotifier {
         learningGoal: pendingLearningGoal,
         contextText: pendingContextText,
         requestedGameTypes: pendingGameTypes,
+        guestSessionId: isScanFirstOnboarding
+            ? onboardingCheckpoints['guest_session_id']?.toString()
+            : null,
       );
       lastDocumentId = _extractId(document);
 
@@ -1371,6 +1476,13 @@ class AppState extends ChangeNotifier {
         return;
       }
       generationStatus = 'Quiz ready!';
+      if (isScanFirstOnboarding) {
+        await _trackOnboardingEvent(
+          role: 'guest',
+          eventName: 'quiz_generated',
+          step: 'guest_prelink',
+        );
+      }
       processingProgressPercent = 100;
       processingStageLabel = 'Ready';
       pipelineStage = 'ready';
@@ -1413,6 +1525,13 @@ class AppState extends ChangeNotifier {
     notifyListeners();
 
     try {
+      if (isScanFirstOnboarding) {
+        await _trackOnboardingEvent(
+          role: 'guest',
+          eventName: 'scan_uploaded',
+          step: 'guest_prelink',
+        );
+      }
       final session = await _ensureBackendSession();
       final document = await backend.uploadDocumentBatch(
         childId: session.childId,
@@ -1428,6 +1547,9 @@ class AppState extends ChangeNotifier {
         learningGoal: pendingLearningGoal,
         contextText: pendingContextText,
         requestedGameTypes: pendingGameTypes,
+        guestSessionId: isScanFirstOnboarding
+            ? onboardingCheckpoints['guest_session_id']?.toString()
+            : null,
       );
       lastDocumentId = _extractId(document);
 
@@ -1444,6 +1566,13 @@ class AppState extends ChangeNotifier {
         return;
       }
       generationStatus = 'Quiz ready!';
+      if (isScanFirstOnboarding) {
+        await _trackOnboardingEvent(
+          role: 'guest',
+          eventName: 'quiz_generated',
+          step: 'guest_prelink',
+        );
+      }
       processingProgressPercent = 100;
       processingStageLabel = 'Ready';
       pipelineStage = 'ready';
@@ -1467,6 +1596,10 @@ class AppState extends ChangeNotifier {
   }
 
   Future<_BackendSession> _ensureBackendSession() async {
+    if (isScanFirstOnboarding && backend.token == null) {
+      await _ensureGuestSession();
+    }
+
     if (backend.token == null) {
       try {
         final payload = await backend.login(
@@ -1548,6 +1681,78 @@ class AppState extends ChangeNotifier {
     }
 
     return _BackendSession(childId: childId);
+  }
+
+  Future<String> _ensureGuestSession() async {
+    final existing = onboardingCheckpoints['guest_session_id']?.toString();
+    if (existing != null && existing.isNotEmpty && backend.token != null) {
+      return existing;
+    }
+
+    final installId = await _guestInstallId();
+    final deviceSignature = 'mobile-install-$installId';
+    try {
+      final data = await backend.createGuestSession(
+        deviceSignature: deviceSignature,
+      );
+      final sessionId = data['guest_session_id']?.toString();
+      if (sessionId != null && sessionId.isNotEmpty) {
+        final token = data['access_token']?.toString();
+        final guestChildId = data['guest_child_id']?.toString();
+        if (token != null && token.isNotEmpty) {
+          backend.token = token;
+        }
+        if (guestChildId != null && guestChildId.isNotEmpty) {
+          backendChildId = guestChildId;
+        }
+        onboardingCheckpoints = {
+          ...onboardingCheckpoints,
+          'scan_first': true,
+          'guest_session_id': sessionId,
+        };
+        await _persistOnboardingState();
+        return sessionId;
+      }
+    } catch (_) {
+      // Keep a local fallback id so flow can proceed when backend is offline.
+    }
+    final seed = DateTime.now().microsecondsSinceEpoch.toString();
+    return 'guest-local-$seed';
+  }
+
+  Future<void> _linkGuestSessionToChildIfPresent() async {
+    final guestSessionId = onboardingCheckpoints['guest_session_id']?.toString();
+    final childId = backendChildId;
+    if (guestSessionId == null || guestSessionId.isEmpty || childId == null) {
+      return;
+    }
+
+    try {
+      await backend.linkGuestSessionAccount(
+        guestSessionId: guestSessionId,
+        childId: childId,
+      );
+      await _trackOnboardingEvent(
+        role: 'guest',
+        eventName: 'guest_session_linked',
+        step: 'parent_link_prompt',
+      );
+    } catch (_) {
+      // Linking migration is retriable and should not block onboarding.
+    }
+  }
+
+  Future<String> _guestInstallId() async {
+    const key = 'guest.installation_id';
+    final prefs = await SharedPreferences.getInstance();
+    final existing = prefs.getString(key);
+    if (existing != null && existing.isNotEmpty) {
+      return existing;
+    }
+
+    final generated = '${DateTime.now().microsecondsSinceEpoch}-${Random().nextInt(1 << 20)}';
+    await prefs.setString(key, generated);
+    return generated;
   }
 
   Future<void> _hydrateFromBackend() async {
@@ -1698,11 +1903,22 @@ class AppState extends ChangeNotifier {
   void _setGamePayloadsFromBackendList(List<Map<String, dynamic>> games) {
     final payloadsByType = <String, Map<String, dynamic>>{};
     final idsByType = <String, String>{};
+    final allGameTypes = <String>[];
+    
     for (final entry in games) {
       final status = entry['status']?.toString();
       final type = entry['type']?.toString();
       final payload = entry['payload'];
       final id = _extractId(entry);
+      
+      // Track all game types (even if not ready yet)
+      if (type != null) {
+        if (!allGameTypes.contains(type)) {
+          allGameTypes.add(type);
+        }
+      }
+      
+      // Only set payload for ready games
       if (status == 'ready' &&
           type != null &&
           payload is Map<String, dynamic>) {
@@ -1712,11 +1928,15 @@ class AppState extends ChangeNotifier {
         }
       }
     }
+    
     gamePayloads = payloadsByType;
     gameIds = idsByType;
     flashcardsPayload = payloadsByType['flashcards'];
     matchingPayload = payloadsByType['matching'];
-    _setPackGameQueue(payloadsByType.keys.toList());
+    
+    // Use all game types (including pending ones) to populate the queue
+    // This allows the button to show even if games aren't ready yet
+    _setPackGameQueue(allGameTypes);
   }
 
   void _syncProfileFromAuthPayload(Map<String, dynamic> payload) {
@@ -2062,13 +2282,17 @@ class AppState extends ChangeNotifier {
             games.whereType<Map<String, dynamic>>().toList(),
           );
 
-          final selectedType = _pickNextGameType(packGameQueue);
-          if (selectedType != null) {
-            final selectedIndex = packGameQueue.indexOf(selectedType);
-            if (selectedIndex >= 0) {
-              packGameIndex = selectedIndex;
+          // If we have any games (ready or pending), exit polling
+          if (games.isNotEmpty) {
+            final selectedType = _pickNextGameType(packGameQueue);
+            if (selectedType != null) {
+              final selectedIndex = packGameQueue.indexOf(selectedType);
+              if (selectedIndex >= 0) {
+                packGameIndex = selectedIndex;
+              }
+              startGameType(selectedType);
             }
-            startGameType(selectedType);
+            // Exit polling - we have games now (UI will show button)
             return;
           }
         }
@@ -2704,6 +2928,28 @@ class AppState extends ChangeNotifier {
       correctAnswers: correctAnswers,
       results: results,
     );
+
+    if (gameType == 'quiz' && isScanFirstOnboarding) {
+      final nextCompleted = scanFirstCompletedSessions + 1;
+      onboardingCheckpoints = {
+        ...onboardingCheckpoints,
+        'scan_first_completed_sessions': nextCompleted,
+      };
+      await _persistOnboardingState();
+      await _trackOnboardingEvent(
+        role: 'guest',
+        eventName: 'quiz_completed',
+        step: 'guest_prelink',
+        instanceId: nextCompleted.toString(),
+        metadata: {'completed_sessions': nextCompleted},
+      );
+      if (shouldShowPostQuizLinkPrompt) {
+        await saveOnboardingStep(
+          step: 'parent_link_prompt',
+          completedStep: 'first_challenge',
+        );
+      }
+    }
   }
 
   Future<void> _syncQuizSessionProgress({String status = 'active'}) async {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../state/app_state_scope.dart';
 import '../../theme/app_theme.dart';
-import '../shared/gradient_scaffold.dart';
+import '../home/home_shell.dart';
+import '../shared/placeholder_screen.dart';
 
 class HowItWorksScreen extends StatefulWidget {
   const HowItWorksScreen({super.key});
@@ -41,93 +43,124 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
     final state = AppStateScope.of(context);
     await state.startScanFirstOnboarding();
     if (!mounted) return;
-    Navigator.pushReplacementNamed(context, AppRoutes.upload);
+    Navigator.pushNamed(context, AppRoutes.upload);
   }
 
   @override
   Widget build(BuildContext context) {
-    return GradientScaffold(
-      gradient: LearnyGradients.trust,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: ListView(
-          children: [
-            Row(
-              children: [
-                Text(
-                  'Quick profile',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const Spacer(),
-                TextButton(
-                  onPressed: () => Navigator.pushReplacementNamed(
-                    context,
-                    AppRoutes.welcome,
-                  ),
-                  child: const Text('Switch role'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Start by scanning your own homework for a relevant quiz. '
-              'No document right now? Use the demo quiz.',
-            ),
-            const SizedBox(height: 20),
-            DropdownButtonFormField<String>(
-              initialValue: _ageBracket,
-              decoration: const InputDecoration(labelText: 'Age bracket'),
-              items: _ageBrackets
-                  .map(
-                    (value) =>
-                        DropdownMenuItem(value: value, child: Text(value)),
-                  )
-                  .toList(),
-              onChanged: (value) =>
-                  setState(() => _ageBracket = value ?? _ageBracket),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: _grade,
-              decoration: const InputDecoration(labelText: 'Grade'),
-              items: _grades
-                  .map(
-                    (value) =>
-                        DropdownMenuItem(value: value, child: Text(value)),
-                  )
-                  .toList(),
-              onChanged: (value) => setState(() => _grade = value ?? _grade),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: _language,
-              decoration: const InputDecoration(labelText: 'Language'),
-              items: _languages
-                  .map(
-                    (value) => DropdownMenuItem(
-                      value: value,
-                      child: Text(value.toUpperCase()),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) =>
-                  setState(() => _language = value ?? _language),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _startScanNow,
-              child: const Text('Scan my document now'),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: _continueWithDemoQuiz,
-              child: const Text('No document: try demo quiz'),
-            ),
-          ],
+    final l10n = L10n.of(context);
+    final state = AppStateScope.of(context);
+    final canPop = Navigator.of(context).canPop();
+    
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await state.resetOnboarding();
+        if (context.mounted) {
+          if (canPop) {
+            Navigator.of(context).pop();
+          } else {
+            Navigator.pushReplacementNamed(context, AppRoutes.welcome);
+          }
+        }
+      },
+      child: PlaceholderScreen(
+        title: l10n.howItWorksTitle,
+        subtitle: l10n.howItWorksSubtitle,
+        gradient: LearnyGradients.trust,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () async {
+            await state.resetOnboarding();
+            if (!context.mounted) return;
+            if (canPop) {
+              Navigator.of(context).pop();
+            } else {
+              Navigator.pushReplacementNamed(context, AppRoutes.welcome);
+            }
+          },
         ),
+        body: Column(
+        children: [
+          DropdownButtonFormField<String>(
+            initialValue: _ageBracket,
+            decoration: InputDecoration(labelText: l10n.howItWorksAgeBracketLabel),
+            items: _ageBrackets
+                .map(
+                  (value) =>
+                      DropdownMenuItem(value: value, child: Text(value)),
+                )
+                .toList(),
+            onChanged: (value) =>
+                setState(() => _ageBracket = value ?? _ageBracket),
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            initialValue: _grade,
+            decoration: InputDecoration(labelText: l10n.howItWorksGradeLabel),
+            items: _grades
+                .map(
+                  (value) =>
+                      DropdownMenuItem(value: value, child: Text(value)),
+                )
+                .toList(),
+            onChanged: (value) => setState(() => _grade = value ?? _grade),
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            initialValue: _language,
+            decoration: InputDecoration(labelText: l10n.howItWorksLanguageLabel),
+            items: _languages
+                .map(
+                  (value) => DropdownMenuItem(
+                    value: value,
+                    child: Text(value.toUpperCase()),
+                  ),
+                )
+                .toList(),
+            onChanged: (value) =>
+                setState(() => _language = value ?? _language),
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: TextButton(
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => const HomeShell(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(-1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      return SlideTransition(
+                        position: animation.drive(tween),
+                        child: child,
+                      );
+                    },
+                  ),
+                  (route) => false,
+                );
+              },
+              child: Text(l10n.howItWorksSkipToHome),
+            ),
+          ),
+        ],
       ),
-    );
+      primaryAction: ElevatedButton(
+        onPressed: _startScanNow,
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 56),
+        ),
+        child: Text(l10n.howItWorksScanNow),
+      ),
+      secondaryAction: OutlinedButton(
+        onPressed: _continueWithDemoQuiz,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 56),
+        ),
+        child: Text(l10n.howItWorksTryDemoQuiz),
+      ),
+    ));
   }
 }

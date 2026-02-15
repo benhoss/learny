@@ -16,6 +16,7 @@ class AppRoutes {
 
   static const cameraCapture = '/camera-capture';
   static const upload = '/upload';
+  static const guestLimit = '/guest-limit';
   static const review = '/review';
   static const processing = '/processing';
   static const library = '/library';

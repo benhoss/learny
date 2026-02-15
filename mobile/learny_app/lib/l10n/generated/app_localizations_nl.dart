@@ -1958,4 +1958,131 @@ class L10nNl extends L10n {
 
   @override
   String get progressWeeklyProgressTitle => 'Wekelijkse voortgang';
+
+  @override
+  String get welcomeHeroBadge => 'Vertrouwd door duizenden gezinnen';
+
+  @override
+  String get welcomeHeroTitleLine1 => 'Leer je kind leren MET AI,';
+
+  @override
+  String get welcomeHeroTitleLine2 => 'niet VAN AI';
+
+  @override
+  String get welcomeHeroSubtitle =>
+      'Learny verandert huiswerk in boeiende leersessies van 15 minuten.';
+
+  @override
+  String get welcomeIntroTitle => 'Klaar om te starten?';
+
+  @override
+  String get welcomeIntroSubtitle => 'Kies je pad en wij begeleiden de rest.';
+
+  @override
+  String get welcomeTrustCoppa => 'COPPA-conform';
+
+  @override
+  String get welcomeTrustNoDataSelling => 'Geen dataverkoop';
+
+  @override
+  String get welcomeTrustEducatorApproved => 'Goedgekeurd door docenten';
+
+  @override
+  String get welcomeWhoTitle => 'Wie ben je?';
+
+  @override
+  String get welcomeWhoSubtitle => 'Kies je pad om met Learny te starten.';
+
+  @override
+  String get welcomeCardScanTitle => 'Nu scannen';
+
+  @override
+  String get welcomeCardScanSubtitle =>
+      'Maak een foto of upload een werkblad om direct te beginnen.';
+
+  @override
+  String get welcomeCardLearnerTitle => 'Voor leerlingen';
+
+  @override
+  String get welcomeCardLearnerSubtitle =>
+      'Maak je profiel aan en begin aan je eerste uitdaging.';
+
+  @override
+  String get welcomeCardParentTitle => 'Voor ouders';
+
+  @override
+  String get welcomeCardParentSubtitle =>
+      'Volg voortgang, stel voorkeuren in en ondersteun leren veilig.';
+
+  @override
+  String get welcomeDebugSigningIn => 'Testgebruiker wordt aangemeld...';
+
+  @override
+  String get welcomeDebugSkipOnboarding =>
+      'Onboarding overslaan (debug: auto login test user)';
+
+  @override
+  String get welcomeDebugVerifySentry => 'Sentry-configuratie controleren';
+
+  @override
+  String get howItWorksTitle => 'Quick profile';
+
+  @override
+  String get howItWorksSubtitle =>
+      'Start by scanning your own homework for a relevant quiz. No document right now? Use the demo quiz.';
+
+  @override
+  String get howItWorksAgeBracketLabel => 'Age bracket';
+
+  @override
+  String get howItWorksGradeLabel => 'Grade';
+
+  @override
+  String get howItWorksLanguageLabel => 'Language';
+
+  @override
+  String get howItWorksSkipToHome => 'Skip for now and go to Home';
+
+  @override
+  String get howItWorksScanNow => 'Scan my document now';
+
+  @override
+  String get howItWorksTryDemoQuiz => 'No document: try demo quiz';
+
+  @override
+  String get createProfileSetupTitle => 'Profile setup';
+
+  @override
+  String get createProfileSetupSubtitle =>
+      'Choose a nickname and an avatar to start your journey!';
+
+  @override
+  String get createProfileNicknameLabel => 'Nickname';
+
+  @override
+  String get createProfileNicknameHint => 'How should we call you?';
+
+  @override
+  String get createProfileSkipToHome => 'Skip for now and go to Home';
+
+  @override
+  String get createProfileStartFirstChallenge => 'Start first challenge';
+
+  @override
+  String get createProfileCreateFailed =>
+      'Could not create your learner profile. Please try again.';
+
+  @override
+  String get createProfileDefaultLearnerName => 'Learner';
+
+  @override
+  String get welcomeChildEntrySubtitle =>
+      'Kies hoe je verdergaat: inloggen, account aanmaken of gastmodus proberen.';
+
+  @override
+  String get welcomeTryGuestFlow => 'Gastmodus proberen: gratis quiz';
+
+  @override
+  String get welcomeGuestValueHint =>
+      'Scan één huiswerkpagina en ontvang je eerste quiz gratis.';
 }

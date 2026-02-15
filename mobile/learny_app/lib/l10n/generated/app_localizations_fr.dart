@@ -1973,4 +1973,136 @@ class L10nFr extends L10n {
 
   @override
   String get progressWeeklyProgressTitle => 'Progrès hebdomadaire';
+
+  @override
+  String get welcomeHeroBadge => 'Déjà adopté par des milliers de familles';
+
+  @override
+  String get welcomeHeroTitleLine1 =>
+      'Aidez votre enfant à apprendre AVEC l\'IA,';
+
+  @override
+  String get welcomeHeroTitleLine2 => 'pas DE l\'IA';
+
+  @override
+  String get welcomeHeroSubtitle =>
+      'Learny transforme les devoirs en sessions d\'apprentissage engageantes de 15 minutes.';
+
+  @override
+  String get welcomeIntroTitle => 'Prêt à commencer ?';
+
+  @override
+  String get welcomeIntroSubtitle =>
+      'Choisissez votre parcours, on vous guide pour la suite.';
+
+  @override
+  String get welcomeTrustCoppa => 'Conforme COPPA';
+
+  @override
+  String get welcomeTrustNoDataSelling => 'Aucune revente de données';
+
+  @override
+  String get welcomeTrustEducatorApproved => 'Approuvé par des enseignants';
+
+  @override
+  String get welcomeWhoTitle => 'Qui êtes-vous ?';
+
+  @override
+  String get welcomeWhoSubtitle =>
+      'Choisissez votre parcours pour démarrer avec Learny.';
+
+  @override
+  String get welcomeCardScanTitle => 'Scanner maintenant';
+
+  @override
+  String get welcomeCardScanSubtitle =>
+      'Prenez une photo ou importez une fiche pour commencer tout de suite.';
+
+  @override
+  String get welcomeCardLearnerTitle => 'Pour les élèves';
+
+  @override
+  String get welcomeCardLearnerSubtitle =>
+      'Crée ton profil et commence ton premier défi.';
+
+  @override
+  String get welcomeCardParentTitle => 'Pour les parents';
+
+  @override
+  String get welcomeCardParentSubtitle =>
+      'Suivez les progrès, définissez des préférences et accompagnez l\'apprentissage.';
+
+  @override
+  String get welcomeDebugSigningIn => 'Connexion du compte de test...';
+
+  @override
+  String get welcomeDebugSkipOnboarding =>
+      'Ignorer l\'onboarding (debug : auto login test user)';
+
+  @override
+  String get welcomeDebugVerifySentry => 'Vérifier la configuration Sentry';
+
+  @override
+  String get howItWorksTitle => 'Profil rapide';
+
+  @override
+  String get howItWorksSubtitle =>
+      'Commence par scanner tes devoirs pour obtenir un quiz pertinent. Pas de document maintenant ? Essaie le quiz de démo.';
+
+  @override
+  String get howItWorksAgeBracketLabel => 'Tranche d\'âge';
+
+  @override
+  String get howItWorksGradeLabel => 'Niveau';
+
+  @override
+  String get howItWorksLanguageLabel => 'Langue';
+
+  @override
+  String get howItWorksSkipToHome =>
+      'Ignorer pour l\'instant et aller à l\'accueil';
+
+  @override
+  String get howItWorksScanNow => 'Scanner mon document maintenant';
+
+  @override
+  String get howItWorksTryDemoQuiz => 'Pas de document : essayer le quiz démo';
+
+  @override
+  String get createProfileSetupTitle => 'Configuration du profil';
+
+  @override
+  String get createProfileSetupSubtitle =>
+      'Choisis un pseudo et un avatar pour commencer ton aventure !';
+
+  @override
+  String get createProfileNicknameLabel => 'Pseudo';
+
+  @override
+  String get createProfileNicknameHint => 'Comment doit-on t\'appeler ?';
+
+  @override
+  String get createProfileSkipToHome =>
+      'Ignorer pour l\'instant et aller à l\'accueil';
+
+  @override
+  String get createProfileStartFirstChallenge => 'Commencer le premier défi';
+
+  @override
+  String get createProfileCreateFailed =>
+      'Impossible de créer ton profil élève. Réessaie.';
+
+  @override
+  String get createProfileDefaultLearnerName => 'Élève';
+
+  @override
+  String get welcomeChildEntrySubtitle =>
+      'Choisis comment continuer : se connecter, créer un compte, ou essayer en invité.';
+
+  @override
+  String get welcomeTryGuestFlow => 'Essayer en invité : quiz gratuit';
+
+  @override
+  String get welcomeGuestValueHint =>
+      'Scanne une page de devoir et reçois ton premier quiz gratuitement.';
 }

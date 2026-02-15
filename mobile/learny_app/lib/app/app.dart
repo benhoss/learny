@@ -21,6 +21,7 @@ import '../screens/home/notifications_screen.dart';
 import '../screens/onboarding/consent_screen.dart';
 import '../screens/onboarding/create_profile_screen.dart';
 import '../screens/onboarding/how_it_works_screen.dart';
+import '../screens/onboarding/guest_limit_screen.dart';
 import '../screens/onboarding/parent_onboarding_screen.dart';
 import '../screens/onboarding/plan_screen.dart';
 import '../screens/onboarding/welcome_screen.dart';
@@ -109,6 +110,7 @@ class LearnyApp extends StatelessWidget {
               AppRoutes.notifications: (_) => const NotificationsScreen(),
               AppRoutes.cameraCapture: (_) => const CameraCaptureScreen(),
               AppRoutes.upload: (_) => const UploadScreen(),
+              AppRoutes.guestLimit: (_) => const GuestLimitScreen(),
               AppRoutes.review: (_) => const ReviewScreen(),
               AppRoutes.processing: (_) => const ProcessingScreen(),
               AppRoutes.library: (_) => const LibraryScreen(),

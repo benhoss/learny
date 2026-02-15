@@ -7,8 +7,15 @@ import '../../state/app_state_scope.dart';
 import '../../widgets/animations/fade_in_slide.dart';
 import '../../widgets/games/pressable_scale.dart';
 
-class ProcessingScreen extends StatelessWidget {
+class ProcessingScreen extends StatefulWidget {
   const ProcessingScreen({super.key});
+
+  @override
+  State<ProcessingScreen> createState() => _ProcessingScreenState();
+}
+
+class _ProcessingScreenState extends State<ProcessingScreen> {
+  bool _redirected = false;
 
   static String _localizedStageLabel(
     L10n l,
@@ -88,12 +95,32 @@ class ProcessingScreen extends StatelessWidget {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final state = AppStateScope.of(context);
+    if (_redirected) return;
+
+    if (state.hasReadyGeneratedGame) {
+      final readyGameType = state.currentPackGameType;
+      if (readyGameType != null) {
+        _redirected = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          state.startGameType(readyGameType);
+          Navigator.pushReplacementNamed(
+            context,
+            state.routeForGameType(readyGameType),
+          );
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final tokens = context.tokens;
     final l = L10n.of(context);
-    final readyGameType = state.currentPackGameType;
-    final isReady = state.hasReadyGeneratedGame;
     final hasError = state.generationError != null;
     final isAwaitingScanValidation = state.awaitingScanValidation;
     final status = _localizedStatus(
@@ -117,7 +144,6 @@ class ProcessingScreen extends StatelessWidget {
       state.pipelineStage,
       state.hasFirstPlayableSignal,
     );
-    final ctaLabel = _startLabelForType(context, readyGameType);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -157,9 +183,7 @@ class ProcessingScreen extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        isReady
-                            ? L10n.of(context).processingReadyTitle
-                            : L10n.of(context).processingTitle,
+                        L10n.of(context).processingTitle,
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(
                               fontWeight: FontWeight.w700,
@@ -174,12 +198,7 @@ class ProcessingScreen extends StatelessWidget {
               const Spacer(),
 
               // Main content
-              if (isReady) ...[
-                FadeInSlide(
-                  delay: const Duration(milliseconds: 100),
-                  child: _SuccessState(),
-                ),
-              ] else if (isAwaitingScanValidation) ...[
+              if (isAwaitingScanValidation) ...[
                 FadeInSlide(
                   delay: const Duration(milliseconds: 100),
                   child: _ScanValidationState(
@@ -210,50 +229,7 @@ class ProcessingScreen extends StatelessWidget {
               const Spacer(),
 
               // Action buttons
-              if (isReady) ...[
-                FadeInSlide(
-                  delay: const Duration(milliseconds: 200),
-                  child: PressableScale(
-                    onTap: readyGameType == null
-                        ? null
-                        : () {
-                            state.startGameType(readyGameType);
-                            Navigator.pushNamed(
-                              context,
-                              state.routeForGameType(readyGameType),
-                            );
-                          },
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: tokens.spaceMd),
-                      decoration: BoxDecoration(
-                        gradient: tokens.gradientAccent,
-                        borderRadius: tokens.radiusFull,
-                        boxShadow: tokens.buttonShadow,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            LucideIcons.play,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            ctaLabel,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ] else if (hasError) ...[
+              if (hasError) ...[
                 FadeInSlide(
                   delay: const Duration(milliseconds: 200),
                   child: PressableScale(
@@ -295,30 +271,6 @@ class ProcessingScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _startLabelForType(BuildContext context, String? type) {
-    final l = L10n.of(context);
-    switch (type) {
-      case 'flashcards':
-        return l.processingStartFlashcards;
-      case 'matching':
-        return l.processingStartMatching;
-      case 'true_false':
-        return l.processingStartTrueFalse;
-      case 'multiple_select':
-        return l.processingStartMultiSelect;
-      case 'fill_blank':
-        return l.processingStartFillBlank;
-      case 'short_answer':
-        return l.processingStartShortAnswer;
-      case 'ordering':
-        return l.processingStartOrdering;
-      case 'quiz':
-        return l.processingStartQuiz;
-      default:
-        return l.processingStartLearning;
-    }
   }
 }
 
@@ -1000,89 +952,6 @@ class _StepDot extends StatelessWidget {
         icon,
         size: 16,
         color: isActive ? LearnyColors.mintPrimary : LearnyColors.neutralLight,
-      ),
-    );
-  }
-}
-
-class _SuccessState extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.tokens;
-
-    return Container(
-      padding: EdgeInsets.all(tokens.spaceLg + 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: tokens.radiusXl,
-        boxShadow: tokens.cardShadow,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Success icon
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [LearnyColors.mintLight, LearnyColors.success],
-              ),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(LucideIcons.check, color: Colors.white, size: 40),
-          ),
-
-          SizedBox(height: tokens.spaceLg),
-
-          Text(
-            L10n.of(context).processingSuccessTitle,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: LearnyColors.neutralDark,
-            ),
-          ),
-
-          SizedBox(height: tokens.spaceSm),
-
-          Text(
-            L10n.of(context).processingSuccessMessage,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: LearnyColors.neutralMedium),
-            textAlign: TextAlign.center,
-          ),
-
-          SizedBox(height: tokens.spaceMd),
-
-          Container(
-            padding: EdgeInsets.all(tokens.spaceMd),
-            decoration: BoxDecoration(
-              color: LearnyColors.mintLight.withValues(alpha: 0.5),
-              borderRadius: tokens.radiusLg,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  LucideIcons.sparkles,
-                  color: LearnyColors.mintPrimary,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    L10n.of(context).processingSuccessDetail,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: LearnyColors.neutralMedium,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

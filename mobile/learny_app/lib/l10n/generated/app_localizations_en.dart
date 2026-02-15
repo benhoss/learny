@@ -1942,4 +1942,132 @@ class L10nEn extends L10n {
 
   @override
   String get progressWeeklyProgressTitle => 'Weekly Progress';
+
+  @override
+  String get welcomeHeroBadge => 'Trusted by thousands of families';
+
+  @override
+  String get welcomeHeroTitleLine1 => 'Teach your child to learn WITH AI,';
+
+  @override
+  String get welcomeHeroTitleLine2 => 'not FROM AI';
+
+  @override
+  String get welcomeHeroSubtitle =>
+      'Learny turns homework into engaging 15-minute learning sessions.';
+
+  @override
+  String get welcomeIntroTitle => 'Ready to start?';
+
+  @override
+  String get welcomeIntroSubtitle =>
+      'Pick your path and we will guide the rest.';
+
+  @override
+  String get welcomeTrustCoppa => 'COPPA compliant';
+
+  @override
+  String get welcomeTrustNoDataSelling => 'No data selling';
+
+  @override
+  String get welcomeTrustEducatorApproved => 'Educator approved';
+
+  @override
+  String get welcomeWhoTitle => 'Who are you?';
+
+  @override
+  String get welcomeWhoSubtitle => 'Choose your path to start with Learny.';
+
+  @override
+  String get welcomeCardScanTitle => 'Scan now';
+
+  @override
+  String get welcomeCardScanSubtitle =>
+      'Take a photo or upload a worksheet to start immediately.';
+
+  @override
+  String get welcomeCardLearnerTitle => 'For learners';
+
+  @override
+  String get welcomeCardLearnerSubtitle =>
+      'Create your profile and begin your first challenge.';
+
+  @override
+  String get welcomeCardParentTitle => 'For parents';
+
+  @override
+  String get welcomeCardParentSubtitle =>
+      'Track progress, set preferences, and support learning safely.';
+
+  @override
+  String get welcomeDebugSigningIn => 'Signing in test user...';
+
+  @override
+  String get welcomeDebugSkipOnboarding =>
+      'Skip onboarding (debug: auto login test user)';
+
+  @override
+  String get welcomeDebugVerifySentry => 'Verify Sentry Setup';
+
+  @override
+  String get howItWorksTitle => 'Quick profile';
+
+  @override
+  String get howItWorksSubtitle =>
+      'Start by scanning your own homework for a relevant quiz. No document right now? Use the demo quiz.';
+
+  @override
+  String get howItWorksAgeBracketLabel => 'Age bracket';
+
+  @override
+  String get howItWorksGradeLabel => 'Grade';
+
+  @override
+  String get howItWorksLanguageLabel => 'Language';
+
+  @override
+  String get howItWorksSkipToHome => 'Skip for now and go to Home';
+
+  @override
+  String get howItWorksScanNow => 'Scan my document now';
+
+  @override
+  String get howItWorksTryDemoQuiz => 'No document: try demo quiz';
+
+  @override
+  String get createProfileSetupTitle => 'Profile setup';
+
+  @override
+  String get createProfileSetupSubtitle =>
+      'Choose a nickname and an avatar to start your journey!';
+
+  @override
+  String get createProfileNicknameLabel => 'Nickname';
+
+  @override
+  String get createProfileNicknameHint => 'How should we call you?';
+
+  @override
+  String get createProfileSkipToHome => 'Skip for now and go to Home';
+
+  @override
+  String get createProfileStartFirstChallenge => 'Start first challenge';
+
+  @override
+  String get createProfileCreateFailed =>
+      'Could not create your learner profile. Please try again.';
+
+  @override
+  String get createProfileDefaultLearnerName => 'Learner';
+
+  @override
+  String get welcomeChildEntrySubtitle =>
+      'Choose how to continue: sign in, create an account, or try guest mode.';
+
+  @override
+  String get welcomeTryGuestFlow => 'Try guest mode: free quiz';
+
+  @override
+  String get welcomeGuestValueHint =>
+      'Scan one homework page and get your first quiz for free.';
 }

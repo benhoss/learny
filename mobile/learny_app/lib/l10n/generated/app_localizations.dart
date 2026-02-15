@@ -3602,6 +3602,240 @@ abstract class L10n {
   /// In en, this message translates to:
   /// **'Weekly Progress'**
   String get progressWeeklyProgressTitle;
+
+  /// No description provided for @welcomeHeroBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Trusted by thousands of families'**
+  String get welcomeHeroBadge;
+
+  /// No description provided for @welcomeHeroTitleLine1.
+  ///
+  /// In en, this message translates to:
+  /// **'Teach your child to learn WITH AI,'**
+  String get welcomeHeroTitleLine1;
+
+  /// No description provided for @welcomeHeroTitleLine2.
+  ///
+  /// In en, this message translates to:
+  /// **'not FROM AI'**
+  String get welcomeHeroTitleLine2;
+
+  /// No description provided for @welcomeHeroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Learny turns homework into engaging 15-minute learning sessions.'**
+  String get welcomeHeroSubtitle;
+
+  /// No description provided for @welcomeIntroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to start?'**
+  String get welcomeIntroTitle;
+
+  /// No description provided for @welcomeIntroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick your path and we will guide the rest.'**
+  String get welcomeIntroSubtitle;
+
+  /// No description provided for @welcomeTrustCoppa.
+  ///
+  /// In en, this message translates to:
+  /// **'COPPA compliant'**
+  String get welcomeTrustCoppa;
+
+  /// No description provided for @welcomeTrustNoDataSelling.
+  ///
+  /// In en, this message translates to:
+  /// **'No data selling'**
+  String get welcomeTrustNoDataSelling;
+
+  /// No description provided for @welcomeTrustEducatorApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Educator approved'**
+  String get welcomeTrustEducatorApproved;
+
+  /// No description provided for @welcomeWhoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Who are you?'**
+  String get welcomeWhoTitle;
+
+  /// No description provided for @welcomeWhoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your path to start with Learny.'**
+  String get welcomeWhoSubtitle;
+
+  /// No description provided for @welcomeCardScanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan now'**
+  String get welcomeCardScanTitle;
+
+  /// No description provided for @welcomeCardScanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo or upload a worksheet to start immediately.'**
+  String get welcomeCardScanSubtitle;
+
+  /// No description provided for @welcomeCardLearnerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For learners'**
+  String get welcomeCardLearnerTitle;
+
+  /// No description provided for @welcomeCardLearnerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your profile and begin your first challenge.'**
+  String get welcomeCardLearnerSubtitle;
+
+  /// No description provided for @welcomeCardParentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For parents'**
+  String get welcomeCardParentTitle;
+
+  /// No description provided for @welcomeCardParentSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track progress, set preferences, and support learning safely.'**
+  String get welcomeCardParentSubtitle;
+
+  /// No description provided for @welcomeDebugSigningIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in test user...'**
+  String get welcomeDebugSigningIn;
+
+  /// No description provided for @welcomeDebugSkipOnboarding.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip onboarding (debug: auto login test user)'**
+  String get welcomeDebugSkipOnboarding;
+
+  /// No description provided for @welcomeDebugVerifySentry.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Sentry Setup'**
+  String get welcomeDebugVerifySentry;
+
+  /// No description provided for @howItWorksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick profile'**
+  String get howItWorksTitle;
+
+  /// No description provided for @howItWorksSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start by scanning your own homework for a relevant quiz. No document right now? Use the demo quiz.'**
+  String get howItWorksSubtitle;
+
+  /// No description provided for @howItWorksAgeBracketLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Age bracket'**
+  String get howItWorksAgeBracketLabel;
+
+  /// No description provided for @howItWorksGradeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade'**
+  String get howItWorksGradeLabel;
+
+  /// No description provided for @howItWorksLanguageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get howItWorksLanguageLabel;
+
+  /// No description provided for @howItWorksSkipToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now and go to Home'**
+  String get howItWorksSkipToHome;
+
+  /// No description provided for @howItWorksScanNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan my document now'**
+  String get howItWorksScanNow;
+
+  /// No description provided for @howItWorksTryDemoQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'No document: try demo quiz'**
+  String get howItWorksTryDemoQuiz;
+
+  /// No description provided for @createProfileSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile setup'**
+  String get createProfileSetupTitle;
+
+  /// No description provided for @createProfileSetupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a nickname and an avatar to start your journey!'**
+  String get createProfileSetupSubtitle;
+
+  /// No description provided for @createProfileNicknameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname'**
+  String get createProfileNicknameLabel;
+
+  /// No description provided for @createProfileNicknameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How should we call you?'**
+  String get createProfileNicknameHint;
+
+  /// No description provided for @createProfileSkipToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now and go to Home'**
+  String get createProfileSkipToHome;
+
+  /// No description provided for @createProfileStartFirstChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Start first challenge'**
+  String get createProfileStartFirstChallenge;
+
+  /// No description provided for @createProfileCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create your learner profile. Please try again.'**
+  String get createProfileCreateFailed;
+
+  /// No description provided for @createProfileDefaultLearnerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Learner'**
+  String get createProfileDefaultLearnerName;
+
+  /// No description provided for @welcomeChildEntrySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how to continue: sign in, create an account, or try guest mode.'**
+  String get welcomeChildEntrySubtitle;
+
+  /// No description provided for @welcomeTryGuestFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Try guest mode: free quiz'**
+  String get welcomeTryGuestFlow;
+
+  /// No description provided for @welcomeGuestValueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan one homework page and get your first quiz for free.'**
+  String get welcomeGuestValueHint;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

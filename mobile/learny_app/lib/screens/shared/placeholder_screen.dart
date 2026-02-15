@@ -12,6 +12,7 @@ class PlaceholderScreen extends StatelessWidget {
     this.primaryAction,
     this.secondaryAction,
     this.gradient,
+    this.leading,
   });
 
   final String title;
@@ -20,6 +21,7 @@ class PlaceholderScreen extends StatelessWidget {
   final Widget? primaryAction;
   final Widget? secondaryAction;
   final Gradient? gradient;
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +29,7 @@ class PlaceholderScreen extends StatelessWidget {
       gradient: gradient,
       appBar: AppBar(
         title: Text(L10n.of(context).appTitle),
+        leading: leading,
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),

@@ -6,6 +6,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
 import '../../state/app_state_scope.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/source_card.dart';
 import '../shared/placeholder_screen.dart';
 
 class CameraCaptureScreen extends StatefulWidget {
@@ -41,7 +42,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
         bytes: bytes,
         filename: file.name.isEmpty ? 'capture.jpg' : file.name,
       );
-      Navigator.pushNamed(context, AppRoutes.review);
+      _startProcessing();
       return;
     }
 
@@ -59,7 +60,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
     }
     final state = AppStateScope.of(context);
     state.setPendingImage(bytes: bytes, filename: file.name.isEmpty ? 'capture.jpg' : file.name);
-    Navigator.pushNamed(context, AppRoutes.review);
+    _startProcessing();
   }
 
   Future<void> _pickMultipleFromGallery() async {
@@ -88,7 +89,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
       if (!mounted) {
         return;
       }
-      Navigator.pushNamed(context, AppRoutes.review);
+      _startProcessing();
       return;
     }
 
@@ -111,46 +112,63 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
     if (!mounted) {
       return;
     }
-    Navigator.pushNamed(context, AppRoutes.review);
+    _startProcessing();
+  }
+
+  void _startProcessing() {
+    // Start processing immediately - no review step
+    final state = AppStateScope.of(context);
+    state.generateQuizFromPendingImage();
+    Navigator.pushNamed(context, AppRoutes.processing);
   }
 
   @override
   Widget build(BuildContext context) {
     final l = L10n.of(context);
+    
     return PlaceholderScreen(
       title: l.cameraCaptureTitle,
       subtitle: l.cameraCaptureSubtitle,
       gradient: LearnyGradients.trust,
-      body: Container(
-        height: 220,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: LearnyColors.slateLight.withValues(alpha: 0.3)),
-        ),
-        child: const Center(
-          child: Icon(Icons.camera_alt_rounded, size: 60, color: LearnyColors.slateLight),
-        ),
-      ),
-      primaryAction: ElevatedButton(
-        onPressed: () => _pickImage(ImageSource.camera),
-        child: Text(l.cameraCaptureTakePhoto),
-      ),
-      secondaryAction: Column(
+      body: Column(
         children: [
-          OutlinedButton(
-            onPressed: () => _pickImage(ImageSource.gallery),
-            child: Text(l.cameraCaptureChooseSinglePhoto),
+          SourceCard(
+            title: l.cameraCaptureTakePhoto,
+            subtitle: 'Point at your page and snap!',
+            icon: Icons.camera_alt_rounded,
+            color: LearnyColors.coral,
+            isPrimary: true,
+            onTap: () => _pickImage(ImageSource.camera),
           ),
-          const SizedBox(height: 8),
-          OutlinedButton(
-            onPressed: _pickMultipleFromGallery,
-            child: Text(l.cameraCaptureChooseMultiplePages),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: SourceCard(
+                  title: 'Single Photo',
+                  subtitle: 'From gallery',
+                  icon: Icons.photo_outlined,
+                  color: LearnyColors.skyPrimary,
+                  onTap: () => _pickImage(ImageSource.gallery),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SourceCard(
+                  title: 'Multiple',
+                  subtitle: 'Choose pages',
+                  icon: Icons.auto_awesome_motion_rounded,
+                  color: LearnyColors.lavender,
+                  onTap: _pickMultipleFromGallery,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          TextButton(
+          const SizedBox(height: 24),
+          TextButton.icon(
             onPressed: () => Navigator.pushNamed(context, AppRoutes.upload),
-            child: Text(l.cameraCaptureUploadPdfInstead),
+            icon: const Icon(Icons.description_outlined),
+            label: Text(l.cameraCaptureUploadPdfInstead),
           ),
         ],
       ),

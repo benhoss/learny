@@ -98,9 +98,15 @@ class ResultsScreen extends StatelessWidget {
           FadeInSlide(
             delay: const Duration(milliseconds: 700),
             child: PressableScale(
-              onTap: () {
+              onTap: () async {
                 if (shouldShowLinkPrompt) {
                   Navigator.pushNamed(context, AppRoutes.plan);
+                  return;
+                }
+                if (state.isScanFirstOnboarding) {
+                  await state.completeGuestSession();
+                  if (!context.mounted) return;
+                  Navigator.pushReplacementNamed(context, AppRoutes.guestLimit);
                   return;
                 }
                 if (isPackSession) {
@@ -165,7 +171,13 @@ class ResultsScreen extends StatelessWidget {
                       }
                       Navigator.pushNamed(context, AppRoutes.quiz);
                     }
-                  : () {
+                  : () async {
+                      if (state.isScanFirstOnboarding) {
+                        await state.completeGuestSession();
+                        if (!context.mounted) return;
+                        Navigator.pushReplacementNamed(context, AppRoutes.guestLimit);
+                        return;
+                      }
                       state.resetQuiz();
                       if (isPackSession) {
                         state.completePackSession();
@@ -211,7 +223,13 @@ class ResultsScreen extends StatelessWidget {
             FadeInSlide(
               delay: const Duration(milliseconds: 900),
               child: PressableScale(
-                onTap: () {
+                onTap: () async {
+                  if (state.isScanFirstOnboarding) {
+                    await state.completeGuestSession();
+                    if (!context.mounted) return;
+                    Navigator.pushReplacementNamed(context, AppRoutes.guestLimit);
+                    return;
+                  }
                   state.resetQuiz();
                   if (isPackSession) {
                     state.completePackSession();

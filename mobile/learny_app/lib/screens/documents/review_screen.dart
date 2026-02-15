@@ -127,7 +127,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: state.pendingImages.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 12),
                     itemBuilder: (context, index) {
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(24),
@@ -141,39 +142,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     },
                   ),
                 ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () => _addAnotherPage(),
-            icon: const Icon(Icons.add_photo_alternate_outlined),
-            label: Text(L10n.of(context).reviewAddPage),
-          ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: _isSuggestingMetadata
-                ? null
-                : () => _suggestMetadata(state),
-            icon: _isSuggestingMetadata
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.auto_awesome_rounded),
-            label: Text(
-              _isSuggestingMetadata
-                  ? L10n.of(context).uploadAnalyzing
-                  : L10n.of(context).uploadSuggestMetadata,
-            ),
-          ),
-          if (_suggestionFeedback != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              _suggestionFeedback!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: LearnyColors.slateMedium),
-            ),
-          ],
           _ReviewContextFields(
             titleController: _titleController,
             subjectController: _subjectController,
@@ -231,16 +200,90 @@ class _ReviewScreenState extends State<ReviewScreen> {
                 Navigator.pushNamed(context, AppRoutes.processing);
               }
             : null,
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 56),
+        ),
         child: Text(L10n.of(context).reviewLooksGood),
       ),
-      secondaryAction: OutlinedButton(
-        onPressed: () => Navigator.pushNamed(context, AppRoutes.cameraCapture),
-        child: Text(L10n.of(context).reviewRetake),
+      secondaryAction: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => _addAnotherPage(),
+              icon: const Icon(Icons.add_photo_alternate_outlined),
+              label: Text(L10n.of(context).reviewAddPage),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => _showSourceSheet(replaceExisting: true),
+              child: Text(L10n.of(context).reviewRetake),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Future<void> _addAnotherPage() async {
+    await _showSourceSheet(replaceExisting: false);
+  }
+
+  Future<void> _showSourceSheet({required bool replaceExisting}) async {
+    if (!mounted) {
+      return;
+    }
+    final l = L10n.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded),
+                title: Text(l.cameraCaptureTakePhoto),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _pickImageForReview(
+                    source: ImageSource.camera,
+                    replaceExisting: replaceExisting,
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: Text(l.cameraCaptureChooseSinglePhoto),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _pickImageForReview(
+                    source: ImageSource.gallery,
+                    replaceExisting: replaceExisting,
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.description_outlined),
+                title: Text(l.uploadChooseFile),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  Navigator.pushNamed(context, AppRoutes.upload);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImageForReview({
+    required ImageSource source,
+    required bool replaceExisting,
+  }) async {
     final state = AppStateScope.of(context);
     if (kIsWeb) {
       final result = await FilePicker.platform.pickFiles(
@@ -256,17 +299,24 @@ class _ReviewScreenState extends State<ReviewScreen> {
       if (bytes == null) {
         return;
       }
-      state.addPendingImage(
-        bytes: bytes,
-        filename: file.name.isEmpty ? 'capture.jpg' : file.name,
-      );
+      if (replaceExisting) {
+        state.setPendingImage(
+          bytes: bytes,
+          filename: file.name.isEmpty ? 'capture.jpg' : file.name,
+        );
+      } else {
+        state.addPendingImage(
+          bytes: bytes,
+          filename: file.name.isEmpty ? 'capture.jpg' : file.name,
+        );
+      }
       _didAutoSuggest = false;
       _autoSuggestIfNeeded();
       return;
     }
 
     final file = await _picker.pickImage(
-      source: ImageSource.gallery,
+      source: source,
       maxWidth: 1600,
       imageQuality: 85,
     );
@@ -277,10 +327,17 @@ class _ReviewScreenState extends State<ReviewScreen> {
     if (!mounted) {
       return;
     }
-    state.addPendingImage(
-      bytes: bytes,
-      filename: file.name.isEmpty ? 'capture.jpg' : file.name,
-    );
+    if (replaceExisting) {
+      state.setPendingImage(
+        bytes: bytes,
+        filename: file.name.isEmpty ? 'capture.jpg' : file.name,
+      );
+    } else {
+      state.addPendingImage(
+        bytes: bytes,
+        filename: file.name.isEmpty ? 'capture.jpg' : file.name,
+      );
+    }
     _didAutoSuggest = false;
     _autoSuggestIfNeeded();
   }
@@ -345,7 +402,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 }
 
-class _ReviewContextFields extends StatelessWidget {
+class _ReviewContextFields extends StatefulWidget {
   const _ReviewContextFields({
     required this.titleController,
     required this.subjectController,
@@ -371,12 +428,20 @@ class _ReviewContextFields extends StatelessWidget {
   final VoidCallback onContextChanged;
 
   @override
+  State<_ReviewContextFields> createState() => _ReviewContextFieldsState();
+}
+
+class _ReviewContextFieldsState extends State<_ReviewContextFields> {
+  bool _showAll = false;
+
+  @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 12),
         TextField(
-          controller: titleController,
+          controller: widget.titleController,
           decoration: InputDecoration(
             labelText: L10n.of(context).uploadTitleLabel,
             hintText: L10n.of(context).uploadTitleHint,
@@ -384,72 +449,89 @@ class _ReviewContextFields extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
-          controller: subjectController,
-          onChanged: (_) => onContextChanged(),
+          controller: widget.subjectController,
+          onChanged: (_) => widget.onContextChanged(),
           decoration: InputDecoration(
             labelText: L10n.of(context).uploadSubjectLabel,
             hintText: L10n.of(context).uploadSubjectHint,
           ),
         ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: topicController,
-          onChanged: (_) => onContextChanged(),
-          decoration: InputDecoration(
-            labelText: L10n.of(context).processingTopicLabel,
-            hintText: L10n.of(context).uploadTopicHint,
+        if (!_showAll)
+          Center(
+            child: TextButton.icon(
+              onPressed: () => setState(() => _showAll = true),
+              icon: const Icon(Icons.expand_more_rounded),
+              label: const Text('Show more details'),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: languageController,
-          decoration: InputDecoration(
-            labelText: L10n.of(context).uploadLanguageLabel,
-            hintText: L10n.of(context).uploadLanguageHint,
+        if (_showAll) ...[
+          const SizedBox(height: 8),
+          TextField(
+            controller: widget.topicController,
+            onChanged: (_) => widget.onContextChanged(),
+            decoration: InputDecoration(
+              labelText: L10n.of(context).processingTopicLabel,
+              hintText: L10n.of(context).uploadTopicHint,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: gradeController,
-          decoration: InputDecoration(
-            labelText: L10n.of(context).uploadGradeLabel,
-            hintText: L10n.of(context).uploadGradeHint,
+          const SizedBox(height: 8),
+          TextField(
+            controller: widget.languageController,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadLanguageLabel,
+              hintText: L10n.of(context).uploadLanguageHint,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: collectionsController,
-          decoration: InputDecoration(
-            labelText: L10n.of(context).uploadCollectionsLabel,
-            hintText: L10n.of(context).uploadCollectionsHint,
+          const SizedBox(height: 8),
+          TextField(
+            controller: widget.gradeController,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadGradeLabel,
+              hintText: L10n.of(context).uploadGradeHint,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: tagsController,
-          decoration: InputDecoration(
-            labelText: L10n.of(context).uploadTagsLabel,
-            hintText: L10n.of(context).uploadTagsHint,
+          const SizedBox(height: 8),
+          TextField(
+            controller: widget.collectionsController,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadCollectionsLabel,
+              hintText: L10n.of(context).uploadCollectionsHint,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: goalController,
-          onChanged: (_) => onContextChanged(),
-          decoration: InputDecoration(
-            labelText: L10n.of(context).uploadGoalLabel,
-            hintText: L10n.of(context).uploadGoalHint,
+          const SizedBox(height: 8),
+          TextField(
+            controller: widget.tagsController,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadTagsLabel,
+              hintText: L10n.of(context).uploadTagsHint,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: contextController,
-          maxLines: 3,
-          decoration: InputDecoration(
-            labelText: L10n.of(context).uploadContextLabel,
-            hintText: L10n.of(context).uploadContextHint,
+          const SizedBox(height: 8),
+          TextField(
+            controller: widget.goalController,
+            onChanged: (_) => widget.onContextChanged(),
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadGoalLabel,
+              hintText: L10n.of(context).uploadGoalHint,
+            ),
           ),
-        ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: widget.contextController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              labelText: L10n.of(context).uploadContextLabel,
+              hintText: L10n.of(context).uploadContextHint,
+            ),
+          ),
+          Center(
+            child: TextButton.icon(
+              onPressed: () => setState(() => _showAll = false),
+              icon: const Icon(Icons.expand_less_rounded),
+              label: const Text('Show less'),
+            ),
+          ),
+        ],
       ],
     );
   }

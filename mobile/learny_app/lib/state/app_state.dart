@@ -428,6 +428,15 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> resetOnboarding() async {
+    onboardingRole = '';
+    onboardingStep = 'role_entry';
+    onboardingCheckpoints = {};
+    onboardingCompletedSteps = <String>{};
+    await _persistOnboardingState();
+    notifyListeners();
+  }
+
   Future<void> startScanFirstOnboarding() async {
     await selectOnboardingRole('child');
 
@@ -778,12 +787,31 @@ class AppState extends ChangeNotifier {
     return int.tryParse(normalized);
   }
 
+  bool get isGuestLimitReached {
+    if (!isScanFirstOnboarding) return false;
+    return scanFirstCompletedSessions >= 1;
+  }
+
+  Future<void> completeGuestSession() async {
+    if (!isScanFirstOnboarding) return;
+    final completed = scanFirstCompletedSessions + 1;
+    onboardingCheckpoints = {
+      ...onboardingCheckpoints,
+      'scan_first_completed_sessions': completed,
+    };
+    await _persistOnboardingState();
+    notifyListeners();
+  }
+
   String get onboardingResumeRoute {
     if (onboardingComplete) {
       return AppRoutes.home;
     }
     if (onboardingRole == 'parent') {
       return AppRoutes.parentOnboarding;
+    }
+    if (isGuestLimitReached) {
+      return AppRoutes.guestLimit;
     }
     switch (onboardingStep) {
       case 'guest_prelink':
@@ -1618,33 +1646,38 @@ class AppState extends ChangeNotifier {
 
     if (backend.token == null) {
       if (BackendConfig.forceNoLocalIdentification) {
-        throw BackendException(
-          'Local identification is disabled (FORCE_NO_LOCAL_IDENTIFICATION=true).',
-        );
+        await _ensureGuestSession(markScanFirst: false);
+        if (backend.token == null) {
+          throw BackendException(
+            'No backend session available with FORCE_NO_LOCAL_IDENTIFICATION=true.',
+          );
+        }
       }
-      try {
-        final payload = await backend.login(
-          email: _demoEmail,
-          password: _demoPassword,
-        );
-        _syncProfileFromAuthPayload(payload);
-      } catch (error) {
+      if (!BackendConfig.forceNoLocalIdentification) {
         try {
-          final payload = await backend.register(
-            name: BackendConfig.demoName,
+          final payload = await backend.login(
             email: _demoEmail,
             password: _demoPassword,
           );
           _syncProfileFromAuthPayload(payload);
-        } catch (registerError) {
-          if (_isEmailTaken(registerError)) {
-            final payload = await backend.login(
+        } catch (error) {
+          try {
+            final payload = await backend.register(
+              name: BackendConfig.demoName,
               email: _demoEmail,
               password: _demoPassword,
             );
             _syncProfileFromAuthPayload(payload);
-          } else {
-            rethrow;
+          } catch (registerError) {
+            if (_isEmailTaken(registerError)) {
+              final payload = await backend.login(
+                email: _demoEmail,
+                password: _demoPassword,
+              );
+              _syncProfileFromAuthPayload(payload);
+            } else {
+              rethrow;
+            }
           }
         }
       }
@@ -1704,7 +1737,7 @@ class AppState extends ChangeNotifier {
     return _BackendSession(childId: childId);
   }
 
-  Future<String> _ensureGuestSession() async {
+  Future<String> _ensureGuestSession({bool markScanFirst = true}) async {
     final existing = onboardingCheckpoints['guest_session_id']?.toString();
     if (existing != null && existing.isNotEmpty && backend.token != null) {
       return existing;
@@ -1728,8 +1761,8 @@ class AppState extends ChangeNotifier {
         }
         onboardingCheckpoints = {
           ...onboardingCheckpoints,
-          'scan_first': true,
           'guest_session_id': sessionId,
+          if (markScanFirst) 'scan_first': true,
         };
         await _persistOnboardingState();
         return sessionId;

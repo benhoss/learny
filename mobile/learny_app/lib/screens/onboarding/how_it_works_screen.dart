@@ -17,186 +17,12 @@ class HowItWorksScreen extends StatefulWidget {
 
 class _HowItWorksScreenState extends State<HowItWorksScreen> {
   static const _ageBrackets = ['10-11', '12-13', '14+'];
+  static const _grades = ['5th', '6th', '7th', '8th'];
   static const _languages = ['en', 'fr', 'nl'];
 
-  // Map device locales to country codes
-  static const _localeToCountry = {
-    'en_US': 'US',
-    'en_GB': 'GB',
-    'fr_FR': 'FR',
-    'fr_BE': 'BE',
-    'de_DE': 'DE',
-    'de_CH': 'CH',
-    'de_AT': 'AT',
-    'nl_NL': 'NL',
-    'nl_BE': 'BE',
-    'es_ES': 'ES',
-    'it_IT': 'IT',
-    'pt_PT': 'PT',
-    'pl_PL': 'PL',
-    'ja_JP': 'JP',
-    'en_CA': 'CA',
-    'en_AU': 'AU',
-  };
-
   String _ageBracket = _ageBrackets.first;
-  String? _selectedGrade;
+  String _grade = _grades[1];
   String _language = _languages.first;
-  
-  String? _detectedCountry;
-  List<String> _availableGrades = [];
-  bool _countrySupported = false;
-  bool _isLoadingGrades = false;
-  String? _errorMessage;
-
-  // Default fallback grades (US system)
-  static const _defaultGrades = ['5th', '6th', '7th', '8th'];
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeCountryAndGrades();
-  }
-
-  String? _getCountryFromDeviceLocale() {
-    final locale = PlatformDispatcher.instance.locale;
-    final localeString = '${locale.languageCode}_${locale.countryCode}';
-    
-    // Try exact match first
-    if (_localeToCountry.containsKey(localeString)) {
-      return _localeToCountry[localeString];
-    }
-    
-    // Try language code only match
-    final langCode = locale.languageCode;
-    for (final entry in _localeToCountry.entries) {
-      if (entry.key.startsWith('${langCode}_')) {
-        return entry.value;
-      }
-    }
-    
-    return null;
-  }
-
-  Future<void> _initializeCountryAndGrades() async {
-    final state = AppStateScope.of(context);
-    
-    // First, try to detect country from device locale
-    String? detectedFromLocale = _getCountryFromDeviceLocale();
-    debugPrint('Onboarding: Device locale detected: $detectedFromLocale');
-    
-    try {
-      // Try backend IP detection as fallback
-      debugPrint('Onboarding: Calling listOnboardingCountries...');
-      final countriesData = await state.backend.listOnboardingCountries();
-      debugPrint('Onboarding: listOnboardingCountries response: $countriesData');
-      
-      final backendDetected = countriesData['detected_country'] as String?;
-      debugPrint('Onboarding: Backend detected country: $backendDetected');
-      
-      // Prefer device locale over IP detection (more accurate for mobile)
-      _detectedCountry = detectedFromLocale ?? backendDetected;
-      debugPrint('Onboarding: Final detected country: $_detectedCountry');
-      
-      if (mounted) setState(() {});
-      
-      // Fetch grade suggestions based on detected country
-      await _fetchGradeSuggestions();
-    } catch (e, stack) {
-      debugPrint('Onboarding: Error initializing country: $e');
-      debugPrint('Onboarding: Stack trace: $stack');
-      
-      // Fallback to device locale only
-      _detectedCountry = detectedFromLocale;
-      debugPrint('Onboarding: Falling back to device locale: $_detectedCountry');
-      
-      if (_detectedCountry != null) {
-        await _fetchGradeSuggestions();
-      } else {
-        // Use default grades if nothing detected
-        _availableGrades = List.from(_defaultGrades);
-        _selectedGrade = _defaultGrades[1];
-        if (mounted) {
-          setState(() {
-            _errorMessage = 'Using default grades';
-          });
-        }
-      }
-    }
-  }
-
-  int _ageFromBracket(String bracket) {
-    switch (bracket) {
-      case '10-11':
-        return 10;
-      case '12-13':
-        return 12;
-      case '14+':
-        return 14;
-      default:
-        return 10;
-    }
-  }
-
-  Future<void> _fetchGradeSuggestions() async {
-    final state = AppStateScope.of(context);
-    
-    setState(() {
-      _isLoadingGrades = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final age = _ageFromBracket(_ageBracket);
-      debugPrint('Onboarding: Fetching grade suggestions for country: $_detectedCountry, age: $age');
-      
-      final suggestionsData = await state.backend.getGradeSuggestions(
-        country: _detectedCountry,
-        age: age,
-      );
-      debugPrint('Onboarding: Grade suggestions response: $suggestionsData');
-
-      final countrySupported = suggestionsData['country_supported'] as bool? ?? false;
-      final suggestedGrade = suggestionsData['suggested_grade'] as String?;
-      final availableGrades = (suggestionsData['available_grades'] as List<dynamic>?)
-          ?.map((e) => e.toString())
-          .toList() ?? [];
-
-      debugPrint('Onboarding: Suggested grade: $suggestedGrade, available: $availableGrades');
-
-      if (mounted) {
-        setState(() {
-          _countrySupported = countrySupported;
-          _availableGrades = availableGrades.isNotEmpty 
-              ? availableGrades 
-              : List.from(_defaultGrades);
-          _selectedGrade = suggestedGrade ?? 
-              (_availableGrades.isNotEmpty ? _availableGrades[0] : null);
-          _isLoadingGrades = false;
-        });
-      }
-    } catch (e, stack) {
-      debugPrint('Onboarding: Error fetching grade suggestions: $e');
-      debugPrint('Onboarding: Stack trace: $stack');
-      if (mounted) {
-        setState(() {
-          _availableGrades = List.from(_defaultGrades);
-          _selectedGrade = _defaultGrades[1];
-          _isLoadingGrades = false;
-          _errorMessage = 'Could not load grade suggestions';
-        });
-      }
-    }
-  }
-
-  Future<void> _onAgeBracketChanged(String? newBracket) async {
-    if (newBracket != null && newBracket != _ageBracket) {
-      setState(() {
-        _ageBracket = newBracket;
-      });
-      await _fetchGradeSuggestions();
-    }
-  }
 
   Future<void> _continueWithDemoQuiz() async {
     final state = AppStateScope.of(context);
@@ -204,10 +30,9 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
       step: 'child_avatar',
       checkpoint: {
         'age_bracket': _ageBracket,
-        'grade': _selectedGrade ?? '',
+        'grade': _grade,
         'language': _language,
-        'market': _detectedCountry ?? 'US',
-        'country_supported': _countrySupported,
+        'market': 'US',
       },
       completedStep: 'child_profile',
     );
@@ -259,40 +84,6 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
         ),
         body: Column(
         children: [
-          // Country indicator
-          if (_detectedCountry != null) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: _countrySupported 
-                    ? Colors.green.withValues(alpha: 0.1) 
-                    : Colors.orange.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _countrySupported ? Icons.check_circle : Icons.info_outline,
-                    size: 16,
-                    color: _countrySupported ? Colors.green : Colors.orange,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    _countrySupported 
-                        ? 'Country detected: $_detectedCountry'
-                        : 'Country not recognized - select grade manually',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: _countrySupported ? Colors.green : Colors.orange,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-          
           DropdownButtonFormField<String>(
             value: _ageBracket,
             decoration: InputDecoration(labelText: l10n.howItWorksAgeBracketLabel),
@@ -302,32 +93,21 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
                       DropdownMenuItem(value: value, child: Text(value)),
                 )
                 .toList(),
-            onChanged: _onAgeBracketChanged,
+            onChanged: (value) =>
+                setState(() => _ageBracket = value ?? _ageBracket),
           ),
           const SizedBox(height: 12),
-          _isLoadingGrades
-              ? const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
+          DropdownButtonFormField<String>(
+            value: _grade,
+            decoration: InputDecoration(labelText: l10n.howItWorksGradeLabel),
+            items: _grades
+                .map(
+                  (value) =>
+                      DropdownMenuItem(value: value, child: Text(value)),
                 )
-              : DropdownButtonFormField<String>(
-                  value: _selectedGrade,
-                  decoration: InputDecoration(
-                    labelText: l10n.howItWorksGradeLabel,
-                    helperText: _countrySupported 
-                        ? 'Grade suggested based on your country and age' 
-                        : 'Select your grade level',
-                  ),
-                  items: _availableGrades
-                      .map(
-                        (value) =>
-                            DropdownMenuItem(value: value, child: Text(value)),
-                      )
-                      .toList(),
-                  onChanged: (value) => setState(() => _selectedGrade = value),
-                ),
+                .toList(),
+            onChanged: (value) => setState(() => _grade = value ?? _grade),
+          ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             value: _language,
@@ -343,13 +123,6 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
             onChanged: (value) =>
                 setState(() => _language = value ?? _language),
           ),
-          if (_errorMessage != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              _errorMessage!,
-              style: const TextStyle(fontSize: 12, color: Colors.orange),
-            ),
-          ],
           const SizedBox(height: 24),
           Center(
             child: TextButton(

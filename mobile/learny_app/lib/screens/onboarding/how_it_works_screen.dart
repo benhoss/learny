@@ -15,12 +15,115 @@ class HowItWorksScreen extends StatefulWidget {
 
 class _HowItWorksScreenState extends State<HowItWorksScreen> {
   static const _ageBrackets = ['10-11', '12-13', '14+'];
-  static const _grades = ['5th', '6th', '7th', '8th'];
   static const _languages = ['en', 'fr', 'nl'];
 
   String _ageBracket = _ageBrackets.first;
-  String _grade = _grades[1];
+  String? _selectedGrade;
   String _language = _languages.first;
+  
+  String? _detectedCountry;
+  List<String> _availableGrades = [];
+  bool _countrySupported = false;
+  bool _isLoadingGrades = false;
+  String? _errorMessage;
+
+  // Default fallback grades (US system)
+  static const _defaultGrades = ['5th', '6th', '7th', '8th'];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCountryAndGrades();
+  }
+
+  Future<void> _initializeCountryAndGrades() async {
+    final state = AppStateScope.of(context);
+    try {
+      // Fetch countries and detect user's country
+      final countriesData = await state.backend.listOnboardingCountries();
+      _detectedCountry = countriesData['detected_country'] as String?;
+      
+      if (mounted) setState(() {});
+      
+      // Fetch grade suggestions based on detected country
+      await _fetchGradeSuggestions();
+    } catch (e) {
+      // Fallback to default grades on error
+      _availableGrades = List.from(_defaultGrades);
+      _selectedGrade = _defaultGrades[1]; // Default to 6th grade
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Using default grades';
+        });
+      }
+    }
+  }
+
+  int _ageFromBracket(String bracket) {
+    switch (bracket) {
+      case '10-11':
+        return 10;
+      case '12-13':
+        return 12;
+      case '14+':
+        return 14;
+      default:
+        return 10;
+    }
+  }
+
+  Future<void> _fetchGradeSuggestions() async {
+    final state = AppStateScope.of(context);
+    
+    setState(() {
+      _isLoadingGrades = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final age = _ageFromBracket(_ageBracket);
+      final suggestionsData = await state.backend.getGradeSuggestions(
+        country: _detectedCountry,
+        age: age,
+      );
+
+      final countrySupported = suggestionsData['country_supported'] as bool? ?? false;
+      final suggestedGrade = suggestionsData['suggested_grade'] as String?;
+      final availableGrades = (suggestionsData['available_grades'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ?? [];
+
+      if (mounted) {
+        setState(() {
+          _countrySupported = countrySupported;
+          _availableGrades = availableGrades.isNotEmpty 
+              ? availableGrades 
+              : List.from(_defaultGrades);
+          _selectedGrade = suggestedGrade ?? 
+              (_availableGrades.isNotEmpty ? _availableGrades[0] : null);
+          _isLoadingGrades = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _availableGrades = List.from(_defaultGrades);
+          _selectedGrade = _defaultGrades[1];
+          _isLoadingGrades = false;
+          _errorMessage = 'Could not load grade suggestions';
+        });
+      }
+    }
+  }
+
+  Future<void> _onAgeBracketChanged(String? newBracket) async {
+    if (newBracket != null && newBracket != _ageBracket) {
+      setState(() {
+        _ageBracket = newBracket;
+      });
+      await _fetchGradeSuggestions();
+    }
+  }
 
   Future<void> _continueWithDemoQuiz() async {
     final state = AppStateScope.of(context);
@@ -28,9 +131,10 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
       step: 'child_avatar',
       checkpoint: {
         'age_bracket': _ageBracket,
-        'grade': _grade,
+        'grade': _selectedGrade ?? '',
         'language': _language,
-        'market': 'US',
+        'market': _detectedCountry ?? 'US',
+        'country_supported': _countrySupported,
       },
       completedStep: 'child_profile',
     );
@@ -82,8 +186,42 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
         ),
         body: Column(
         children: [
+          // Country indicator
+          if (_detectedCountry != null) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: _countrySupported 
+                    ? Colors.green.withValues(alpha: 0.1) 
+                    : Colors.orange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _countrySupported ? Icons.check_circle : Icons.info_outline,
+                    size: 16,
+                    color: _countrySupported ? Colors.green : Colors.orange,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _countrySupported 
+                        ? 'Country detected: $_detectedCountry'
+                        : 'Country not recognized - select grade manually',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _countrySupported ? Colors.green : Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          
           DropdownButtonFormField<String>(
-            initialValue: _ageBracket,
+            value: _ageBracket,
             decoration: InputDecoration(labelText: l10n.howItWorksAgeBracketLabel),
             items: _ageBrackets
                 .map(
@@ -91,24 +229,35 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
                       DropdownMenuItem(value: value, child: Text(value)),
                 )
                 .toList(),
-            onChanged: (value) =>
-                setState(() => _ageBracket = value ?? _ageBracket),
+            onChanged: _onAgeBracketChanged,
           ),
           const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: _grade,
-            decoration: InputDecoration(labelText: l10n.howItWorksGradeLabel),
-            items: _grades
-                .map(
-                  (value) =>
-                      DropdownMenuItem(value: value, child: Text(value)),
+          _isLoadingGrades
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 )
-                .toList(),
-            onChanged: (value) => setState(() => _grade = value ?? _grade),
-          ),
+              : DropdownButtonFormField<String>(
+                  value: _selectedGrade,
+                  decoration: InputDecoration(
+                    labelText: l10n.howItWorksGradeLabel,
+                    helperText: _countrySupported 
+                        ? 'Grade suggested based on your country and age' 
+                        : 'Select your grade level',
+                  ),
+                  items: _availableGrades
+                      .map(
+                        (value) =>
+                            DropdownMenuItem(value: value, child: Text(value)),
+                      )
+                      .toList(),
+                  onChanged: (value) => setState(() => _selectedGrade = value),
+                ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            initialValue: _language,
+            value: _language,
             decoration: InputDecoration(labelText: l10n.howItWorksLanguageLabel),
             items: _languages
                 .map(
@@ -121,6 +270,13 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
             onChanged: (value) =>
                 setState(() => _language = value ?? _language),
           ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage!,
+              style: const TextStyle(fontSize: 12, color: Colors.orange),
+            ),
+          ],
           const SizedBox(height: 24),
           Center(
             child: TextButton(

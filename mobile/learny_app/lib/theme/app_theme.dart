@@ -32,6 +32,7 @@ class LearnyColors {
   // For now, I will update specific values and keep aliases.
 
   static const skyLightOld = Color(0xFFE8F7FA); // Keeping for safe fallback if needed
+  static const skyLight = sky; // Restored alias for compatibility
   
   // Aliases for compatibility with existing code
   static const mintPrimary = tealPrimary;

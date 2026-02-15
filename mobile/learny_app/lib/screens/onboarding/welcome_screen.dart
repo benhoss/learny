@@ -7,6 +7,7 @@ import '../../theme/app_assets.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import '../../widgets/animations/fade_in_slide.dart';
+import '../../widgets/animations/logo_animation.dart';
 import '../../widgets/games/pressable_scale.dart';
 import '../shared/gradient_scaffold.dart';
 
@@ -97,71 +98,110 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       gradient: LearnyGradients.hero,
       child: Stack(
         children: [
-          // Background Illustration
-          Positioned(
-            right: -40,
-            bottom: -80,
-            child: IgnorePointer(
-              child: Opacity(
-                opacity: 0.16,
-                child: Image.asset(AppImages.renderOnboarding, width: 300),
-              ),
-            ),
-          ),
+          // Background decorative circles
+          _BackgroundDecorations(),
           
           SafeArea(
             child: Padding(
-              padding: EdgeInsets.all(tokens.spaceLg),
+              padding: EdgeInsets.symmetric(horizontal: tokens.spaceLg),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Spacer(flex: 1),
                   
-                  // Header Section
+                  // Hero Logo Section with Animation
                   FadeInSlide(
-                    duration: const Duration(milliseconds: 600),
+                    duration: const Duration(milliseconds: 800),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: tokens.cardShadow,
-                          ),
-                          child: const Icon(
-                            LucideIcons.graduationCap, 
-                            size: 32, 
-                            color: LearnyColors.skyPrimary
+                        // Animated Logo
+                        LogoAnimation(
+                          size: 140,
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: WiggleAnimation(
+                              child: Image.asset(
+                                AppImages.foxMascot,
+                                width: 80,
+                                height: 80,
+                              ),
+                            ),
                           ),
                         ),
-                        SizedBox(height: tokens.spaceLg),
-                        Text(
-                          'Welcome to\nLearny',
-                          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: LearnyColors.neutralDark,
-                            height: 1.1,
+                        
+                        SizedBox(height: tokens.spaceXl),
+                        
+                        // App name with gradient text
+                        ShaderMask(
+                          shaderCallback: (bounds) => const LinearGradient(
+                            colors: [LearnyColors.coral, LearnyColors.peach],
+                          ).createShader(bounds),
+                          child: Text(
+                            'Learny',
+                            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              height: 1.1,
+                            ),
                           ),
                         ),
-                        SizedBox(height: tokens.spaceMd),
+                        
+                        SizedBox(height: tokens.spaceSm),
+                        
+                        // Tagline
                         Text(
-                          'Your personal AI study companion.\nScan homework, generate quizzes, and master any subject.',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          'Your AI Study Companion',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: LearnyColors.neutralMedium,
-                            height: 1.5,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
 
-                  const Spacer(flex: 2),
+                  const Spacer(flex: 1),
+
+                  // Features preview with icons
+                  FadeInSlide(
+                    delay: const Duration(milliseconds: 300),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _FeatureChip(
+                          icon: LucideIcons.scanLine,
+                          label: 'Scan',
+                          delay: 400,
+                        ),
+                        _FeatureChip(
+                          icon: LucideIcons.brain,
+                          label: 'Learn',
+                          delay: 500,
+                        ),
+                        _FeatureChip(
+                          icon: LucideIcons.trophy,
+                          label: 'Master',
+                          delay: 600,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Spacer(flex: 1),
 
                   // Actions Section
                   FadeInSlide(
-                    delay: const Duration(milliseconds: 200),
+                    delay: const Duration(milliseconds: 500),
                     child: Column(
                       children: [
                         // Primary: Scan Homework (Guest Flow)
@@ -171,19 +211,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             width: double.infinity,
                             padding: EdgeInsets.all(tokens.spaceMd),
                             decoration: BoxDecoration(
-                              gradient: tokens.gradientAccent,
+                              gradient: LearnyGradients.cta,
                               borderRadius: tokens.radiusXl,
-                              boxShadow: tokens.buttonShadow,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: LearnyColors.coral.withValues(alpha: 0.4),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(14),
                                   ),
-                                  child: const Icon(LucideIcons.scanLine, color: Colors.white),
+                                  child: const Icon(LucideIcons.scanLine, color: Colors.white, size: 24),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
@@ -199,16 +245,24 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                         ),
                                       ),
                                       Text(
-                                        'Try it now without an account',
+                                        'Try it now — no account needed!',
                                         style: TextStyle(
                                           color: Colors.white.withValues(alpha: 0.9),
-                                          fontSize: 12,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const Icon(LucideIcons.arrowRight, color: Colors.white),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(LucideIcons.arrowRight, color: Colors.white, size: 20),
+                                ),
                               ],
                             ),
                           ),
@@ -221,21 +275,37 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           onTap: () => _chooseRole('child'),
                           child: Container(
                             width: double.infinity,
-                            padding: EdgeInsets.symmetric(vertical: tokens.spaceMd),
+                            padding: EdgeInsets.symmetric(vertical: tokens.spaceMd + 4),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: tokens.radiusFull,
-                              border: Border.all(color: LearnyColors.skyPrimary, width: 2),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                "I'm a Student",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                  color: LearnyColors.skyPrimary,
+                              border: Border.all(color: LearnyColors.tealPrimary, width: 2.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: LearnyColors.tealPrimary.withValues(alpha: 0.2),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
                                 ),
-                              ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  LucideIcons.smile,
+                                  color: LearnyColors.tealPrimary,
+                                  size: 22,
+                                ),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  "I'm a Student",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 17,
+                                    color: LearnyColors.tealPrimary,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -243,13 +313,33 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         SizedBox(height: tokens.spaceMd),
 
                         // Tertiary: Parent Flow
-                        TextButton(
-                          onPressed: () => _chooseRole('parent'),
-                          child: Text(
-                            "I'm a Parent / Guardian",
-                            style: TextStyle(
-                              color: LearnyColors.neutralMedium,
-                              fontWeight: FontWeight.w600,
+                        PressableScale(
+                          onTap: () => _chooseRole('parent'),
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(vertical: tokens.spaceMd),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              borderRadius: tokens.radiusFull,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  LucideIcons.users,
+                                  color: LearnyColors.neutralMedium,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "I'm a Parent / Guardian",
+                                  style: TextStyle(
+                                    color: LearnyColors.neutralMedium,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -257,11 +347,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: tokens.spaceXl),
 
                   if (kDebugMode)
                     FadeInSlide(
-                      delay: const Duration(milliseconds: 400),
+                      delay: const Duration(milliseconds: 700),
                       child: Center(
                         child: TextButton(
                           onPressed: _skipping ? null : _debugSkip,
@@ -272,8 +362,170 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         ),
                       ),
                     ),
+                  
+                  SizedBox(height: tokens.spaceMd),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Background decorative circles for visual interest
+class _BackgroundDecorations extends StatelessWidget {
+  const _BackgroundDecorations();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Top right decorative circle
+        Positioned(
+          right: -30,
+          top: 80,
+          child: _DecorativeCircle(
+            size: 120,
+            color: LearnyColors.peach.withValues(alpha: 0.5),
+            delay: 0,
+          ),
+        ),
+        // Bottom left decorative circle
+        Positioned(
+          left: -40,
+          bottom: 120,
+          child: _DecorativeCircle(
+            size: 100,
+            color: LearnyColors.tealLight.withValues(alpha: 0.3),
+            delay: 200,
+          ),
+        ),
+        // Bottom right decorative circle
+        Positioned(
+          right: 20,
+          bottom: 60,
+          child: _DecorativeCircle(
+            size: 60,
+            color: LearnyColors.purpleLight.withValues(alpha: 0.3),
+            delay: 400,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DecorativeCircle extends StatefulWidget {
+  const _DecorativeCircle({
+    required this.size,
+    required this.color,
+    required this.delay,
+  });
+
+  final double size;
+  final Color color;
+  final int delay;
+
+  @override
+  State<_DecorativeCircle> createState() => _DecorativeCircleState();
+}
+
+class _DecorativeCircleState extends State<_DecorativeCircle>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3000),
+    );
+    _animation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) _controller.repeat(reverse: true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _animation.value,
+          child: child,
+        );
+      },
+      child: Container(
+        width: widget.size,
+        height: widget.size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: widget.color,
+        ),
+      ),
+    );
+  }
+}
+
+/// Feature chip showing app capabilities
+class _FeatureChip extends StatelessWidget {
+  const _FeatureChip({
+    required this.icon,
+    required this.label,
+    required this.delay,
+  });
+
+  final IconData icon;
+  final String label;
+  final int delay;
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeInSlide(
+      delay: Duration(milliseconds: delay),
+      duration: const Duration(milliseconds: 500),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              color: LearnyColors.coral,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: LearnyColors.neutralMedium,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
             ),
           ),
         ],

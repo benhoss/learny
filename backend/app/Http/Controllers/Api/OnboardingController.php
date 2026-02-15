@@ -8,6 +8,7 @@ use App\Models\ChildProfile;
 use App\Models\OnboardingEvent;
 use App\Models\OnboardingLinkToken;
 use App\Models\OnboardingState;
+use App\Services\Onboarding\GradeByCountryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -19,6 +20,13 @@ use Illuminate\Validation\ValidationException;
 class OnboardingController extends Controller
 {
     use FindsOwnedChild;
+
+    protected GradeByCountryService $gradeByCountryService;
+
+    public function __construct()
+    {
+        $this->gradeByCountryService = new GradeByCountryService();
+    }
 
     private const EVENT_OPTIONS = [
         'onboarding_role_selected',
@@ -438,5 +446,78 @@ class OnboardingController extends Controller
                 'metadata' => [],
             ]);
         }
+    }
+
+    /**
+     * Get list of available countries with grade systems.
+     * This endpoint is public (no auth required).
+     */
+    public function listCountries(Request $request): JsonResponse
+    {
+        // Try to detect country from IP if not provided
+        $detectedCountry = null;
+        $countryParam = $request->query('country');
+        
+        if (empty($countryParam)) {
+            $detectedCountry = $this->gradeByCountryService->getCountryFromRequest($request);
+        }
+
+        $countries = $this->gradeByCountryService->getAvailableCountries();
+
+        return response()->json([
+            'data' => [
+                'countries' => $countries,
+                'detected_country' => $detectedCountry,
+            ],
+        ]);
+    }
+
+    /**
+     * Get grade suggestions based on country and age.
+     * This endpoint is public (no auth required).
+     */
+    public function getGradeSuggestions(Request $request): JsonResponse
+    {
+        $payload = $request->validate([
+            'country' => ['nullable', 'string', 'size:2'],
+            'age' => ['required', 'integer', 'min:3', 'max:25'],
+        ]);
+
+        $countryCode = $payload['country'] ?? null;
+        $age = (int) $payload['age'];
+
+        // If no country provided, try to detect from IP
+        if (empty($countryCode)) {
+            $countryCode = $this->gradeByCountryService->getCountryFromRequest($request);
+        }
+
+        // If country is not supported, return empty suggestions
+        if (empty($countryCode) || !$this->gradeByCountryService->isCountrySupported($countryCode)) {
+            return response()->json([
+                'data' => [
+                    'country' => $countryCode,
+                    'country_supported' => false,
+                    'suggested_grade' => null,
+                    'available_grades' => [],
+                    'message' => 'Country not supported. Please select your grade manually.',
+                ],
+            ]);
+        }
+
+        // Get grades for the country
+        $gradesData = $this->gradeByCountryService->getGradesByCountry($countryCode);
+        $suggestedGrade = $this->gradeByCountryService->suggestGradeByAgeAndCountry($countryCode, $age);
+        $gradeLabels = $this->gradeByCountryService->getGradeLabelsByCountry($countryCode);
+
+        return response()->json([
+            'data' => [
+                'country' => $countryCode,
+                'country_name' => $gradesData['name'] ?? null,
+                'country_supported' => true,
+                'suggested_grade' => $suggestedGrade,
+                'available_grades' => $gradeLabels,
+                'age' => $age,
+            ],
+        ]);
     }
 }

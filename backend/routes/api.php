@@ -31,6 +31,8 @@ Route::prefix('v1')->group(function () {
     Route::post('/onboarding/link-tokens/consume', [OnboardingController::class, 'consumeLinkToken'])
         ->middleware('throttle:api-write');
     Route::get('/onboarding/policy', [OnboardingController::class, 'policy']);
+    Route::get('/onboarding/countries', [OnboardingController::class, 'listCountries']);
+    Route::get('/onboarding/grade-suggestions', [OnboardingController::class, 'getGradeSuggestions']);
     Route::post('/guest/session', [GuestSessionController::class, 'create'])
         ->middleware('throttle:api-write');
     Route::post('/guest/events', [GuestSessionController::class, 'trackEvent'])

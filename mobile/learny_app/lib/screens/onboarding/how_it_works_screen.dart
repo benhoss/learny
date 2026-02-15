@@ -304,18 +304,18 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
         ],
       ),
       primaryAction: ElevatedButton(
-        onPressed: _startScanNow,
+        onPressed: _continueWithDemoQuiz,
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(double.infinity, 56),
         ),
-        child: Text(l10n.howItWorksScanNow),
+        child: const Text('Continue'),
       ),
       secondaryAction: OutlinedButton(
-        onPressed: _continueWithDemoQuiz,
+        onPressed: _startScanNow,
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(double.infinity, 56),
         ),
-        child: Text(l10n.howItWorksTryDemoQuiz),
+        child: Text(l10n.howItWorksScanNow),
       ),
     ));
   }

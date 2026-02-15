@@ -80,6 +80,10 @@ class AppState extends ChangeNotifier {
   Set<String> onboardingCompletedSteps = <String>{};
   Set<String> onboardingTrackedEvents = <String>{};
 
+  Map<String, dynamic> onboardingGradeSystems = {};
+  List<String> onboardingCountries = [];
+  String? onboardingDetectedCountry;
+
   String? selectedPackId;
   QuizSession? quizSession;
   RevisionSession? revisionSession;
@@ -435,6 +439,40 @@ class AppState extends ChangeNotifier {
     onboardingCompletedSteps = <String>{};
     await _persistOnboardingState();
     notifyListeners();
+  }
+
+  Future<void> fetchOnboardingConfig() async {
+    try {
+      final data = await backend.initOnboarding();
+      onboardingDetectedCountry = data['detected_country'] as String?;
+      onboardingGradeSystems = data['grade_systems'] as Map<String, dynamic>? ?? {};
+      onboardingCountries = (data['supported_countries'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [];
+      notifyListeners();
+    } catch (_) {
+      // Fallback
+    }
+  }
+
+  String? suggestGrade(int age, String countryCode) {
+    // Try to find the system for the country, or fallback to DEFAULT
+    final system = onboardingGradeSystems[countryCode] ?? onboardingGradeSystems['DEFAULT'];
+    
+    if (system == null) return null;
+    
+    final map = system['age_map'] as Map<String, dynamic>?;
+    if (map != null) {
+      return map[age.toString()] as String?;
+    }
+    return null;
+  }
+
+  List<String> getAvailableGrades(String countryCode) {
+    final system = onboardingGradeSystems[countryCode] ?? onboardingGradeSystems['DEFAULT'];
+    if (system == null) return [];
+    return (system['grades'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
   }
 
   Future<void> startScanFirstOnboarding() async {
@@ -817,9 +855,11 @@ class AppState extends ChangeNotifier {
       case 'guest_prelink':
         return AppRoutes.upload;
       case 'child_profile':
-        return AppRoutes.howItWorks;
-      case 'child_avatar':
+        return AppRoutes.studentOnboarding;
+      case 'child_profile_setup':
         return AppRoutes.createProfile;
+      case 'child_avatar':
+        return AppRoutes.createProfile; // Fallback or if revisited
       case 'first_challenge':
         return AppRoutes.consent;
       case 'parent_link_prompt':

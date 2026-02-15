@@ -48,7 +48,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     if (!mounted) return;
     final target = role == 'parent'
         ? AppRoutes.parentOnboarding
-        : AppRoutes.howItWorks;
+        : AppRoutes.studentOnboarding;
     Navigator.pushNamed(context, target).then((_) {
       if (mounted) setState(() => _isInteracting = false);
     });

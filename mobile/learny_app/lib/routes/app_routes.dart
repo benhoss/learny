@@ -1,6 +1,7 @@
 class AppRoutes {
   static const welcome = '/';
   static const howItWorks = '/how-it-works';
+  static const studentOnboarding = '/student-onboarding';
   static const createProfile = '/create-profile';
   static const consent = '/consent';
   static const plan = '/plan';

@@ -21,6 +21,7 @@ import '../screens/home/notifications_screen.dart';
 import '../screens/onboarding/consent_screen.dart';
 import '../screens/onboarding/create_profile_screen.dart';
 import '../screens/onboarding/how_it_works_screen.dart';
+import '../screens/onboarding/student_onboarding_screen.dart';
 import '../screens/onboarding/guest_limit_screen.dart';
 import '../screens/onboarding/parent_onboarding_screen.dart';
 import '../screens/onboarding/plan_screen.dart';
@@ -61,6 +62,7 @@ class LearnyApp extends StatelessWidget {
   static const List<String> _onboardingRoutes = [
     AppRoutes.welcome,
     AppRoutes.howItWorks,
+    AppRoutes.studentOnboarding,
     AppRoutes.createProfile,
     AppRoutes.consent,
     AppRoutes.plan,
@@ -98,6 +100,7 @@ class LearnyApp extends StatelessWidget {
             routes: {
               AppRoutes.welcome: (_) => const WelcomeScreen(),
               AppRoutes.howItWorks: (_) => const HowItWorksScreen(),
+              AppRoutes.studentOnboarding: (_) => const StudentOnboardingScreen(),
               AppRoutes.createProfile: (_) => const CreateProfileScreen(),
               AppRoutes.consent: (_) => const ConsentScreen(),
               AppRoutes.plan: (_) => const PlanScreen(),

@@ -85,6 +85,22 @@ class BackendClient {
     return payload['data'] as Map<String, dynamic>;
   }
 
+  /// Initialize onboarding with country and grade system data.
+  /// This is a public endpoint (no auth required).
+  Future<Map<String, dynamic>> initOnboarding() async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/api/v1/onboarding/init'),
+      headers: _jsonHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw BackendException('Onboarding init failed: ${response.body}');
+    }
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    return payload['data'] as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> onboardingPolicy({String? market}) async {
     final uri = Uri.parse('$baseUrl/api/v1/onboarding/policy');
     final target = market == null
@@ -94,44 +110,6 @@ class BackendClient {
 
     if (response.statusCode != 200) {
       throw BackendException('Onboarding policy failed: ${response.body}');
-    }
-
-    final payload = jsonDecode(response.body) as Map<String, dynamic>;
-    return payload['data'] as Map<String, dynamic>;
-  }
-
-  /// Get list of available countries with grade systems.
-  /// This is a public endpoint (no auth required).
-  Future<Map<String, dynamic>> listOnboardingCountries({String? country}) async {
-    final uri = Uri.parse('$baseUrl/api/v1/onboarding/countries');
-    final target = country == null
-        ? uri
-        : uri.replace(queryParameters: {'country': country});
-    final response = await _client.get(target, headers: _jsonHeaders());
-
-    if (response.statusCode != 200) {
-      throw BackendException('List onboarding countries failed: ${response.body}');
-    }
-
-    final payload = jsonDecode(response.body) as Map<String, dynamic>;
-    return payload['data'] as Map<String, dynamic>;
-  }
-
-  /// Get grade suggestions based on country and age.
-  /// This is a public endpoint (no auth required).
-  Future<Map<String, dynamic>> getGradeSuggestions({
-    String? country,
-    required int age,
-  }) async {
-    final uri = Uri.parse('$baseUrl/api/v1/onboarding/grade-suggestions');
-    final target = uri.replace(queryParameters: {
-      if (country != null) 'country': country,
-      'age': age.toString(),
-    });
-    final response = await _client.get(target, headers: _jsonHeaders());
-
-    if (response.statusCode != 200) {
-      throw BackendException('Get grade suggestions failed: ${response.body}');
     }
 
     final payload = jsonDecode(response.body) as Map<String, dynamic>;

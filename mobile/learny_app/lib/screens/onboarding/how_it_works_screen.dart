@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../routes/app_routes.dart';
@@ -16,6 +18,26 @@ class HowItWorksScreen extends StatefulWidget {
 class _HowItWorksScreenState extends State<HowItWorksScreen> {
   static const _ageBrackets = ['10-11', '12-13', '14+'];
   static const _languages = ['en', 'fr', 'nl'];
+
+  // Map device locales to country codes
+  static const _localeToCountry = {
+    'en_US': 'US',
+    'en_GB': 'GB',
+    'fr_FR': 'FR',
+    'fr_BE': 'BE',
+    'de_DE': 'DE',
+    'de_CH': 'CH',
+    'de_AT': 'AT',
+    'nl_NL': 'NL',
+    'nl_BE': 'BE',
+    'es_ES': 'ES',
+    'it_IT': 'IT',
+    'pt_PT': 'PT',
+    'pl_PL': 'PL',
+    'ja_JP': 'JP',
+    'en_CA': 'CA',
+    'en_AU': 'AU',
+  };
 
   String _ageBracket = _ageBrackets.first;
   String? _selectedGrade;
@@ -36,25 +58,59 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
     _initializeCountryAndGrades();
   }
 
+  String? _getCountryFromDeviceLocale() {
+    final locale = PlatformDispatcher.instance.locale;
+    final localeString = '${locale.languageCode}_${locale.countryCode}';
+    
+    // Try exact match first
+    if (_localeToCountry.containsKey(localeString)) {
+      return _localeToCountry[localeString];
+    }
+    
+    // Try language code only match
+    final langCode = locale.languageCode;
+    for (final entry in _localeToCountry.entries) {
+      if (entry.key.startsWith('${langCode}_')) {
+        return entry.value;
+      }
+    }
+    
+    return null;
+  }
+
   Future<void> _initializeCountryAndGrades() async {
     final state = AppStateScope.of(context);
+    
+    // First, try to detect country from device locale
+    String? detectedFromLocale = _getCountryFromDeviceLocale();
+    
     try {
-      // Fetch countries and detect user's country
+      // Try backend IP detection as fallback
       final countriesData = await state.backend.listOnboardingCountries();
-      _detectedCountry = countriesData['detected_country'] as String?;
+      final backendDetected = countriesData['detected_country'] as String?;
+      
+      // Prefer device locale over IP detection (more accurate for mobile)
+      _detectedCountry = detectedFromLocale ?? backendDetected;
       
       if (mounted) setState(() {});
       
       // Fetch grade suggestions based on detected country
       await _fetchGradeSuggestions();
     } catch (e) {
-      // Fallback to default grades on error
-      _availableGrades = List.from(_defaultGrades);
-      _selectedGrade = _defaultGrades[1]; // Default to 6th grade
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'Using default grades';
-        });
+      // Fallback to device locale only
+      _detectedCountry = detectedFromLocale;
+      
+      if (_detectedCountry != null) {
+        await _fetchGradeSuggestions();
+      } else {
+        // Use default grades if nothing detected
+        _availableGrades = List.from(_defaultGrades);
+        _selectedGrade = _defaultGrades[1];
+        if (mounted) {
+          setState(() {
+            _errorMessage = 'Using default grades';
+          });
+        }
       }
     }
   }

@@ -612,6 +612,56 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  Future<bool> registerStudentForOnboarding({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final payload = await backend.register(
+        name: name,
+        email: email,
+        password: password,
+      );
+      _syncProfileFromAuthPayload(payload);
+      
+      // If the backend creates a default child profile for the user, list it.
+      // If not, we might need to create one explicitly. 
+      // Assuming 'register' creates a generic user, we then create a child profile for them.
+      // But let's check if 'listChildren' returns anything first.
+      
+      var backendChildren = await backend.listChildren();
+      children = backendChildren
+          .whereType<Map<String, dynamic>>()
+          .map(_mapChildProfile)
+          .whereType<ChildProfile>()
+          .toList();
+          
+      // If no child profile exists, create one with the user's name/details
+      if (children.isEmpty) {
+         final grade = onboardingCheckpoints['grade']?.toString() ?? BackendConfig.childGrade;
+         final lang = onboardingCheckpoints['language']?.toString() ?? 'en';
+         await createChildForOnboarding(name: name, gradeLevel: grade, preferredLanguage: lang, role: 'child');
+         // createChildForOnboarding updates 'children'
+      } else {
+         backendChildId = children.first.id;
+      }
+
+      await _trackOnboardingEvent(
+        role: 'child',
+        eventName: 'child_signup_completed',
+        step: 'child_signup',
+      );
+      
+      // Mark onboarding as complete since student is signed up and has profile
+      await completeOnboarding(force: true);
+      
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<ChildProfile?> createChildForOnboarding({
     required String name,
     required String gradeLevel,
@@ -1527,18 +1577,21 @@ class AppState extends ChangeNotifier {
         );
       }
       final session = await _ensureBackendSession();
+      final uploadSubject = _normalizedOptionalText(pendingSubject);
+      final uploadTopic = _resolvedUploadTopic();
+      final uploadLearningGoal = _normalizedOptionalText(pendingLearningGoal);
       final document = await backend.uploadDocument(
         childId: session.childId,
         bytes: bytes,
         filename: filename,
         title: pendingTitle,
-        subject: pendingSubject,
-        topic: pendingTopic,
+        subject: uploadSubject,
+        topic: uploadTopic,
         language: pendingLanguage,
         gradeLevel: pendingGradeLevel ?? BackendConfig.childGrade,
         collections: pendingCollections,
         tags: pendingTags,
-        learningGoal: pendingLearningGoal,
+        learningGoal: uploadLearningGoal,
         contextText: pendingContextText,
         requestedGameTypes: pendingGameTypes,
         guestSessionId: isScanFirstOnboarding
@@ -1617,18 +1670,21 @@ class AppState extends ChangeNotifier {
         );
       }
       final session = await _ensureBackendSession();
+      final uploadSubject = _normalizedOptionalText(pendingSubject);
+      final uploadTopic = _resolvedUploadTopic();
+      final uploadLearningGoal = _normalizedOptionalText(pendingLearningGoal);
       final document = await backend.uploadDocumentBatch(
         childId: session.childId,
         files: images,
         filenames: filenames,
         title: pendingTitle,
-        subject: pendingSubject,
-        topic: pendingTopic,
+        subject: uploadSubject,
+        topic: uploadTopic,
         language: pendingLanguage,
         gradeLevel: pendingGradeLevel ?? BackendConfig.childGrade,
         collections: pendingCollections,
         tags: pendingTags,
-        learningGoal: pendingLearningGoal,
+        learningGoal: uploadLearningGoal,
         contextText: pendingContextText,
         requestedGameTypes: pendingGameTypes,
         guestSessionId: isScanFirstOnboarding
@@ -1677,6 +1733,26 @@ class AppState extends ChangeNotifier {
       pendingGameTypes = [];
       notifyListeners();
     }
+  }
+
+  String? _normalizedOptionalText(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed;
+  }
+
+  String _resolvedUploadTopic() {
+    final topic = _normalizedOptionalText(pendingTopic);
+    if (topic != null) {
+      return topic;
+    }
+    final subject = _normalizedOptionalText(pendingSubject);
+    if (subject != null) {
+      return subject;
+    }
+    return 'General';
   }
 
   Future<_BackendSession> _ensureBackendSession() async {

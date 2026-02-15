@@ -19,52 +19,75 @@ class CreateProfileScreen extends StatefulWidget {
 
 class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final _nicknameController = TextEditingController(text: 'Alex');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  
   String _avatar = 'fox';
   bool _busy = false;
   String? _error;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
     _nicknameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _continue() async {
     final l10n = L10n.of(context);
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final nickname = _nicknameController.text.trim();
+
+    if (nickname.isEmpty || email.isEmpty || password.isEmpty) {
+      setState(() => _error = 'Please fill in all fields.');
+      return;
+    }
+
     setState(() {
       _busy = true;
       _error = null;
     });
+
     final state = AppStateScope.of(context);
+    
+    // Save avatar/nickname choice to checkpoints
     await state.saveOnboardingStep(
-      step: 'first_challenge',
+      step: 'child_signup',
       checkpoint: {
-        'nickname': _nicknameController.text.trim(),
+        'nickname': nickname,
         'avatar': _avatar,
       },
-      completedStep: 'child_avatar',
+      completedStep: 'child_profile_setup',
     );
-    final created = await state.createChildForOnboarding(
-      name: _nicknameController.text.trim().isEmpty
-          ? l10n.createProfileDefaultLearnerName
-          : _nicknameController.text.trim(),
-      gradeLevel: state.onboardingCheckpoints['grade']?.toString() ?? '6th',
-      preferredLanguage:
-          state.onboardingCheckpoints['language']?.toString() ?? 'en',
-      role: 'child',
+
+    // Register user and create child profile
+    final success = await state.registerStudentForOnboarding(
+      name: nickname,
+      email: email,
+      password: password,
     );
 
     if (!mounted) return;
-    if (created == null) {
+    
+    if (!success) {
       setState(() {
         _busy = false;
-        _error = l10n.createProfileCreateFailed;
+        _error = 'Could not create account. Email might be taken or password too weak.';
       });
       return;
     }
 
     setState(() => _busy = false);
-    Navigator.pushReplacementNamed(context, AppRoutes.consent);
+    
+    // Skip dummy quiz (ConsentScreen) and go to Home
+    Navigator.pushNamedAndRemoveUntil(
+      context, 
+      AppRoutes.home, 
+      (route) => false,
+    );
   }
 
   @override
@@ -113,7 +136,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n.createProfileSetupTitle,
+                      'Create Account',
                       style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                         color: LearnyColors.neutralDark,
@@ -121,7 +144,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     ),
                     SizedBox(height: tokens.spaceXs),
                     Text(
-                      l10n.createProfileSetupSubtitle,
+                      'Save your progress and access your study plans from anywhere.',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: LearnyColors.neutralMedium,
                       ),
@@ -183,25 +206,54 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                 delay: const Duration(milliseconds: 400),
                 child: TextField(
                   controller: _nicknameController,
-                  decoration: InputDecoration(
-                    labelText: l10n.createProfileNicknameLabel,
-                    hintText: l10n.createProfileNicknameHint,
-                    prefixIcon: Icon(LucideIcons.user, color: LearnyColors.neutralLight, size: 20),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: LearnyColors.neutralSoft),
+                  decoration: _inputDecoration(
+                    tokens,
+                    l10n.createProfileNicknameLabel,
+                    l10n.createProfileNicknameHint,
+                    LucideIcons.user,
+                  ),
+                ),
+              ),
+              
+              SizedBox(height: tokens.spaceMd),
+              
+              // Email Input
+              FadeInSlide(
+                delay: const Duration(milliseconds: 450),
+                child: TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: _inputDecoration(
+                    tokens,
+                    'Email',
+                    'your@email.com',
+                    LucideIcons.mail,
+                  ),
+                ),
+              ),
+              
+              SizedBox(height: tokens.spaceMd),
+              
+              // Password Input
+              FadeInSlide(
+                delay: const Duration(milliseconds: 500),
+                child: TextField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: _inputDecoration(
+                    tokens,
+                    'Password',
+                    'Min. 8 characters',
+                    LucideIcons.lock,
+                  ).copyWith(
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? LucideIcons.eyeOff : LucideIcons.eye,
+                        color: LearnyColors.neutralLight,
+                        size: 20,
+                      ),
+                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: LearnyColors.neutralSoft),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: LearnyColors.skyPrimary, width: 2),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                 ),
               ),
@@ -209,7 +261,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               if (_error != null) ...[
                 SizedBox(height: tokens.spaceSm),
                 FadeInSlide(
-                  delay: const Duration(milliseconds: 450),
+                  delay: const Duration(milliseconds: 550),
                   child: Text(
                     _error!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -224,7 +276,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               
               // Primary CTA
               FadeInSlide(
-                delay: const Duration(milliseconds: 500),
+                delay: const Duration(milliseconds: 600),
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LearnyGradients.cta,
@@ -255,7 +307,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                                   ),
                                 )
                               : Text(
-                                  l10n.createProfileStartFirstChallenge,
+                                  'Create Account',
                                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w700,
                                     color: Colors.white,
@@ -272,7 +324,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               
               // Skip Link
               FadeInSlide(
-                delay: const Duration(milliseconds: 600),
+                delay: const Duration(milliseconds: 700),
                 child: Center(
                   child: TextButton(
                     onPressed: () {
@@ -307,6 +359,29 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration(LearnyTokens tokens, String label, String hint, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon, color: LearnyColors.neutralLight, size: 20),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: LearnyColors.neutralSoft),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: LearnyColors.neutralSoft),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: LearnyColors.skyPrimary, width: 2),
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }
 }

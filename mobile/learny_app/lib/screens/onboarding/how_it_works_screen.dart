@@ -83,22 +83,32 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
     
     // First, try to detect country from device locale
     String? detectedFromLocale = _getCountryFromDeviceLocale();
+    debugPrint('Onboarding: Device locale detected: $detectedFromLocale');
     
     try {
       // Try backend IP detection as fallback
+      debugPrint('Onboarding: Calling listOnboardingCountries...');
       final countriesData = await state.backend.listOnboardingCountries();
+      debugPrint('Onboarding: listOnboardingCountries response: $countriesData');
+      
       final backendDetected = countriesData['detected_country'] as String?;
+      debugPrint('Onboarding: Backend detected country: $backendDetected');
       
       // Prefer device locale over IP detection (more accurate for mobile)
       _detectedCountry = detectedFromLocale ?? backendDetected;
+      debugPrint('Onboarding: Final detected country: $_detectedCountry');
       
       if (mounted) setState(() {});
       
       // Fetch grade suggestions based on detected country
       await _fetchGradeSuggestions();
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Onboarding: Error initializing country: $e');
+      debugPrint('Onboarding: Stack trace: $stack');
+      
       // Fallback to device locale only
       _detectedCountry = detectedFromLocale;
+      debugPrint('Onboarding: Falling back to device locale: $_detectedCountry');
       
       if (_detectedCountry != null) {
         await _fetchGradeSuggestions();
@@ -138,16 +148,21 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
 
     try {
       final age = _ageFromBracket(_ageBracket);
+      debugPrint('Onboarding: Fetching grade suggestions for country: $_detectedCountry, age: $age');
+      
       final suggestionsData = await state.backend.getGradeSuggestions(
         country: _detectedCountry,
         age: age,
       );
+      debugPrint('Onboarding: Grade suggestions response: $suggestionsData');
 
       final countrySupported = suggestionsData['country_supported'] as bool? ?? false;
       final suggestedGrade = suggestionsData['suggested_grade'] as String?;
       final availableGrades = (suggestionsData['available_grades'] as List<dynamic>?)
           ?.map((e) => e.toString())
           .toList() ?? [];
+
+      debugPrint('Onboarding: Suggested grade: $suggestedGrade, available: $availableGrades');
 
       if (mounted) {
         setState(() {
@@ -160,7 +175,9 @@ class _HowItWorksScreenState extends State<HowItWorksScreen> {
           _isLoadingGrades = false;
         });
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Onboarding: Error fetching grade suggestions: $e');
+      debugPrint('Onboarding: Stack trace: $stack');
       if (mounted) {
         setState(() {
           _availableGrades = List.from(_defaultGrades);

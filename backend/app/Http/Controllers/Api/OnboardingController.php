@@ -68,6 +68,9 @@ class OnboardingController extends Controller
 
         // 2. Load Grade Systems
         $systems = config('learny.grade_systems');
+        if (!is_array($systems)) {
+            $systems = [];
+        }
         
         return response()->json([
             'data' => [

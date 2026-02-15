@@ -389,6 +389,10 @@ class GradeByCountryService
     {
         // Skip localhost/private IPs
         if (empty($ipAddress) || $this->isPrivateIp($ipAddress)) {
+            \Log::info('GradeByCountryService: Skipping IP detection - private/localhost IP', [
+                'ip' => $ipAddress,
+                'reason' => empty($ipAddress) ? 'empty' : 'private_range',
+            ]);
             return null;
         }
 
@@ -397,18 +401,33 @@ class GradeByCountryService
         return Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($ipAddress) {
             try {
                 // Use ipapi.co free API (no API key required, 1000 requests/month)
+                \Log::info('GradeByCountryService: Detecting country from IP', ['ip' => $ipAddress]);
+                
                 $response = Http::timeout(5)
                     ->get("https://ipapi.co/{$ipAddress}/country_code/");
 
                 if ($response->successful()) {
-                    $countryCode = $response->body();
+                    $countryCode = trim($response->body());
                     if (strlen($countryCode) === 2) {
-                        return strtoupper($countryCode);
+                        $country = strtoupper($countryCode);
+                        \Log::info('GradeByCountryService: IP country detected', [
+                            'ip' => $ipAddress,
+                            'country' => $country,
+                        ]);
+                        return $country;
                     }
                 }
+                
+                \Log::warning('GradeByCountryService: IP detection failed - invalid response', [
+                    'ip' => $ipAddress,
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
             } catch (\Exception $e) {
                 // Log error but don't break the flow
-                \Log::warning("GradeByCountryService: Failed to detect country from IP: " . $e->getMessage());
+                \Log::warning("GradeByCountryService: IP detection exception: " . $e->getMessage(), [
+                    'ip' => $ipAddress,
+                ]);
             }
 
             return null;

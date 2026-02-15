@@ -458,8 +458,17 @@ class OnboardingController extends Controller
         $detectedCountry = null;
         $countryParam = $request->query('country');
         
+        \Log::info('OnboardingController: listCountries called', [
+            'country_param' => $countryParam,
+            'ip' => $request->ip(),
+            'cf_country' => $request->header('CF-IPCountry'),
+        ]);
+        
         if (empty($countryParam)) {
             $detectedCountry = $this->gradeByCountryService->getCountryFromRequest($request);
+            \Log::info('OnboardingController: IP-based country detection result', [
+                'detected_country' => $detectedCountry,
+            ]);
         }
 
         $countries = $this->gradeByCountryService->getAvailableCountries();
@@ -486,13 +495,25 @@ class OnboardingController extends Controller
         $countryCode = $payload['country'] ?? null;
         $age = (int) $payload['age'];
 
+        \Log::info('OnboardingController: getGradeSuggestions called', [
+            'country_param' => $countryCode,
+            'age' => $age,
+            'ip' => $request->ip(),
+        ]);
+
         // If no country provided, try to detect from IP
         if (empty($countryCode)) {
             $countryCode = $this->gradeByCountryService->getCountryFromRequest($request);
+            \Log::info('OnboardingController: IP-based country detection for grades', [
+                'detected_country' => $countryCode,
+            ]);
         }
 
         // If country is not supported, return empty suggestions
         if (empty($countryCode) || !$this->gradeByCountryService->isCountrySupported($countryCode)) {
+            \Log::info('OnboardingController: Country not supported for grades', [
+                'country' => $countryCode,
+            ]);
             return response()->json([
                 'data' => [
                     'country' => $countryCode,
@@ -508,6 +529,13 @@ class OnboardingController extends Controller
         $gradesData = $this->gradeByCountryService->getGradesByCountry($countryCode);
         $suggestedGrade = $this->gradeByCountryService->suggestGradeByAgeAndCountry($countryCode, $age);
         $gradeLabels = $this->gradeByCountryService->getGradeLabelsByCountry($countryCode);
+
+        \Log::info('OnboardingController: Grade suggestions generated', [
+            'country' => $countryCode,
+            'age' => $age,
+            'suggested_grade' => $suggestedGrade,
+            'available_grades_count' => count($gradeLabels),
+        ]);
 
         return response()->json([
             'data' => [
